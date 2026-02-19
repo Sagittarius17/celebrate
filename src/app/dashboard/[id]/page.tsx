@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, use } from 'react';
+import React, { useState, use, useRef } from 'react';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc, query, orderBy } from 'firebase/firestore';
 import { addDocumentNonBlocking, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -10,10 +10,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Plus, Trash2, Calendar, Quote, Copy, Check, ExternalLink, Save, ImageIcon } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Calendar, Quote, Copy, Check, ExternalLink, Save, ImageIcon, Upload } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -22,9 +21,12 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
   const { user } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const [isCopied, setIsCopied] = useState(false);
   const [isSavingQuote, setIsSavingQuote] = useState(false);
-  const [selectedImageUrl, setSelectedImageUrl] = useState(PlaceHolderImages[0].imageUrl);
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
+  const [customQuote, setCustomQuote] = useState('');
 
   const pageRef = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -32,8 +34,6 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
   }, [db, user, id]);
 
   const { data: page, isLoading: isPageLoading } = useDoc(pageRef);
-
-  const [customQuote, setCustomQuote] = useState('');
 
   // Sync customQuote when page data loads
   React.useEffect(() => {
@@ -52,8 +52,37 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
 
   const { data: events, isLoading: isEventsLoading } = useCollection(eventsQuery);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Basic size check for prototypes (e.g., 2MB limit)
+      if (file.size > 2 * 1024 * 1024) {
+        toast({
+          variant: "destructive",
+          title: "File too large",
+          description: "Please choose an image under 2MB for the best experience.",
+        });
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImageUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleAddEvent = () => {
     if (!user || !db || !page) return;
+    if (!selectedImageUrl) {
+      toast({
+        variant: "destructive",
+        title: "No image selected",
+        description: "Please upload an image first to add a memory.",
+      });
+      return;
+    }
     
     const eventId = doc(collection(db, 'dummy')).id;
     const payload = {
@@ -70,6 +99,8 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
     };
 
     addDocumentNonBlocking(collection(db, 'celebrationPages', id, 'birthdayEvents'), payload);
+    setSelectedImageUrl(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
     toast({ title: "Memory Added", description: "Edit the details directly in the timeline." });
   };
 
@@ -173,31 +204,48 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
               </CardHeader>
               <CardContent className="space-y-6 pt-6">
                 <div className="space-y-3">
-                  <Label className="text-muted-foreground font-bold uppercase text-[10px] tracking-widest">Choose an Image</Label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {PlaceHolderImages.slice(0, 9).map((img) => (
-                      <button 
-                        key={img.id}
-                        onClick={() => setSelectedImageUrl(img.imageUrl)}
-                        className={`relative aspect-square rounded-xl overflow-hidden border-4 transition-all ${selectedImageUrl === img.imageUrl ? 'border-primary' : 'border-transparent'}`}
-                      >
-                        <Image src={img.imageUrl} alt={img.description} fill className="object-cover" />
-                        {selectedImageUrl === img.imageUrl && (
-                          <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                            <Check className="text-white h-6 w-6 drop-shadow-md" />
-                          </div>
-                        )}
-                      </button>
-                    ))}
+                  <Label className="text-muted-foreground font-bold uppercase text-[10px] tracking-widest">Upload Image</Label>
+                  
+                  <div 
+                    onClick={() => fileInputRef.current?.click()}
+                    className={cn(
+                      "relative aspect-video rounded-2xl border-2 border-dashed border-muted-foreground/30 flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-all overflow-hidden",
+                      selectedImageUrl && "border-solid border-primary"
+                    )}
+                  >
+                    {selectedImageUrl ? (
+                      <>
+                        <Image src={selectedImageUrl} alt="Preview" fill className="object-cover" />
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                          <p className="text-white text-xs font-bold flex items-center gap-1">
+                            <Upload className="h-3 w-3" /> Change Photo
+                          </p>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                        <Upload className="h-8 w-8" />
+                        <span className="text-xs font-medium">Choose from device</span>
+                      </div>
+                    )}
+                    <input 
+                      type="file" 
+                      ref={fileInputRef} 
+                      className="hidden" 
+                      accept="image/*"
+                      onChange={handleFileChange} 
+                    />
                   </div>
                 </div>
+
                 <Button 
                   className="w-full rounded-full h-12 shadow-md hover:shadow-lg transition-all" 
                   onClick={handleAddEvent}
+                  disabled={!selectedImageUrl}
                 >
                   <Plus className="mr-2 h-4 w-4" /> Add to Timeline
                 </Button>
-                <p className="text-center text-[10px] text-muted-foreground italic">Pick an image and add it. You can edit the title and story directly in the preview!</p>
+                <p className="text-center text-[10px] text-muted-foreground italic">Pick a photo from your device. You can edit the date, title and story directly in the preview!</p>
               </CardContent>
             </Card>
 
@@ -240,7 +288,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
             ) : events?.length === 0 ? (
               <div className="text-center py-20 bg-white/50 rounded-[3rem] border-2 border-dashed border-muted">
                 <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground/30 mb-2" />
-                <p className="text-muted-foreground">Your timeline is empty. Add a memory from the left panel!</p>
+                <p className="text-muted-foreground">Your timeline is empty. Upload a photo from the left panel!</p>
               </div>
             ) : (
               <div className="space-y-6">

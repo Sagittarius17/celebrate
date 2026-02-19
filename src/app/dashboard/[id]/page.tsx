@@ -10,11 +10,30 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Plus, Trash2, Calendar, Quote, Copy, Check, ExternalLink, Save, ImageIcon, Upload } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowLeft, Plus, Trash2, Calendar, Quote, Copy, Check, ExternalLink, Save, ImageIcon, Upload, Type } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+
+const FONTS = [
+  "Playfair Display",
+  "PT Sans",
+  "Montserrat",
+  "Lora",
+  "Quicksand",
+  "Merriweather",
+  "Oswald",
+  "Dancing Script",
+  "Caveat",
+  "Pacifico",
+  "Lobster",
+  "Cinzel",
+  "Comfortaa",
+  "Great Vibes",
+  "Sacramento"
+];
 
 export default function SurpriseEditor({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -246,6 +265,40 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
                   <Plus className="mr-2 h-4 w-4" /> Add to Timeline
                 </Button>
                 <p className="text-center text-[10px] text-muted-foreground italic">Pick a photo from your device. You can edit the date, title and story directly in the preview!</p>
+              </CardContent>
+            </Card>
+
+            <Card className="h-fit rounded-3xl shadow-lg border-none overflow-hidden">
+              <CardHeader className="bg-accent/10">
+                <CardTitle className="flex items-center gap-2 text-accent-foreground">
+                  <Type className="h-5 w-5" /> Page Style
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-6">
+                <div className="space-y-2">
+                  <Label>Choose a Font</Label>
+                  <Select 
+                    value={page.font || 'Playfair Display'} 
+                    onValueChange={(val) => {
+                      if (db && pageRef) {
+                        updateDocumentNonBlocking(pageRef, { font: val, updatedAt: new Date().toISOString() });
+                        toast({ title: "Font Updated", description: `Style changed to ${val}.` });
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="rounded-xl">
+                      <SelectValue placeholder="Select font" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {FONTS.map(font => (
+                        <SelectItem key={font} value={font} style={{ fontFamily: font }}>
+                          <span style={{ fontFamily: font }}>{font}</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground italic">This font will be used for the main headings and titles on your surprise page.</p>
+                </div>
               </CardContent>
             </Card>
 

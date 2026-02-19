@@ -10,11 +10,12 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Plus, Trash2, Calendar, Image as ImageIcon, Quote, Copy, Check, ExternalLink, Save } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Calendar, Quote, Copy, Check, ExternalLink, Save, ImageIcon } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 export default function SurpriseEditor({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -23,12 +24,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
   const { toast } = useToast();
   const [isCopied, setIsCopied] = useState(false);
   const [isSavingQuote, setIsSavingQuote] = useState(false);
-  const [newEvent, setNewEvent] = useState({
-    title: '',
-    message: '',
-    eventDate: '',
-    imageUrl: PlaceHolderImages[0].imageUrl,
-  });
+  const [selectedImageUrl, setSelectedImageUrl] = useState(PlaceHolderImages[0].imageUrl);
 
   const pageRef = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -37,7 +33,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
 
   const { data: page, isLoading: isPageLoading } = useDoc(pageRef);
 
-  const [customQuote, setCustomQuote] = useState(page?.finalQuote || '');
+  const [customQuote, setCustomQuote] = useState('');
 
   // Sync customQuote when page data loads
   React.useEffect(() => {
@@ -61,9 +57,12 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
     
     const eventId = doc(collection(db, 'dummy')).id;
     const payload = {
-      ...newEvent,
       id: eventId,
       celebrationPageId: id,
+      title: 'New Memory',
+      message: '',
+      eventDate: new Date().toISOString().split('T')[0],
+      imageUrl: selectedImageUrl,
       order: (events?.length || 0) + 1,
       ownerId: user.uid,
       createdAt: new Date().toISOString(),
@@ -71,8 +70,16 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
     };
 
     addDocumentNonBlocking(collection(db, 'celebrationPages', id, 'birthdayEvents'), payload);
-    setNewEvent({ title: '', message: '', eventDate: '', imageUrl: PlaceHolderImages[0].imageUrl });
-    toast({ title: "Event Added", description: "The memory has been added to the timeline." });
+    toast({ title: "Memory Added", description: "Edit the details directly in the timeline." });
+  };
+
+  const handleUpdateEvent = (eventId: string, updates: any) => {
+    if (!db) return;
+    const eventRef = doc(db, 'celebrationPages', id, 'birthdayEvents', eventId);
+    updateDocumentNonBlocking(eventRef, {
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    });
   };
 
   const handleSaveFinalQuote = () => {
@@ -92,7 +99,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
     if (!user || !db) return;
     const eventRef = doc(db, 'celebrationPages', id, 'birthdayEvents', eventId);
     deleteDocumentNonBlocking(eventRef);
-    toast({ title: "Event Removed", description: "The memory has been deleted." });
+    toast({ title: "Memory Removed", description: "The memory has been deleted." });
   };
 
   const copyShareLink = () => {
@@ -164,53 +171,33 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
                   <Plus className="h-5 w-5" /> Add Memory
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4 pt-6">
-                <div className="space-y-2">
-                  <Label>Event Date</Label>
-                  <Input 
-                    type="date" 
-                    value={newEvent.eventDate}
-                    onChange={(e) => setNewEvent({...newEvent, eventDate: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Title</Label>
-                  <Input 
-                    placeholder="e.g. First Steps" 
-                    value={newEvent.title}
-                    onChange={(e) => setNewEvent({...newEvent, title: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Memory / Quote</Label>
-                  <Textarea 
-                    placeholder="Tell the story..." 
-                    className="min-h-[100px]"
-                    value={newEvent.message}
-                    onChange={(e) => setNewEvent({...newEvent, message: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Choose an Image</Label>
+              <CardContent className="space-y-6 pt-6">
+                <div className="space-y-3">
+                  <Label className="text-muted-foreground font-bold uppercase text-[10px] tracking-widest">Choose an Image</Label>
                   <div className="grid grid-cols-3 gap-2">
-                    {PlaceHolderImages.slice(0, 6).map((img) => (
+                    {PlaceHolderImages.slice(0, 9).map((img) => (
                       <button 
                         key={img.id}
-                        onClick={() => setNewEvent({...newEvent, imageUrl: img.imageUrl})}
-                        className={`relative aspect-square rounded-md overflow-hidden border-2 transition-all ${newEvent.imageUrl === img.imageUrl ? 'border-primary' : 'border-transparent'}`}
+                        onClick={() => setSelectedImageUrl(img.imageUrl)}
+                        className={`relative aspect-square rounded-xl overflow-hidden border-4 transition-all ${selectedImageUrl === img.imageUrl ? 'border-primary' : 'border-transparent'}`}
                       >
                         <Image src={img.imageUrl} alt={img.description} fill className="object-cover" />
+                        {selectedImageUrl === img.imageUrl && (
+                          <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                            <Check className="text-white h-6 w-6 drop-shadow-md" />
+                          </div>
+                        )}
                       </button>
                     ))}
                   </div>
                 </div>
                 <Button 
-                  className="w-full rounded-full h-12" 
+                  className="w-full rounded-full h-12 shadow-md hover:shadow-lg transition-all" 
                   onClick={handleAddEvent}
-                  disabled={!newEvent.title || !newEvent.eventDate}
                 >
-                  Add to Timeline
+                  <Plus className="mr-2 h-4 w-4" /> Add to Timeline
                 </Button>
+                <p className="text-center text-[10px] text-muted-foreground italic">Pick an image and add it. You can edit the title and story directly in the preview!</p>
               </CardContent>
             </Card>
 
@@ -245,41 +232,63 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
 
           <div className="lg:col-span-2 space-y-4">
             <h2 className="text-2xl font-bold flex items-center gap-2">
-              <Calendar className="h-6 w-6" /> Timeline Preview
+              <Calendar className="h-6 w-6 text-primary" /> Timeline Preview
             </h2>
             
             {isEventsLoading ? (
               <div className="text-center py-10">Loading events...</div>
             ) : events?.length === 0 ? (
-              <div className="text-center py-20 bg-white/50 rounded-3xl border-2 border-dashed">
-                <Quote className="mx-auto h-12 w-12 text-muted-foreground/30 mb-2" />
-                <p className="text-muted-foreground">No events added yet. Start by filling the form on the left.</p>
+              <div className="text-center py-20 bg-white/50 rounded-[3rem] border-2 border-dashed border-muted">
+                <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground/30 mb-2" />
+                <p className="text-muted-foreground">Your timeline is empty. Add a memory from the left panel!</p>
               </div>
             ) : (
               <div className="space-y-6">
                 {events?.map((event) => (
-                  <Card key={event.id} className="rounded-3xl overflow-hidden border-none shadow-md group">
+                  <Card key={event.id} className="rounded-[2rem] overflow-hidden border-none shadow-md hover:shadow-xl transition-shadow group bg-white/80 backdrop-blur-sm">
                     <div className="flex flex-col md:flex-row">
-                      <div className="relative w-full md:w-48 h-48">
+                      <div className="relative w-full md:w-56 h-56 md:h-auto">
                         <Image src={event.imageUrl} alt={event.title} fill className="object-cover" />
                       </div>
-                      <CardContent className="p-6 flex-1 flex flex-col justify-between">
-                        <div>
-                          <div className="flex justify-between items-start mb-2">
-                            <span className="text-sm font-bold text-primary uppercase tracking-widest">
-                              {new Date(event.eventDate).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
-                            </span>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="text-muted-foreground hover:text-destructive transition-colors"
-                              onClick={() => handleDeleteEvent(event.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                      <CardContent className="p-8 flex-1 space-y-4">
+                        <div className="flex justify-between items-start">
+                          <div className="space-y-1 w-full mr-4">
+                            <Label className="text-[10px] font-bold text-primary uppercase tracking-widest">Date of Memory</Label>
+                            <Input 
+                              type="date" 
+                              className="border-none bg-transparent p-0 h-auto font-bold text-primary text-sm focus-visible:ring-0 shadow-none cursor-pointer"
+                              value={event.eventDate}
+                              onChange={(e) => handleUpdateEvent(event.id, { eventDate: e.target.value })}
+                            />
                           </div>
-                          <h3 className="text-xl font-bold mb-2">{event.title}</h3>
-                          <p className="text-muted-foreground italic line-clamp-3">"{event.message}"</p>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="text-muted-foreground hover:text-destructive transition-colors shrink-0"
+                            onClick={() => handleDeleteEvent(event.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        
+                        <div className="space-y-1">
+                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Memory Title</Label>
+                          <Input 
+                            placeholder="e.g. First Steps" 
+                            className="border-none bg-transparent p-0 h-auto text-2xl font-headline font-bold focus-visible:ring-0 shadow-none"
+                            value={event.title}
+                            onChange={(e) => handleUpdateEvent(event.id, { title: e.target.value })}
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">The Story</Label>
+                          <Textarea 
+                            placeholder="Tell the story of this moment..." 
+                            className="border-none bg-transparent p-0 h-auto min-h-[60px] italic text-muted-foreground focus-visible:ring-0 shadow-none resize-none leading-relaxed"
+                            value={event.message}
+                            onChange={(e) => handleUpdateEvent(event.id, { message: e.target.value })}
+                          />
                         </div>
                       </CardContent>
                     </div>

@@ -41,8 +41,8 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       const rect = element.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
       
-      // We trigger the "completion" of the line when the element reaches the center of the screen
-      const triggerPoint = viewportHeight * 0.6;
+      // Calculate progress based on the center of the viewport relative to the timeline container
+      const triggerPoint = viewportHeight * 0.7;
       const start = rect.top;
       const height = rect.height;
       
@@ -53,7 +53,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
     window.addEventListener('scroll', handleScroll);
     handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [events.length]); // Re-run if events length changes
 
   useEffect(() => {
     const loadSurprise = async () => {
@@ -86,7 +86,6 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         
         const fetchedEvents = eventsSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
         
-        // Client-side sort to avoid complex indexing requirements
         fetchedEvents.sort((a, b) => {
           const dateA = new Date(a.eventDate).getTime();
           const dateB = new Date(b.eventDate).getTime();
@@ -153,10 +152,12 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
 
   const icons = [<Star />, <Camera />, <Gift />, <PartyPopper />, <Cake />, <Heart />, <Sparkles />];
   const finalQuoteToDisplay = page?.finalQuote || DEFAULT_QUOTES[page?.occasion] || DEFAULT_QUOTES["Other"];
-  const isFinished = scrollProgress >= 100;
+  
+  // Trigger finished state slightly before reaching the absolute bottom to ensure it shows
+  const isFinished = scrollProgress > 95;
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background pb-40">
       <Header title={page?.title} occasion={page?.occasion} />
        
       <section className="py-20">
@@ -165,7 +166,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
           <div className="w-24 h-1 bg-secondary mx-auto rounded-full" />
         </div>
         
-        <div ref={timelineRef} className="relative max-w-6xl mx-auto px-4 py-20">
+        <div ref={timelineRef} className="relative max-w-6xl mx-auto px-4 pt-20 pb-40">
           {/* Base Timeline Line */}
           <div className="absolute left-1/2 transform -translate-x-1/2 w-1 timeline-line h-full z-0 opacity-20 hidden md:block" />
           
@@ -177,6 +178,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
 
           <div className="space-y-32 relative z-10">
             {events.map((event, index) => {
+              // Approximate position of this specific event
               const eventProgress = (index / (events.length || 1)) * 100;
               const isActive = scrollProgress >= eventProgress;
 
@@ -210,27 +212,31 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
                   </div>
 
                   <div className="w-full md:w-[45%] flex items-center justify-center p-8">
-                    <div className="w-full h-48 md:h-64" />
+                    {/* Empty side spacer */}
                   </div>
                 </div>
               );
             })}
+          </div>
+        </div>
 
-            {/* Final Quote Section - Attached to the tail of the line */}
-            <div className={cn(
-              "flex flex-col items-center justify-center transition-all duration-1000 transform pt-20",
-              isFinished ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-            )}>
-              {/* Final Timeline Point */}
+        {/* Final Quote Section - Placed outside of measured timeline container for reliability */}
+        <div className="max-w-6xl mx-auto px-4 -mt-20">
+          <div className={cn(
+            "flex flex-col items-center justify-center transition-all duration-1000 transform",
+            isFinished ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20 pointer-events-none"
+          )}>
+            {/* The Quote Box */}
+            <div className="relative w-full flex justify-center">
+               {/* Final Timeline Point Connector */}
               <div className={cn(
-                "hidden md:flex absolute left-1/2 bottom-0 transform -translate-x-1/2 items-center justify-center w-20 h-20 rounded-full bg-secondary shadow-[0_0_30px_rgba(255,182,193,0.8)] z-30 transition-all duration-1000",
+                "hidden md:flex absolute left-1/2 -top-20 transform -translate-x-1/2 items-center justify-center w-20 h-20 rounded-full bg-secondary shadow-[0_0_30px_rgba(255,182,193,0.8)] z-30 transition-all duration-1000 delay-300",
                 isFinished ? "scale-100" : "scale-0"
               )}>
                 <Heart className="w-10 h-10 text-white animate-pulse" />
               </div>
 
-              {/* The Quote Box */}
-              <Card className="max-w-2xl w-full mx-auto border-none shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[3rem] overflow-hidden bg-white/90 backdrop-blur-md">
+              <Card className="max-w-2xl w-full mx-auto border-none shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[3rem] overflow-hidden bg-white/95 backdrop-blur-md">
                 <div className="h-2 w-full bg-gradient-to-r from-primary via-secondary to-primary" />
                 <CardContent className="p-12 text-center space-y-6">
                   <Quote className="w-12 h-12 text-secondary/30 mx-auto mb-4" />

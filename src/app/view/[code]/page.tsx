@@ -151,8 +151,6 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
   const icons = [<Star />, <Camera />, <Gift />, <PartyPopper />, <Cake />, <Heart />, <Sparkles />];
   const finalQuoteToDisplay = page?.finalQuote || DEFAULT_QUOTES[page?.occasion] || DEFAULT_QUOTES["Other"];
   
-  const isFinished = scrollProgress >= 100;
-
   return (
     <main className="min-h-screen bg-background pb-40">
       <Header title={page?.title} occasion={page?.occasion} />
@@ -196,14 +194,14 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
                     />
                   </div>
 
-                  {/* Timeline Dot */}
+                  {/* Timeline Dot - Stable Solid Design */}
                   <div className={cn(
-                    "hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center justify-center w-14 h-14 rounded-full border-4 transition-all duration-500 z-20 bg-background",
-                    isActive ? "border-secondary scale-110 shadow-[0_0_20px_rgba(255,182,193,0.6)]" : "border-primary opacity-50"
+                    "hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center justify-center w-14 h-14 rounded-full border-[3px] transition-all duration-500 z-20 bg-background shadow-sm",
+                    isActive ? "border-secondary scale-110 shadow-[0_0_15px_rgba(255,182,193,0.4)]" : "border-primary/40"
                   )}> 
                     <div className={cn(
-                      "w-4 h-4 rounded-full transition-colors duration-500",
-                      isActive ? "bg-secondary animate-pulse" : "bg-primary"
+                      "w-5 h-5 rounded-full transition-colors duration-500",
+                      isActive ? "bg-secondary" : "bg-primary/20"
                     )} />
                   </div>
 
@@ -212,13 +210,13 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
               );
             })}
 
-            {/* Final Quote Section - Mixed with the tail */}
+            {/* Final Quote Section */}
             <div className="flex flex-col items-center justify-center pt-20">
               <div className={cn(
                 "relative transition-all duration-1000 transform w-full max-w-2xl",
                 scrollProgress > 95 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20 pointer-events-none"
               )}>
-                {/* Connecting tail line segment that enters the box */}
+                {/* Connecting tail line segment */}
                 <div className="absolute -top-20 left-1/2 transform -translate-x-1/2 w-1.5 h-20 timeline-glow-line z-10 hidden md:block" />
 
                 <Card className="border-none shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[3rem] overflow-hidden bg-white/95 backdrop-blur-md relative z-20">

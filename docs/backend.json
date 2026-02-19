@@ -31,6 +31,10 @@
           "type": "string",
           "description": "A secret code required to securely access this particular page."
         },
+        "finalQuote": {
+          "type": "string",
+          "description": "A final message or quote shown at the end of the timeline."
+        },
         "ownerId": {
           "type": "string",
           "description": "UID of the creator."

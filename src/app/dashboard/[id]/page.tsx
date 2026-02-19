@@ -4,13 +4,13 @@
 import React, { useState, use } from 'react';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc, query, orderBy } from 'firebase/firestore';
-import { addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { addDocumentNonBlocking, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Plus, Trash2, Calendar, Image as ImageIcon, Quote, Copy, Check, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Calendar, Image as ImageIcon, Quote, Copy, Check, ExternalLink, Save } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -22,6 +22,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
   const db = useFirestore();
   const { toast } = useToast();
   const [isCopied, setIsCopied] = useState(false);
+  const [isSavingQuote, setIsSavingQuote] = useState(false);
   const [newEvent, setNewEvent] = useState({
     title: '',
     message: '',
@@ -35,6 +36,15 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
   }, [db, user, id]);
 
   const { data: page, isLoading: isPageLoading } = useDoc(pageRef);
+
+  const [customQuote, setCustomQuote] = useState(page?.finalQuote || '');
+
+  // Sync customQuote when page data loads
+  React.useEffect(() => {
+    if (page?.finalQuote) {
+      setCustomQuote(page.finalQuote);
+    }
+  }, [page]);
 
   const eventsQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -62,12 +72,27 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
 
     addDocumentNonBlocking(collection(db, 'celebrationPages', id, 'birthdayEvents'), payload);
     setNewEvent({ title: '', message: '', eventDate: '', imageUrl: PlaceHolderImages[0].imageUrl });
+    toast({ title: "Event Added", description: "The memory has been added to the timeline." });
+  };
+
+  const handleSaveFinalQuote = () => {
+    if (!db || !pageRef) return;
+    setIsSavingQuote(true);
+    updateDocumentNonBlocking(pageRef, {
+      finalQuote: customQuote,
+      updatedAt: new Date().toISOString(),
+    });
+    setTimeout(() => {
+      setIsSavingQuote(false);
+      toast({ title: "Final Quote Saved", description: "The ending message has been updated." });
+    }, 500);
   };
 
   const handleDeleteEvent = (eventId: string) => {
     if (!user || !db) return;
     const eventRef = doc(db, 'celebrationPages', id, 'birthdayEvents', eventId);
     deleteDocumentNonBlocking(eventRef);
+    toast({ title: "Event Removed", description: "The memory has been deleted." });
   };
 
   const copyShareLink = () => {
@@ -132,61 +157,91 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <Card className="lg:col-span-1 h-fit sticky top-8 rounded-3xl shadow-lg border-none">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Plus className="h-5 w-5 text-primary" /> Add Memory
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Event Date</Label>
-                <Input 
-                  type="date" 
-                  value={newEvent.eventDate}
-                  onChange={(e) => setNewEvent({...newEvent, eventDate: e.target.value})}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Title</Label>
-                <Input 
-                  placeholder="e.g. First Steps" 
-                  value={newEvent.title}
-                  onChange={(e) => setNewEvent({...newEvent, title: e.target.value})}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Memory / Quote</Label>
-                <Textarea 
-                  placeholder="Tell the story..." 
-                  className="min-h-[100px]"
-                  value={newEvent.message}
-                  onChange={(e) => setNewEvent({...newEvent, message: e.target.value})}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Choose an Image</Label>
-                <div className="grid grid-cols-3 gap-2">
-                  {PlaceHolderImages.slice(0, 6).map((img) => (
-                    <button 
-                      key={img.id}
-                      onClick={() => setNewEvent({...newEvent, imageUrl: img.imageUrl})}
-                      className={`relative aspect-square rounded-md overflow-hidden border-2 transition-all ${newEvent.imageUrl === img.imageUrl ? 'border-primary' : 'border-transparent'}`}
-                    >
-                      <Image src={img.imageUrl} alt={img.description} fill className="object-cover" />
-                    </button>
-                  ))}
+          <div className="space-y-6 lg:col-span-1">
+            <Card className="h-fit rounded-3xl shadow-lg border-none overflow-hidden">
+              <CardHeader className="bg-primary/10">
+                <CardTitle className="flex items-center gap-2 text-primary-foreground">
+                  <Plus className="h-5 w-5" /> Add Memory
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-6">
+                <div className="space-y-2">
+                  <Label>Event Date</Label>
+                  <Input 
+                    type="date" 
+                    value={newEvent.eventDate}
+                    onChange={(e) => setNewEvent({...newEvent, eventDate: e.target.value})}
+                  />
                 </div>
-              </div>
-              <Button 
-                className="w-full rounded-full" 
-                onClick={handleAddEvent}
-                disabled={!newEvent.title || !newEvent.eventDate}
-              >
-                Add to Timeline
-              </Button>
-            </CardContent>
-          </Card>
+                <div className="space-y-2">
+                  <Label>Title</Label>
+                  <Input 
+                    placeholder="e.g. First Steps" 
+                    value={newEvent.title}
+                    onChange={(e) => setNewEvent({...newEvent, title: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Memory / Quote</Label>
+                  <Textarea 
+                    placeholder="Tell the story..." 
+                    className="min-h-[100px]"
+                    value={newEvent.message}
+                    onChange={(e) => setNewEvent({...newEvent, message: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Choose an Image</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {PlaceHolderImages.slice(0, 6).map((img) => (
+                      <button 
+                        key={img.id}
+                        onClick={() => setNewEvent({...newEvent, imageUrl: img.imageUrl})}
+                        className={`relative aspect-square rounded-md overflow-hidden border-2 transition-all ${newEvent.imageUrl === img.imageUrl ? 'border-primary' : 'border-transparent'}`}
+                      >
+                        <Image src={img.imageUrl} alt={img.description} fill className="object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <Button 
+                  className="w-full rounded-full h-12" 
+                  onClick={handleAddEvent}
+                  disabled={!newEvent.title || !newEvent.eventDate}
+                >
+                  Add to Timeline
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="h-fit rounded-3xl shadow-lg border-none overflow-hidden">
+              <CardHeader className="bg-secondary/10">
+                <CardTitle className="flex items-center gap-2 text-secondary-foreground">
+                  <Quote className="h-5 w-5" /> Final Quote
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-6">
+                <div className="space-y-2">
+                  <Label>The Ending Message</Label>
+                  <Textarea 
+                    placeholder="A final heart-warming message..." 
+                    value={customQuote}
+                    onChange={(e) => setCustomQuote(e.target.value)}
+                    className="min-h-[80px]"
+                  />
+                  <p className="text-xs text-muted-foreground italic">If left empty, a default message based on the occasion will be used.</p>
+                </div>
+                <Button 
+                  variant="secondary"
+                  className="w-full rounded-full" 
+                  onClick={handleSaveFinalQuote}
+                  disabled={isSavingQuote}
+                >
+                  {isSavingQuote ? "Saving..." : <><Save className="mr-2 h-4 w-4" /> Save Ending</>}
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
 
           <div className="lg:col-span-2 space-y-4">
             <h2 className="text-2xl font-bold flex items-center gap-2">

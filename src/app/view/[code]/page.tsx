@@ -3,10 +3,9 @@
 
 import React, { use, useEffect, useState } from 'react';
 import { useFirestore } from '@/firebase';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { Header } from '@/components/birthday/Header';
 import { EventCard } from '@/components/birthday/EventCard';
-import { ThreeDecoration } from '@/components/birthday/ThreeDecoration';
 import { Star, Camera, Gift, PartyPopper, Cake, Loader2, Heart, Sparkles } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -29,7 +28,6 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       try {
         const decodedCode = decodeURIComponent(code);
         
-        // Query top-level collection (automatically indexed for single field equality)
         const pagesQuery = query(
           collection(db, 'celebrationPages'),
           where('accessCode', '==', decodedCode)
@@ -47,7 +45,6 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         const pageData = { ...pageDoc.data(), id: pageDoc.id };
         setPage(pageData);
 
-        // Load the events for this specific page
         const eventsQuery = query(
           collection(db, 'celebrationPages', pageData.id, 'birthdayEvents')
         );
@@ -55,7 +52,6 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         
         const fetchedEvents = eventsSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
         
-        // Sort events by date client-side
         fetchedEvents.sort((a, b) => {
           const dateA = new Date(a.eventDate).getTime();
           const dateB = new Date(b.eventDate).getTime();
@@ -64,8 +60,6 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
 
         setEvents(fetchedEvents);
       } catch (err: any) {
-        console.error("Firestore Error:", err);
-
         if (err.code === 'permission-denied' || err.message?.toLowerCase().includes('permissions')) {
           const permissionError = new FirestorePermissionError({
             path: 'celebrationPages',
@@ -142,7 +136,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
               <div 
                 key={event.id} 
                 className={`flex flex-col md:flex-row items-center justify-between group reveal-on-scroll visible ${
-                  index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse '
+                  index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
                 }`}
               >
                 <div className="w-full md:w-[45%]">
@@ -160,13 +154,8 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
                 </div>
 
                 <div className="w-full md:w-[45%] flex items-center justify-center p-8">
-                  <div className="relative w-full h-48 md:h-64 flex items-center justify-center">
-                    <ThreeDecoration 
-                      type={index % 2 === 0 ? 'heart' : 'cube'}
-                      className="w-48 h-48 animate-float"
-                      color={index % 2 === 0 ? '#FFD1DC' : '#E6E6FA'}
-                    />
-                  </div>
+                  {/* Spacer to maintain alternating layout without 3D elements */}
+                  <div className="w-full h-48 md:h-64" />
                 </div>
               </div>
             ))}

@@ -1,7 +1,7 @@
+
 "use client";
 
 import React from 'react';
-import { ThreeDecoration } from './ThreeDecoration';
 
 interface HeaderProps {
   title?: string;
@@ -11,14 +11,6 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ title, occasion = "Celebration" }) => {
   return (
     <header className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden bg-gradient-to-b from-primary/10 via-background to-background">
-      {/* Background Decorations */}
-      <div className="absolute top-20 left-10 w-32 h-32 opacity-30 animate-float">
-        <ThreeDecoration type="heart" className="w-full h-full" color="#FFD1DC" />
-      </div>
-      <div className="absolute bottom-20 right-10 w-40 h-40 opacity-30 animate-float delay-1000">
-        <ThreeDecoration type="heart" className="w-full h-full" color="#E6E6FA" />
-      </div>
-      
       <div className="relative z-10 animate-fade-in space-y-6">
         <div className="inline-block px-6 py-2 rounded-full bg-secondary/20 text-secondary-foreground font-bold tracking-widest uppercase text-sm mb-4">
           A special {occasion.toLowerCase()} surprise

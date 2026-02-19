@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Calendar, User, Key, ArrowRight, Gift, LogOut, Copy, Check, Type } from 'lucide-react';
+import { Plus, User, Key, ArrowRight, Gift, LogOut, Copy, Check, Type } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -27,24 +27,6 @@ const OCCASIONS = [
   "Other"
 ];
 
-const FONTS = [
-  "Playfair Display",
-  "PT Sans",
-  "Montserrat",
-  "Lora",
-  "Quicksand",
-  "Merriweather",
-  "Oswald",
-  "Dancing Script",
-  "Caveat",
-  "Pacifico",
-  "Lobster",
-  "Cinzel",
-  "Comfortaa",
-  "Great Vibes",
-  "Sacramento"
-];
-
 export default function Dashboard() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
@@ -58,7 +40,6 @@ export default function Dashboard() {
     title: '',
     occasion: 'Birthday',
     accessCode: '',
-    font: 'Playfair Display',
   });
 
   const celebrationPagesQuery = useMemoFirebase(() => {
@@ -75,6 +56,7 @@ export default function Dashboard() {
     const payload = {
       ...newSurprise,
       id: pageId,
+      font: 'Playfair Display', // Default font
       creatorName: user.displayName || 'Creator',
       ownerId: user.uid,
       createdAt: new Date().toISOString(),
@@ -83,7 +65,7 @@ export default function Dashboard() {
 
     addDocumentNonBlocking(collection(db, 'celebrationPages'), payload);
     setIsCreateOpen(false);
-    setNewSurprise({ recipientName: '', title: '', occasion: 'Birthday', accessCode: '', font: 'Playfair Display' });
+    setNewSurprise({ recipientName: '', title: '', occasion: 'Birthday', accessCode: '' });
   };
 
   const handleLogout = () => {
@@ -155,39 +137,21 @@ export default function Dashboard() {
                   <DialogTitle>Create a New Surprise Page</DialogTitle>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="occasion">Occasion</Label>
-                      <Select 
-                        value={newSurprise.occasion} 
-                        onValueChange={(val) => setNewSurprise({...newSurprise, occasion: val})}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {OCCASIONS.map(occ => (
-                            <SelectItem key={occ} value={occ}>{occ}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="font">Choose a Font</Label>
-                      <Select 
-                        value={newSurprise.font} 
-                        onValueChange={(val) => setNewSurprise({...newSurprise, font: val})}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Font Style" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {FONTS.map(font => (
-                            <SelectItem key={font} value={font} style={{ fontFamily: font }}>{font}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="occasion">Occasion</Label>
+                    <Select 
+                      value={newSurprise.occasion} 
+                      onValueChange={(val) => setNewSurprise({...newSurprise, occasion: val})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {OCCASIONS.map(occ => (
+                          <SelectItem key={occ} value={occ}>{occ}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="recipient">Who is this for?</Label>

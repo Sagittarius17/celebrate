@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from 'react';
@@ -12,14 +11,18 @@ export const Header: React.FC<HeaderProps> = ({ title, occasion = "Celebration" 
   return (
     <header className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden bg-gradient-to-b from-primary/10 via-background to-background">
       <div className="relative z-10 animate-fade-in space-y-6">
-        <div className="inline-block px-6 py-2 rounded-full bg-secondary/20 text-secondary-foreground font-bold tracking-widest uppercase text-sm mb-4">
+        <div className="inline-block px-6 py-2 rounded-full bg-secondary/20 text-secondary-foreground font-bold tracking-widest uppercase text-xs sm:text-sm mb-4">
           A special {occasion.toLowerCase()} surprise
         </div>
-        <h1 className="font-headline text-7xl md:text-9xl font-extrabold text-foreground leading-tight drop-shadow-sm">
+        <h1 className="font-headline text-5xl sm:text-7xl md:text-9xl font-extrabold text-foreground leading-tight drop-shadow-sm px-2">
           {title ? (
             <>
-              {title.split(',')[0]} <br />
-              <span className="text-primary-foreground drop-shadow-xl">{title.split(',')[1] || ''}</span>
+              {title.includes(',') ? (
+                <>
+                  {title.split(',')[0]} <br />
+                  <span className="text-primary-foreground drop-shadow-xl">{title.split(',')[1]}</span>
+                </>
+              ) : title}
             </>
           ) : (
             <>
@@ -28,7 +31,7 @@ export const Header: React.FC<HeaderProps> = ({ title, occasion = "Celebration" 
             </>
           )}
         </h1>
-        <p className="font-body text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+        <p className="font-body text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed px-4">
           Relive the beautiful moments that shaped an extraordinary life and journey through time together.
         </p>
       </div>

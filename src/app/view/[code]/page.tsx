@@ -27,6 +27,8 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
 
       try {
         const decodedCode = decodeURIComponent(code);
+        
+        // Find the page by its access code using a collection group query
         const pagesQuery = query(
           collectionGroup(db, 'celebrationPages'),
           where('accessCode', '==', decodedCode)
@@ -44,19 +46,21 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         const pageData = { ...pageDoc.data(), id: pageDoc.id };
         setPage(pageData);
 
+        // Load the events for this page
         const eventsRef = collection(pageDoc.ref, 'birthdayEvents');
         const eventsQuery = query(eventsRef, orderBy('eventDate', 'asc'));
         const eventsSnap = await getDocs(eventsQuery);
         
         setEvents(eventsSnap.docs.map(doc => ({ ...doc.data(), id: doc.id })));
       } catch (err: any) {
-        // Emit contextual error for debugging
-        const permissionError = new FirestorePermissionError({
-          path: 'celebrationPages',
-          operation: 'list',
-        } satisfies SecurityRuleContext);
-        
-        errorEmitter.emit('permission-error', permissionError);
+        // Emit contextual error for debugging if it's a permission issue
+        if (err.code === 'permission-denied' || err.message?.includes('permissions')) {
+          const permissionError = new FirestorePermissionError({
+            path: 'celebrationPages',
+            operation: 'list',
+          } satisfies SecurityRuleContext);
+          errorEmitter.emit('permission-error', permissionError);
+        }
         setError("Something went wrong while loading your surprise.");
       } finally {
         setIsLoading(false);

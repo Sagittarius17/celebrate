@@ -5,8 +5,8 @@ service cloud.firestore {
     /**
      * CORE PHILOSOPHY:
      * This ruleset supports a "Secret Code" access model. 
-     * While creators have full ownership over their paths, recipients can read data 
-     * across the database if they know the specific access code.
+     * Recipients can read celebration data across the database if they know the specific access code,
+     * which is verified via Collection Group queries.
      */
 
     function isSignedIn() {
@@ -19,34 +19,26 @@ service cloud.firestore {
 
     /** 
      * @description Collection Group rules to allow recipients to find surprises by code.
-     * These rules allow "list" and "get" operations on any celebrationPages or birthdayEvents 
+     * These rules allow "read" (get and list) operations on any celebrationPages or birthdayEvents 
      * collection, regardless of the user path.
      */
     match /{path=**}/celebrationPages/{celebrationPageId} {
-      allow get, list: if true; 
+      allow read: if true; 
     }
 
     match /{path=**}/birthdayEvents/{birthdayEventId} {
-      allow get, list: if true;
+      allow read: if true;
     }
 
     /** 
      * @description Path-based rules for creators.
+     * Owners have full access to their own user document and all sub-resources.
      */
     match /users/{userId} {
-      match /celebrationPages/{celebrationPageId} {
-        allow create: if isOwner(userId) && request.resource.data.ownerId == request.auth.uid;
-        allow update, delete: if isOwner(userId);
+      allow read, write: if isOwner(userId);
 
-        match /birthdayEvents/{birthdayEventId} {
-          allow create: if isOwner(userId) && request.resource.data.ownerId == request.auth.uid;
-          allow update, delete: if isOwner(userId);
-        }
-        
-        match /assets/{assetId} {
-          allow write: if isOwner(userId);
-          allow read: if true;
-        }
+      match /{allPaths=**} {
+        allow read, write: if isOwner(userId);
       }
     }
   }

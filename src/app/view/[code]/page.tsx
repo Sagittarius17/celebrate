@@ -181,11 +181,11 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         </div>
         
         <div ref={timelineRef} className="relative max-w-6xl mx-auto px-4 pt-10 sm:pt-20">
-          {/* Main Timeline Spine */}
-          <div className="absolute left-8 md:left-1/2 transform -translate-x-1/2 w-1 timeline-line h-[calc(100%-300px)] z-0 opacity-20" />
+          {/* Main Timeline Spine - Always Centered */}
+          <div className="absolute left-1/2 transform -translate-x-1/2 w-1 timeline-line h-[calc(100%-300px)] z-0 opacity-20" />
           
           <div 
-            className="absolute left-8 md:left-1/2 transform -translate-x-1/2 w-1.5 z-10 timeline-glow-line"
+            className="absolute left-1/2 transform -translate-x-1/2 w-1.5 z-10 timeline-glow-line"
             style={{ height: `${Math.min(scrollProgress, 95)}%` }}
           />
 
@@ -199,7 +199,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
                 )}
               >
                 <div className={cn(
-                  "w-full md:w-[45%] reveal-on-scroll pl-10 md:pl-0",
+                  "w-full md:w-[45%] reveal-on-scroll",
                   index % 2 === 0 ? "reveal-left" : "reveal-right"
                 )}>
                   <EventCard 
@@ -211,9 +211,9 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
                   />
                 </div>
 
-                {/* Timeline Dot */}
+                {/* Timeline Dot - Hidden on Mobile, Centered on Desktop */}
                 <div className={cn(
-                  "flex absolute left-8 md:left-1/2 transform -translate-x-1/2 items-center justify-center w-10 h-10 sm:w-14 sm:h-14 rounded-full border-[3px] transition-all duration-500 z-20 bg-background shadow-sm",
+                  "hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center justify-center w-10 h-10 sm:w-14 sm:h-14 rounded-full border-[3px] transition-all duration-500 z-20 bg-background shadow-sm",
                   scrollProgress > (index / events.length) * 100 ? "border-secondary scale-110 shadow-[0_0_15px_rgba(255,182,193,0.4)]" : "border-primary/40"
                 )}> 
                   <div className={cn(
@@ -232,9 +232,9 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
                 "relative transition-all duration-1000 transform w-full max-w-2xl flex flex-col items-center px-4",
                 scrollProgress > 95 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20 pointer-events-none"
               )}>
-                {/* Connecting Tail Line */}
+                {/* Connecting Tail Line - Always Centered */}
                 <div 
-                  className="absolute -top-32 left-8 md:left-1/2 transform -translate-x-1/2 w-1.5 timeline-glow-line z-10" 
+                  className="absolute -top-32 left-1/2 transform -translate-x-1/2 w-1.5 timeline-glow-line z-10" 
                   style={{ height: scrollProgress > 95 ? '128px' : '0' }}
                 />
 

@@ -15,7 +15,7 @@ import { Card, CardContent } from '@/components/ui/card';
 const DEFAULT_QUOTES: Record<string, string> = {
   "Birthday": "To many more years of joy, laughter, and beautiful memories! Happy Birthday!",
   "Anniversary": "Here's to a lifetime of love and happiness together. Happy Anniversary!",
-  "Graduation": "The future belongs to those who believe in the beauty of their dreams. Congratulations!",
+  "Graduation": "The future belongs to those if you believe in the beauty of their dreams. Congratulations!",
   "Wedding": "May your journey together be filled with endless love and happiness.",
   "Promotion": "Your hard work and dedication have truly paid off. Onwards and upwards!",
   "New Baby": "A tiny miracle has arrived! Wishing your family all the love in the world.",
@@ -40,8 +40,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       const rect = element.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
       
-      // Calculate progress based on the center of the viewport relative to the timeline container
-      const triggerPoint = viewportHeight * 0.7;
+      const triggerPoint = viewportHeight * 0.75;
       const start = rect.top;
       const height = rect.height;
       
@@ -152,19 +151,19 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
   const icons = [<Star />, <Camera />, <Gift />, <PartyPopper />, <Cake />, <Heart />, <Sparkles />];
   const finalQuoteToDisplay = page?.finalQuote || DEFAULT_QUOTES[page?.occasion] || DEFAULT_QUOTES["Other"];
   
-  const isFinished = scrollProgress >= 99.5;
+  const isFinished = scrollProgress >= 100;
 
   return (
     <main className="min-h-screen bg-background pb-40">
       <Header title={page?.title} occasion={page?.occasion} />
        
-      <section className="py-20">
+      <section className="py-20 overflow-hidden">
         <div className="text-center mb-16 px-4">
           <h2 className="font-headline text-5xl font-bold mb-4">{page?.title || 'Our Journey'}</h2>
           <div className="w-24 h-1 bg-secondary mx-auto rounded-full" />
         </div>
         
-        <div ref={timelineRef} className="relative max-w-6xl mx-auto px-4 pt-20 pb-4">
+        <div ref={timelineRef} className="relative max-w-6xl mx-auto px-4 pt-20">
           {/* Base Timeline Line */}
           <div className="absolute left-1/2 transform -translate-x-1/2 w-1 timeline-line h-full z-0 opacity-20 hidden md:block" />
           
@@ -174,7 +173,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
             style={{ height: `${scrollProgress}%` }}
           />
 
-          <div className="space-y-32 relative z-10 pb-20">
+          <div className="space-y-32 relative z-10">
             {events.map((event, index) => {
               const eventProgress = (index / (events.length || 1)) * 100;
               const isActive = scrollProgress >= eventProgress;
@@ -183,7 +182,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
                 <div 
                   key={event.id} 
                   className={cn(
-                    "flex flex-col md:flex-row items-center justify-between group reveal-on-scroll visible",
+                    "flex flex-col md:flex-row items-center justify-between group",
                     index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
                   )}
                 >
@@ -212,42 +211,39 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
                 </div>
               );
             })}
-          </div>
 
-          {/* Final Tail and Heart Point */}
-          <div className="relative w-full flex justify-center pb-20 mt-10">
-            <div className={cn(
-              "hidden md:flex items-center justify-center w-20 h-20 rounded-full bg-secondary shadow-[0_0_30px_rgba(255,182,193,0.8)] z-30 transition-all duration-1000 transform",
-              isFinished ? "scale-100 opacity-100" : "scale-0 opacity-0"
-            )}>
-              <Heart className="w-10 h-10 text-white animate-pulse" />
+            {/* Final Quote Section - Mixed with the tail */}
+            <div className="flex flex-col items-center justify-center pt-20">
+              <div className={cn(
+                "relative transition-all duration-1000 transform w-full max-w-2xl",
+                scrollProgress > 95 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20 pointer-events-none"
+              )}>
+                {/* Connecting tail line segment that enters the box */}
+                <div className="absolute -top-20 left-1/2 transform -translate-x-1/2 w-1.5 h-20 timeline-glow-line z-10 hidden md:block" />
+
+                <Card className="border-none shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[3rem] overflow-hidden bg-white/95 backdrop-blur-md relative z-20">
+                  <div className="h-2 w-full bg-gradient-to-r from-primary via-secondary to-primary" />
+                  
+                  {/* Visual intersection point */}
+                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1.5 h-4 bg-secondary shadow-[0_0_10px_hsl(var(--secondary))] hidden md:block" />
+
+                  <CardContent className="p-12 text-center space-y-6 pt-16">
+                    <Quote className="w-12 h-12 text-secondary/30 mx-auto mb-4" />
+                    <h3 className="font-headline text-3xl md:text-4xl font-bold text-foreground">
+                      To Many More Years of Joy, {page?.recipientName}!
+                    </h3>
+                    <p className="font-body text-xl md:text-2xl text-muted-foreground italic leading-relaxed">
+                      "{finalQuoteToDisplay}"
+                    </p>
+                    <div className="flex items-center justify-center gap-4 pt-4">
+                      <Sparkles className="text-secondary w-6 h-6" />
+                      <div className="h-px w-20 bg-secondary/20" />
+                      <Sparkles className="text-secondary w-6 h-6" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-          </div>
-        </div>
-
-        {/* Final Quote Section - Appears below the Heart */}
-        <div className="max-w-6xl mx-auto px-4 mt-8">
-          <div className={cn(
-            "flex flex-col items-center justify-center transition-all duration-1000 transform",
-            isFinished ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20 pointer-events-none"
-          )}>
-            <Card className="max-w-2xl w-full mx-auto border-none shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[3rem] overflow-hidden bg-white/95 backdrop-blur-md">
-              <div className="h-2 w-full bg-gradient-to-r from-primary via-secondary to-primary" />
-              <CardContent className="p-12 text-center space-y-6">
-                <Quote className="w-12 h-12 text-secondary/30 mx-auto mb-4" />
-                <h3 className="font-headline text-3xl md:text-4xl font-bold text-foreground">
-                  To Many More Years of Joy, {page?.recipientName}!
-                </h3>
-                <p className="font-body text-xl md:text-2xl text-muted-foreground italic leading-relaxed">
-                  "{finalQuoteToDisplay}"
-                </p>
-                <div className="flex items-center justify-center gap-4 pt-4">
-                  <Sparkles className="text-secondary w-6 h-6" />
-                  <div className="h-px w-20 bg-secondary/20" />
-                  <Sparkles className="text-secondary w-6 h-6" />
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </section>

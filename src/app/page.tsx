@@ -30,6 +30,9 @@ export default function Home() {
     initiateEmailSignIn(auth, email, password);
   };
 
+  // Only allow dashboard access if the user is signed in and NOT anonymous
+  const isFullyAuthenticated = user && !user.isAnonymous;
+
   return (
     <main className="min-h-screen flex items-center justify-center bg-[#F8F8FF] p-4">
       <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
@@ -38,11 +41,11 @@ export default function Home() {
             <Loader2 className="mr-3 h-6 w-6 animate-spin" />
             Loading...
           </Button>
-        ) : user ? (
+        ) : isFullyAuthenticated ? (
           <Link href="/dashboard">
             <Button size="lg" className="rounded-full px-10 py-8 text-xl font-bold shadow-xl hover:scale-105 transition-all bg-[#E6E6FA] text-[#2D2D5F] border-none hover:bg-[#D8D8F0]">
               <Sparkles className="mr-3 h-6 w-6" />
-              Create a Surprise
+              Manage Surprises
             </Button>
           </Link>
         ) : (

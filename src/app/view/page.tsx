@@ -2,23 +2,18 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useAuth, useFirestore } from '@/firebase';
-import { collection, query, where, getDocs, limit, doc, updateDoc, arrayUnion } from 'firebase/firestore';
-import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
+import { useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Key, Gift, AlertCircle, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 
 export default function SurpriseEntry() {
   const [code, setCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
-  const { user, isUserLoading } = useUser();
-  const auth = useAuth();
   const db = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
@@ -28,40 +23,15 @@ export default function SurpriseEntry() {
     setIsVerifying(true);
 
     try {
-      // 1. Ensure user is signed in (anonymously or otherwise)
-      let currentUser = user;
-      if (!currentUser) {
-        initiateAnonymousSignIn(auth);
-        // Wait briefly for auth to trigger (in a real app, this should be more robust)
-        await new Promise(r => setTimeout(r, 2000));
-      }
-
-      // 2. Search for the page with this access code
-      // Note: In production, this logic would be in a Cloud Function for security.
-      // For this MVP, we search across all users' celebrationPages collections.
-      // However, Firestore doesn't support searching subcollections easily without Collection Groups.
-      // We will assume the code verification happens against a collection of surprise IDs or similar.
-      // For now, we'll demonstrate the intent by showing the "view" logic.
-      
-      // MOCK: In a real implementation, you'd have a top-level `publicSurprises` map
-      // or use a Cloud Function to handle the "viewerUids" logic.
-      
-      // Let's assume for this prototype we look for it in a way that respects the structure
-      // we've been given, but since we can't query across unknown user IDs easily without 
-      // Collection Group indexes, we'll redirect to a simplified dynamic surprise page.
-      
-      // For this demo, we'll search for the page by its access code. 
-      // This is a placeholder for the Cloud Function logic.
-      
+      // Since the security rules allow public read for collection groups with the correct code,
+      // we can simply redirect. The verification happens on the [code] page during data load.
       router.push(`/view/${encodeURIComponent(code)}`);
-
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Error",
         description: "Something went wrong. Please try again.",
       });
-    } finally {
       setIsVerifying(false);
     }
   };

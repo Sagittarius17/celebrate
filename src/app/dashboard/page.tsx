@@ -1,7 +1,8 @@
+
 "use client";
 
 import React, { useState } from 'react';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase, useAuth } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Button } from '@/components/ui/button';
@@ -10,8 +11,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Calendar, User, Key, ArrowRight, Gift, PartyPopper } from 'lucide-react';
+import { Plus, Calendar, User, Key, ArrowRight, Gift, LogOut } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const OCCASIONS = [
   "Birthday",
@@ -26,7 +28,9 @@ const OCCASIONS = [
 
 export default function Dashboard() {
   const { user, isUserLoading } = useUser();
+  const auth = useAuth();
   const db = useFirestore();
+  const router = useRouter();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newSurprise, setNewSurprise] = useState({
     recipientName: '',
@@ -61,8 +65,36 @@ export default function Dashboard() {
     setNewSurprise({ recipientName: '', title: '', occasion: 'Birthday', accessCode: '' });
   };
 
+  const handleLogout = () => {
+    auth.signOut().then(() => {
+      router.push('/');
+    });
+  };
+
   if (isUserLoading) return <div className="p-20 text-center">Loading...</div>;
-  if (!user) return <div className="p-20 text-center">Please sign in to create surprises.</div>;
+
+  // Gate the dashboard to real accounts only
+  if (!user || user.isAnonymous) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-8 bg-muted/30">
+        <Card className="max-w-md w-full p-8 text-center space-y-6 rounded-[2rem]">
+          <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+            <User className="h-8 w-8 text-primary" />
+          </div>
+          <h1 className="text-2xl font-bold">Account Required</h1>
+          <p className="text-muted-foreground">
+            To create and manage interactive surprises, you need a registered account. 
+            Anonymous sessions are only for viewing surprises.
+          </p>
+          <div className="flex flex-col gap-3">
+            <Link href="/">
+              <Button className="w-full rounded-full">Go to Sign Up</Button>
+            </Link>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-muted/30 p-8">
@@ -73,67 +105,72 @@ export default function Dashboard() {
             <p className="text-muted-foreground">Manage and create interactive surprises</p>
           </div>
           
-          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-            <DialogTrigger asChild>
-              <Button className="rounded-full shadow-lg h-12 px-6">
-                <Plus className="mr-2 h-5 w-5" /> New Surprise
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Create a New Surprise Page</DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="occasion">What's the occasion?</Label>
-                  <Select 
-                    value={newSurprise.occasion} 
-                    onValueChange={(val) => setNewSurprise({...newSurprise, occasion: val})}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select occasion" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {OCCASIONS.map(occ => (
-                        <SelectItem key={occ} value={occ}>{occ}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+          <div className="flex gap-4">
+            <Button variant="ghost" className="rounded-full" onClick={handleLogout}>
+              <LogOut className="mr-2 h-4 w-4" /> Log Out
+            </Button>
+            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+              <DialogTrigger asChild>
+                <Button className="rounded-full shadow-lg h-12 px-6">
+                  <Plus className="mr-2 h-5 w-5" /> New Surprise
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Create a New Surprise Page</DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="occasion">What's the occasion?</Label>
+                    <Select 
+                      value={newSurprise.occasion} 
+                      onValueChange={(val) => setNewSurprise({...newSurprise, occasion: val})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select occasion" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {OCCASIONS.map(occ => (
+                          <SelectItem key={occ} value={occ}>{occ}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="recipient">Who is this for?</Label>
+                    <Input 
+                      id="recipient" 
+                      placeholder="e.g. Sarah Jones" 
+                      value={newSurprise.recipientName}
+                      onChange={(e) => setNewSurprise({...newSurprise, recipientName: e.target.value})}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="title">Page Title</Label>
+                    <Input 
+                      id="title" 
+                      placeholder="e.g. Happy 25th Birthday, Sarah!" 
+                      value={newSurprise.title}
+                      onChange={(e) => setNewSurprise({...newSurprise, title: e.target.value})}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="code">Secret Access Code</Label>
+                    <Input 
+                      id="code" 
+                      placeholder="e.g. CELEBRATE-2024" 
+                      value={newSurprise.accessCode}
+                      onChange={(e) => setNewSurprise({...newSurprise, accessCode: e.target.value})}
+                    />
+                    <p className="text-xs text-muted-foreground italic">The recipient will need this to view their surprise.</p>
+                  </div>
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="recipient">Who is this for?</Label>
-                  <Input 
-                    id="recipient" 
-                    placeholder="e.g. Sarah Jones" 
-                    value={newSurprise.recipientName}
-                    onChange={(e) => setNewSurprise({...newSurprise, recipientName: e.target.value})}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="title">Page Title</Label>
-                  <Input 
-                    id="title" 
-                    placeholder="e.g. Happy 25th Birthday, Sarah!" 
-                    value={newSurprise.title}
-                    onChange={(e) => setNewSurprise({...newSurprise, title: e.target.value})}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="code">Secret Access Code</Label>
-                  <Input 
-                    id="code" 
-                    placeholder="e.g. CELEBRATE-2024" 
-                    value={newSurprise.accessCode}
-                    onChange={(e) => setNewSurprise({...newSurprise, accessCode: e.target.value})}
-                  />
-                  <p className="text-xs text-muted-foreground italic">The recipient will need this to view their surprise.</p>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button className="w-full" onClick={handleCreate} disabled={!newSurprise.recipientName || !newSurprise.accessCode}>Create Surprise</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+                <DialogFooter>
+                  <Button className="w-full" onClick={handleCreate} disabled={!newSurprise.recipientName || !newSurprise.accessCode}>Create Surprise</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         {isLoading ? (

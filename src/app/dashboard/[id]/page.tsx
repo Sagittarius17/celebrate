@@ -4,21 +4,24 @@
 import React, { useState, use } from 'react';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc, query, orderBy } from 'firebase/firestore';
-import { addDocumentNonBlocking, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Plus, Trash2, Save, Calendar, Image as ImageIcon, Quote } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Calendar, Image as ImageIcon, Quote, Copy, Check, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useToast } from '@/hooks/use-toast';
 
 export default function SurpriseEditor({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { user } = useUser();
   const db = useFirestore();
+  const { toast } = useToast();
+  const [isCopied, setIsCopied] = useState(false);
   const [newEvent, setNewEvent] = useState({
     title: '',
     message: '',
@@ -68,22 +71,49 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
     deleteDocumentNonBlocking(eventRef);
   };
 
+  const copyShareLink = () => {
+    if (!page) return;
+    const baseUrl = window.location.origin;
+    const shareUrl = `${baseUrl}/view/${encodeURIComponent(page.accessCode)}`;
+    navigator.clipboard.writeText(shareUrl);
+    setIsCopied(true);
+    toast({
+      title: "Link Copied!",
+      description: "You can now share this surprise link with your recipient.",
+    });
+    setTimeout(() => setIsCopied(null), 2000);
+  };
+
   if (isPageLoading) return <div className="p-20 text-center">Loading editor...</div>;
   if (!page) return <div className="p-20 text-center">Surprise not found.</div>;
 
   return (
     <div className="min-h-screen bg-muted/30 p-8">
       <div className="max-w-5xl mx-auto space-y-8">
-        <Link href="/dashboard">
-          <Button variant="ghost" className="mb-4">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
-          </Button>
-        </Link>
+        <div className="flex justify-between items-center">
+          <Link href="/dashboard">
+            <Button variant="ghost">
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
+            </Button>
+          </Link>
+          
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={copyShareLink} className="rounded-full">
+              {isCopied ? <Check className="h-4 w-4 mr-2 text-green-500" /> : <Copy className="h-4 w-4 mr-2" />}
+              Copy Share Link
+            </Button>
+            <Link href={`/view/${encodeURIComponent(page.accessCode)}`} target="_blank">
+              <Button size="sm" variant="secondary" className="rounded-full">
+                <ExternalLink className="h-4 w-4 mr-2" /> View Live
+              </Button>
+            </Link>
+          </div>
+        </div>
 
         <div className="flex flex-col md:flex-row justify-between items-start gap-8">
           <div className="space-y-2 w-full md:w-2/3">
             <h1 className="text-4xl font-headline font-bold">{page.title}</h1>
-            <p className="text-muted-foreground italic">Celebrating {page.recipientName}</p>
+            <p className="text-muted-foreground italic">Celebrating {page.recipientName} ({page.occasion})</p>
           </div>
           
           <Card className="w-full md:w-1/3 rounded-2xl">
@@ -102,7 +132,6 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* New Event Form */}
           <Card className="lg:col-span-1 h-fit sticky top-8 rounded-3xl shadow-lg border-none">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -159,7 +188,6 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
             </CardContent>
           </Card>
 
-          {/* Events List */}
           <div className="lg:col-span-2 space-y-4">
             <h2 className="text-2xl font-bold flex items-center gap-2">
               <Calendar className="h-6 w-6" /> Timeline Preview

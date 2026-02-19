@@ -11,9 +11,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Calendar, User, Key, ArrowRight, Gift, LogOut } from 'lucide-react';
+import { Plus, Calendar, User, Key, ArrowRight, Gift, LogOut, Copy, Check } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 const OCCASIONS = [
   "Birthday",
@@ -31,7 +32,9 @@ export default function Dashboard() {
   const auth = useAuth();
   const db = useFirestore();
   const router = useRouter();
+  const { toast } = useToast();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const [newSurprise, setNewSurprise] = useState({
     recipientName: '',
     title: '',
@@ -71,9 +74,20 @@ export default function Dashboard() {
     });
   };
 
+  const copyShareLink = (code: string, id: string) => {
+    const baseUrl = window.location.origin;
+    const shareUrl = `${baseUrl}/view/${encodeURIComponent(code)}`;
+    navigator.clipboard.writeText(shareUrl);
+    setCopiedId(id);
+    toast({
+      title: "Link Copied!",
+      description: "Share this link and the code with your recipient.",
+    });
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
   if (isUserLoading) return <div className="p-20 text-center">Loading...</div>;
 
-  // Gate the dashboard to real accounts only
   if (!user || user.isAnonymous) {
     return (
       <div className="min-h-screen flex items-center justify-center p-8 bg-muted/30">
@@ -83,8 +97,7 @@ export default function Dashboard() {
           </div>
           <h1 className="text-2xl font-bold">Account Required</h1>
           <p className="text-muted-foreground">
-            To create and manage interactive surprises, you need a registered account. 
-            Anonymous sessions are only for viewing surprises.
+            To create and manage interactive surprises, you need a registered account.
           </p>
           <div className="flex flex-col gap-3">
             <Link href="/">
@@ -198,8 +211,18 @@ export default function Dashboard() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-6 space-y-4">
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Key className="h-4 w-4 mr-2" /> Code: <code className="bg-muted px-2 py-0.5 rounded ml-2 font-bold">{surprise.accessCode}</code>
+                  <div className="flex items-center justify-between text-sm text-muted-foreground">
+                    <div className="flex items-center">
+                      <Key className="h-4 w-4 mr-2" /> Code: <code className="bg-muted px-2 py-0.5 rounded ml-2 font-bold">{surprise.accessCode}</code>
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 px-2"
+                      onClick={() => copyShareLink(surprise.accessCode, surprise.id)}
+                    >
+                      {copiedId === surprise.id ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                    </Button>
                   </div>
                   <div className="flex items-center text-sm text-muted-foreground">
                     <Calendar className="h-4 w-4 mr-2" /> Created: {new Date(surprise.createdAt).toLocaleDateString()}

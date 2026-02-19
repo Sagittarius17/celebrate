@@ -1,0 +1,41 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "baby",
+      "description": "Baby smiling",
+      "imageUrl": "https://picsum.photos/seed/baby/600/400",
+      "imageHint": "baby smiling"
+    },
+    {
+      "id": "toddler",
+      "description": "First steps toddler",
+      "imageUrl": "https://picsum.photos/seed/steps/600/400",
+      "imageHint": "toddler walking"
+    },
+    {
+      "id": "school",
+      "description": "First day of school",
+      "imageUrl": "https://picsum.photos/seed/school/600/400",
+      "imageHint": "school child"
+    },
+    {
+      "id": "teen",
+      "description": "Graduation moment",
+      "imageUrl": "https://picsum.photos/seed/grad/600/400",
+      "imageHint": "graduation cap"
+    },
+    {
+      "id": "cake",
+      "description": "Birthday cake",
+      "imageUrl": "https://picsum.photos/seed/cake/600/400",
+      "imageHint": "birthday cake"
+    },
+    {
+      "id": "friends",
+      "description": "Celebration with friends",
+      "imageUrl": "https://picsum.photos/seed/party/600/400",
+      "imageHint": "party friends"
+    }
+  ]
+}

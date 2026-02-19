@@ -11,6 +11,8 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 const DEFAULT_QUOTES: Record<string, string> = {
   "Birthday": "To many more years of joy, laughter, and beautiful memories! Happy Birthday!",
@@ -47,6 +49,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       const progress = ((triggerPoint - start) / height) * 100;
       const clampedProgress = Math.min(Math.max(progress, 0), 100);
       
+      // Only update if progress is higher (one-way reveal)
       setScrollProgress(prev => Math.max(prev, clampedProgress));
     };
 
@@ -184,6 +187,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
           {/* Main Timeline Spine - Always Centered */}
           <div className="absolute left-1/2 transform -translate-x-1/2 w-1 timeline-line h-[calc(100%-300px)] z-0 opacity-20" />
           
+          {/* Glowing Tail */}
           <div 
             className="absolute left-1/2 transform -translate-x-1/2 w-1.5 z-10 timeline-glow-line"
             style={{ height: `${Math.min(scrollProgress, 95)}%` }}
@@ -242,7 +246,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
                   <Heart className="w-8 h-8 sm:w-10 sm:h-10 text-secondary fill-secondary" />
                 </div>
 
-                <Card className="border-none shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[2rem] sm:rounded-[3rem] overflow-hidden bg-white/95 backdrop-blur-md relative z-20 w-full">
+                <Card className="border-none shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[2rem] sm:rounded-[3rem] overflow-hidden bg-white/95 backdrop-blur-md relative z-20 w-full mb-12">
                   <div className="h-1.5 sm:h-2 w-full bg-gradient-to-r from-primary via-secondary to-primary" />
                   
                   <CardContent className="p-8 sm:p-12 text-center space-y-4 sm:space-y-6 pt-12 sm:pt-16">
@@ -260,6 +264,16 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Create a surprise for your loved one CTA */}
+                <div className="z-20">
+                  <Link href="/">
+                    <Button size="lg" className="rounded-full px-8 py-7 text-lg font-bold shadow-2xl hover:scale-105 transition-all bg-secondary text-secondary-foreground hover:bg-secondary/90 border-none">
+                      <Gift className="mr-2 h-6 w-6" />
+                      Create a surprise for your loved one
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>

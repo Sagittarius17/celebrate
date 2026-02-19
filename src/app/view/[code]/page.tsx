@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { use, useEffect, useState, useRef } from 'react';
@@ -170,7 +169,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
   const finalQuoteToDisplay = page?.finalQuote || DEFAULT_QUOTES[page?.occasion] || DEFAULT_QUOTES["Other"];
   
   return (
-    <main className="min-h-screen bg-background pb-40">
+    <main className="min-h-screen bg-background">
       <Header title={page?.title} occasion={page?.occasion} />
        
       <section className="py-20 overflow-hidden">
@@ -228,7 +227,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
               );
             })}
 
-            <div className="flex flex-col items-center justify-center pt-20 relative">
+            <div className="flex flex-col items-center justify-center pt-32 pb-[35vh] relative">
               <div className={cn(
                 "relative transition-all duration-1000 transform w-full max-w-2xl flex flex-col items-center",
                 scrollProgress > 98 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20 pointer-events-none"
@@ -263,7 +262,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         </div>
       </section>
       
-      <footer className="py-20 text-center bg-primary/5">
+      <footer className="py-10 text-center bg-primary/5">
         <div className="max-w-2xl mx-auto px-4 space-y-4">
           <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground opacity-50">
             Created with love by {page?.creatorName}

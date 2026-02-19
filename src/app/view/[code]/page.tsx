@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { use, useEffect, useState } from 'react';
@@ -7,7 +6,7 @@ import { collectionGroup, query, where, getDocs, collection, orderBy } from 'fir
 import { Header } from '@/components/birthday/Header';
 import { EventCard } from '@/components/birthday/EventCard';
 import { ThreeDecoration } from '@/components/birthday/ThreeDecoration';
-import { Star, Camera, Gift, PartyPopper, Cake, Loader2 } from 'lucide-react';
+import { Star, Camera, Gift, PartyPopper, Cake, Loader2, Heart, Sparkles } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 export default function SurpriseView({ params }: { params: Promise<{ code: string }> }) {
@@ -25,8 +24,6 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       setError(null);
 
       try {
-        // Find the page with matching access code using a collection group query
-        // This requires a collectionGroup index for 'celebrationPages' on 'accessCode'
         const pagesQuery = query(
           collectionGroup(db, 'celebrationPages'),
           where('accessCode', '==', code)
@@ -44,8 +41,6 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         const pageData = { ...pageDoc.data(), id: pageDoc.id };
         setPage(pageData);
 
-        // Load events for this page
-        // Since we have the path from the pageDoc, we can directly access its subcollection
         const eventsRef = collection(pageDoc.ref, 'birthdayEvents');
         const eventsQuery = query(eventsRef, orderBy('eventDate', 'asc'));
         const eventsSnap = await getDocs(eventsQuery);
@@ -74,28 +69,32 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <Alert variant="destructive" className="max-w-md rounded-3xl p-8">
-          <AlertTitle className="text-xl font-bold mb-2">Oops!</AlertTitle>
-          <AlertDescription className="text-lg">
-            {error}
-            <div className="mt-6">
-              <a href="/view">
-                <button className="bg-white text-destructive px-6 py-2 rounded-full font-bold shadow-sm">
-                  Try Another Code
-                </button>
-              </a>
-            </div>
-          </AlertDescription>
-        </Alert>
+        <div className="max-w-md w-full">
+          <Alert variant="destructive" className="rounded-3xl p-8 border-none shadow-2xl bg-white">
+            <AlertTitle className="text-xl font-bold mb-2 flex items-center gap-2 text-destructive">
+              <Gift className="h-6 w-6" /> Oops!
+            </AlertTitle>
+            <AlertDescription className="text-lg text-muted-foreground">
+              {error}
+              <div className="mt-8">
+                <a href="/view">
+                  <button className="w-full bg-primary text-primary-foreground py-4 rounded-full font-bold shadow-lg active:scale-95 transition-all">
+                    Try Another Code
+                  </button>
+                </a>
+              </div>
+            </AlertDescription>
+          </Alert>
+        </div>
       </div>
     );
   }
 
-  const icons = [<Star />, <Camera />, <Gift />, <PartyPopper />, <Cake />];
+  const icons = [<Star />, <Camera />, <Gift />, <PartyPopper />, <Cake />, <Heart />, <Sparkles />];
 
   return (
     <main className="min-h-screen bg-background">
-      <Header />
+      <Header title={page?.title} occasion={page?.occasion} />
       
       <section className="py-20">
         <div className="text-center mb-16 px-4">
@@ -145,9 +144,9 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       
       <footer className="py-20 text-center bg-primary/5">
         <div className="max-w-2xl mx-auto px-4 space-y-6">
-          <h3 className="font-headline text-3xl font-bold">To Many More Years, {page?.recipientName}!</h3>
+          <h3 className="font-headline text-3xl font-bold">To Many More Years of Joy, {page?.recipientName}!</h3>
           <p className="font-body text-muted-foreground italic">
-            "The best is yet to come."
+            "Every moment together is a treasure."
           </p>
         </div>
       </footer>

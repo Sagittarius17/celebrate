@@ -1,10 +1,14 @@
-
 "use client";
 
 import React from 'react';
 import { ThreeDecoration } from './ThreeDecoration';
 
-export const Header = () => {
+interface HeaderProps {
+  title?: string;
+  occasion?: string;
+}
+
+export const Header: React.FC<HeaderProps> = ({ title, occasion = "Celebration" }) => {
   return (
     <header className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden bg-gradient-to-b from-primary/10 via-background to-background">
       {/* Background Decorations */}
@@ -17,14 +21,23 @@ export const Header = () => {
       
       <div className="relative z-10 animate-fade-in space-y-6">
         <div className="inline-block px-6 py-2 rounded-full bg-secondary/20 text-secondary-foreground font-bold tracking-widest uppercase text-sm mb-4">
-          Celebrating a wonderful year
+          A special {occasion.toLowerCase()} surprise
         </div>
         <h1 className="font-headline text-7xl md:text-9xl font-extrabold text-foreground leading-tight drop-shadow-sm">
-          Happy <br />
-          <span className="text-primary-foreground drop-shadow-xl">Birthday</span>
+          {title ? (
+            <>
+              {title.split(',')[0]} <br />
+              <span className="text-primary-foreground drop-shadow-xl">{title.split(',')[1] || ''}</span>
+            </>
+          ) : (
+            <>
+              Happy <br />
+              <span className="text-primary-foreground drop-shadow-xl">{occasion}</span>
+            </>
+          )}
         </h1>
         <p className="font-body text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          Journey through time and relive the beautiful moments that shaped an extraordinary life.
+          Relive the beautiful moments that shaped an extraordinary life and journey through time together.
         </p>
       </div>
 

@@ -1,0 +1,246 @@
+{
+  "entities": {
+    "CelebrationPage": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "CelebrationPage",
+      "type": "object",
+      "description": "Represents a single interactive birthday celebration landing page, containing all events and media.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the CelebrationPage entity."
+        },
+        "title": {
+          "type": "string",
+          "description": "The main title displayed prominently on the birthday page (e.g., 'Happy Birthday, [Recipient Name]!')."
+        },
+        "recipientName": {
+          "type": "string",
+          "description": "The full name of the birthday person for whom this celebration page is created."
+        },
+        "creatorName": {
+          "type": "string",
+          "description": "The name of the user who created this birthday celebration page."
+        },
+        "accessCode": {
+          "type": "string",
+          "description": "A secret code required to securely access this particular birthday page, provided by the creator to the recipient."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the celebration page was initially created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the celebration page was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "recipientName",
+        "creatorName",
+        "accessCode",
+        "createdAt"
+      ]
+    },
+    "BirthdayEvent": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "BirthdayEvent",
+      "type": "object",
+      "description": "Represents a single chronological event or memory to be displayed as an interactive card on the timeline.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the BirthdayEvent entity."
+        },
+        "celebrationPageId": {
+          "type": "string",
+          "description": "Reference to the CelebrationPage this event belongs to. (Relationship: CelebrationPage 1:N BirthdayEvent)"
+        },
+        "eventDate": {
+          "type": "string",
+          "description": "The specific date associated with this event, used for chronological ordering on the timeline.",
+          "format": "date"
+        },
+        "title": {
+          "type": "string",
+          "description": "A concise title for the event card, summarizing the memory or milestone."
+        },
+        "message": {
+          "type": "string",
+          "description": "The celebratory message or a memorable quote associated with this event."
+        },
+        "order": {
+          "type": "number",
+          "description": "An integer representing the display order of the event card on the timeline, allowing for custom sequencing."
+        },
+        "imageAssetIds": {
+          "type": "array",
+          "description": "An array of unique identifiers referencing image assets (photos) associated with this event card. (Relationship: BirthdayEvent N:N Asset)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "animatedAssetIds": {
+          "type": "array",
+          "description": "An array of unique identifiers referencing animated 3D model assets to be displayed alongside this event. (Relationship: BirthdayEvent N:N Asset)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when this event record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when this event record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "celebrationPageId",
+        "eventDate",
+        "title",
+        "message",
+        "order",
+        "createdAt"
+      ]
+    },
+    "Asset": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Asset",
+      "type": "object",
+      "description": "Represents a reusable media asset, such as an image file or a 3D model, used across the celebration page.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Asset entity."
+        },
+        "url": {
+          "type": "string",
+          "description": "The URL or file path where the asset can be accessed or loaded from.",
+          "format": "uri"
+        },
+        "altText": {
+          "type": "string",
+          "description": "Alternative text for image assets, providing a text equivalent for accessibility purposes."
+        },
+        "assetType": {
+          "type": "string",
+          "description": "The category of the asset, differentiating between images, 3D models, or other media types (e.g., 'image', '3d_model')."
+        },
+        "mimeType": {
+          "type": "string",
+          "description": "The MIME type of the asset file (e.g., 'image/jpeg', 'model/gltf+json')."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed textual description of the asset's content or purpose."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the asset record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the asset record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "url",
+        "assetType",
+        "mimeType",
+        "description",
+        "createdAt"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}/celebrationPages/{celebrationPageId}",
+        "definition": {
+          "entityName": "CelebrationPage",
+          "schema": {
+            "$ref": "#/backend/entities/CelebrationPage"
+          },
+          "description": "Represents a single birthday celebration page, owned by a specific user. Includes denormalized 'ownerId' for creator authorization and 'viewerUids' for recipient read authorization, populated by a Cloud Function after 'accessCode' verification.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who created and owns this celebration page."
+            },
+            {
+              "name": "celebrationPageId",
+              "description": "The unique identifier for the specific celebration page."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/celebrationPages/{celebrationPageId}/birthdayEvents/{birthdayEventId}",
+        "definition": {
+          "entityName": "BirthdayEvent",
+          "schema": {
+            "$ref": "#/backend/entities/BirthdayEvent"
+          },
+          "description": "Represents a chronological event or memory associated with a specific celebration page. Includes denormalized 'ownerId' and 'viewerUids' from the parent CelebrationPage for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns the parent celebration page."
+            },
+            {
+              "name": "celebrationPageId",
+              "description": "The unique identifier of the parent celebration page."
+            },
+            {
+              "name": "birthdayEventId",
+              "description": "The unique identifier for this specific birthday event."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/celebrationPages/{celebrationPageId}/assets/{assetId}",
+        "definition": {
+          "entityName": "Asset",
+          "schema": {
+            "$ref": "#/backend/entities/Asset"
+          },
+          "description": "Represents a media asset (image, 3D model) used within a specific celebration page. Includes denormalized 'ownerId' and 'viewerUids' from the parent CelebrationPage for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns the parent celebration page."
+            },
+            {
+              "name": "celebrationPageId",
+              "description": "The unique identifier of the parent celebration page."
+            },
+            {
+              "name": "assetId",
+              "description": "The unique identifier for this specific media asset."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "This Firestore structure is designed to be highly secure, scalable, and debuggable, adhering strictly to the core design principles and strategy mandates. The central theme revolves around strict ownership via path-based structures and denormalized authorization contexts to ensure authorization independence.\n\n1.  **Creator's Panel and Ownership:** Each user (creator) will have their own top-level collection of `celebrationPages`. This is established by the path `/users/{userId}/celebrationPages/{celebrationPageId}`. This design immediately fulfills the 'Private Data' and 'Use Hierarchical Paths for User-Owned Data' mandates. The `{userId}` wildcard directly corresponds to `request.auth.uid`, making creator-based read/write access rules incredibly simple and robust (`allow write: if request.auth.uid == userId;`).\n\n2.  **Authorization Independence (CRITICAL Denormalization):** To eliminate problematic `get()` calls in security rules for subcollections, we denormalize key authorization fields. Each `CelebrationPage` document will contain an `ownerId` (the creator's UID) and a `viewerUids` array. This `ownerId` and `viewerUids` array are then *copied* into every document in the `birthdayEvents` and `assets` subcollections. This means that a `BirthdayEvent` or `Asset` document can be read or written without ever needing to fetch its parent `CelebrationPage` document to verify permissions. The rules for these subcollections simply check `request.auth.uid == resource.data.ownerId` or `request.auth.uid in resource.data.viewerUids`.\n\n3.  **Birthday Person (Recipient) Access and QAPs:** The \"secret code\" for the birthday person is handled in a robust, DBAC-compliant manner that leverages `request.auth.uid`. The `accessCode` itself is stored on the `CelebrationPage` document. When a birthday recipient wishes to view a page, they first log in (e.g., anonymously) to obtain a `request.auth.uid`. They then provide the `accessCode` to a **Cloud Function**. This Cloud Function, after verifying the `accessCode` against the `CelebrationPage` document, adds the recipient's `request.auth.uid` to the `viewerUids` array on the `CelebrationPage` and subsequently denormalizes this updated `viewerUids` array to all associated `BirthdayEvent` and `Asset` documents within that page. This makes the `viewerUids` array the definitive, rules-enforceable authorization field for recipients.\n    This structure supports **QAPs (Rules are not Filters)** for `list` operations:\n    *   **For Creators:** A creator can `list` all their `CelebrationPage`s by querying `/users/{request.auth.uid}/celebrationPages`. The rules ensure only documents where `request.auth.uid` matches the `userId` in the path are returned.\n    *   **For Viewers (Recipients):** Once granted access (i.e., their UID is in `viewerUids`), they can `list` `BirthdayEvent`s or `Assets` within a specific page. The rules for these subcollections (`/users/{creatorId}/celebrationPages/{pageId}/birthdayEvents` and `/users/{creatorId}/celebrationPages/{pageId}/assets`) will evaluate `request.auth.uid in resource.data.viewerUids` for *each document* in the result set, ensuring only authorized documents are returned without filtering by the client.\n\n4.  **Structural Segregation:** All documents within a given collection (`celebrationPages`, `birthdayEvents`, `assets`) share the same security posture (owned by `ownerId`, viewable by `viewerUids`). There are no mixed access levels within a single collection, simplifying rule logic.\n\n5.  **DBAC (No Custom Claims):** All authorization (creator or viewer) is determined by `request.auth.uid` and roles (owner/viewer) stored directly within the document data (`ownerId`, `viewerUids` arrays). No custom claims are used, simplifying Firebase Authentication management.\n\nThis design prioritizes a strict adherence to security principles, making the system easy to reason about, debug, and maintain over time."
+  }
+}

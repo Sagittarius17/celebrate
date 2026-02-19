@@ -1,0 +1,99 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * CORE PHILOSOPHY:
+     * This ruleset enforces a strict Ownership and Shared Access model designed for a creator-driven birthday surprise platform.
+     * 
+     * DATA STRUCTURE:
+     * Data is organized hierarchically under /users/{userId}. This path-based nesting provides the primary security layer
+     * for creators. Sub-collections (birthdayEvents, assets) are nested within specific CelebrationPages to maintain 
+     * logical grouping and inheritance-like access patterns.
+     * 
+     * KEY SECURITY DECISIONS:
+     * 1. Authorization Independence (Denormalization): To ensure high performance and avoid expensive 'get()' calls, 
+     *    the 'ownerId' and 'viewerUids' are denormalized onto every document. Rules check these internal fields 
+     *    directly rather than querying parent documents.
+     * 2. Recipient Access: Access for the birthday person is managed by adding their UID to a 'viewerUids' array. 
+     *    This is intended to be handled by a secure backend process after code verification.
+     * 3. Prototyping Flexibility: While authorization is strictly enforced (who can access), the specific shape 
+     *    and types of content data (titles, messages, URLs) are not validated to allow for rapid UI/UX iteration.
+     * 4. Immutable Relationships: Critical fields like 'ownerId' are enforced as immutable during updates to 
+     *    prevent document hijacking.
+     */
+
+    // --- Helper Functions ---
+
+    /** @description Checks if the request is from an authenticated user. */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /** @description Checks if the authenticated user matches the provided userId from the path. */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /** @description Checks if the user is the owner of an existing document. */
+    function isExistingOwner(userId) {
+      return resource != null && isOwner(userId);
+    }
+
+    /** @description Checks if the authenticated user's UID is present in the document's list of authorized viewers. */
+    function isAuthorizedViewer(viewerUids) {
+      return isSignedIn() && (request.auth.uid in viewerUids);
+    }
+
+    // --- Collection Rules ---
+
+    /**
+     * @description Rules for the root CelebrationPage, representing the main birthday landing page.
+     * @path /users/{userId}/celebrationPages/{celebrationPageId}
+     * @allow (create) if user is the path owner and sets themselves as ownerId in data.
+     * @deny (read) if user is neither the creator (path owner) nor in the viewerUids list.
+     * @principle Path-based ownership for creators; data-based shared access for recipients.
+     */
+    match /users/{userId}/celebrationPages/{celebrationPageId} {
+      allow get, list: if isOwner(userId) || isAuthorizedViewer(resource.data.viewerUids);
+      allow create: if isOwner(userId) && request.resource.data.ownerId == request.auth.uid;
+      allow update: if isExistingOwner(userId) && request.resource.data.ownerId == resource.data.ownerId;
+      allow delete: if isExistingOwner(userId);
+
+      /**
+       * @description Rules for individual events/memories within a celebration page.
+       * @path /users/{userId}/celebrationPages/{celebrationPageId}/birthdayEvents/{birthdayEventId}
+       * @allow (list) if the user's UID exists in the document's denormalized viewerUids array.
+       * @deny (update) if the user attempts to change the ownerId or page relationship.
+       * @principle Denormalized authorization for sub-collection performance.
+       */
+      match /birthdayEvents/{birthdayEventId} {
+        allow get, list: if isOwner(userId) || isAuthorizedViewer(resource.data.viewerUids);
+        allow create: if isOwner(userId) && request.resource.data.ownerId == request.auth.uid;
+        allow update: if isExistingOwner(userId) && request.resource.data.ownerId == resource.data.ownerId;
+        allow delete: if isExistingOwner(userId);
+      }
+
+      /**
+       * @description Rules for media assets (images, 3D models) associated with a page.
+       * @path /users/{userId}/celebrationPages/{celebrationPageId}/assets/{assetId}
+       * @allow (get) if the user is the creator or the authorized birthday person.
+       * @deny (create) if the creatorId in the data does not match the authenticated user.
+       * @principle Relational integrity via denormalized owner and viewer fields.
+       */
+      match /assets/{assetId} {
+        allow get, list: if isOwner(userId) || isAuthorizedViewer(resource.data.viewerUids);
+        allow create: if isOwner(userId) && request.resource.data.ownerId == request.auth.uid;
+        allow update: if isExistingOwner(userId) && request.resource.data.ownerId == resource.data.ownerId;
+        allow delete: if isExistingOwner(userId);
+      }
+    }
+  }
+}
+
+/** 
+ * SECURITY NOTE:
+ * The 'viewerUids' field is critical for recipient access. It is assumed that 
+ * a server-side process (Cloud Function) populates this array after the 
+ * recipient provides the correct 'accessCode'.
+ */

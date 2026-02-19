@@ -42,6 +42,13 @@
   background: linear-gradient(to bottom, transparent, hsl(var(--primary)), transparent);
 }
 
+.timeline-glow-line {
+  background: linear-gradient(to bottom, hsl(var(--primary)), hsl(var(--secondary)));
+  box-shadow: 0 0 15px hsl(var(--secondary) / 0.5), 0 0 30px hsl(var(--secondary) / 0.2);
+  transition: height 0.1s linear;
+  border-radius: 100px;
+}
+
 .perspective-1000 {
   perspective: 1000px;
 }

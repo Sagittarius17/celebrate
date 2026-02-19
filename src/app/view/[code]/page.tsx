@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { use, useEffect, useState } from 'react';
+import React, { use, useEffect, useState, useRef } from 'react';
 import { useFirestore } from '@/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { Header } from '@/components/birthday/Header';
@@ -10,6 +10,7 @@ import { Star, Camera, Gift, PartyPopper, Cake, Loader2, Heart, Sparkles } from 
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
+import { cn } from '@/lib/utils';
 
 export default function SurpriseView({ params }: { params: Promise<{ code: string }> }) {
   const { code } = use(params);
@@ -18,6 +19,29 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
   const [events, setEvents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const timelineRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!timelineRef.current) return;
+      const element = timelineRef.current;
+      const rect = element.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      
+      // We trigger the "completion" of the line when the element reaches the center of the screen
+      const triggerPoint = viewportHeight * 0.6;
+      const start = rect.top;
+      const height = rect.height;
+      
+      const progress = ((triggerPoint - start) / height) * 100;
+      setScrollProgress(Math.min(Math.max(progress, 0), 100));
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     const loadSurprise = async () => {
@@ -128,37 +152,56 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
           <div className="w-24 h-1 bg-secondary mx-auto rounded-full" />
         </div>
         
-        <div className="relative max-w-6xl mx-auto px-4 py-20 overflow-hidden">
-          <div className="absolute left-1/2 transform -translate-x-1/2 w-1 timeline-line h-full z-0 opacity-50 hidden md:block" />
+        <div ref={timelineRef} className="relative max-w-6xl mx-auto px-4 py-20 overflow-hidden">
+          {/* Base Timeline Line */}
+          <div className="absolute left-1/2 transform -translate-x-1/2 w-1 timeline-line h-full z-0 opacity-20 hidden md:block" />
+          
+          {/* Glowing Progress Line */}
+          <div 
+            className="absolute left-1/2 transform -translate-x-1/2 w-1.5 z-10 hidden md:block timeline-glow-line"
+            style={{ height: `${scrollProgress}%` }}
+          />
 
           <div className="space-y-32 relative z-10">
-            {events.map((event, index) => (
-              <div 
-                key={event.id} 
-                className={`flex flex-col md:flex-row items-center justify-between group reveal-on-scroll visible ${
-                  index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
-                }`}
-              >
-                <div className="w-full md:w-[45%]">
-                  <EventCard 
-                    title={event.title}
-                    date={new Date(event.eventDate).toLocaleDateString()}
-                    message={event.message}
-                    imageUrl={event.imageUrl}
-                    icon={React.cloneElement(icons[index % icons.length] as React.ReactElement, { className: "w-6 h-6 text-primary-foreground" })}
-                  />
-                </div>
+            {events.map((event, index) => {
+              const eventProgress = (index / (events.length - 1)) * 100;
+              const isActive = scrollProgress >= eventProgress;
 
-                <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center justify-center w-12 h-12 rounded-full bg-white border-4 border-primary shadow-xl z-20 transition-all duration-300 group-hover:scale-125 bg-background"> 
-                  <div className="w-4 h-4 rounded-full bg-secondary animate-pulse" />
-                </div>
+              return (
+                <div 
+                  key={event.id} 
+                  className={cn(
+                    "flex flex-col md:flex-row items-center justify-between group reveal-on-scroll visible",
+                    index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
+                  )}
+                >
+                  <div className="w-full md:w-[45%]">
+                    <EventCard 
+                      title={event.title}
+                      date={new Date(event.eventDate).toLocaleDateString()}
+                      message={event.message}
+                      imageUrl={event.imageUrl}
+                      icon={React.cloneElement(icons[index % icons.length] as React.ReactElement, { className: "w-6 h-6 text-primary-foreground" })}
+                    />
+                  </div>
 
-                <div className="w-full md:w-[45%] flex items-center justify-center p-8">
-                  {/* Spacer to maintain alternating layout without 3D elements */}
-                  <div className="w-full h-48 md:h-64" />
+                  {/* Timeline Dot */}
+                  <div className={cn(
+                    "hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center justify-center w-14 h-14 rounded-full border-4 transition-all duration-500 z-20 bg-background",
+                    isActive ? "border-secondary scale-110 shadow-[0_0_20px_rgba(255,182,193,0.6)]" : "border-primary opacity-50"
+                  )}> 
+                    <div className={cn(
+                      "w-4 h-4 rounded-full transition-colors duration-500",
+                      isActive ? "bg-secondary animate-pulse" : "bg-primary"
+                    )} />
+                  </div>
+
+                  <div className="w-full md:w-[45%] flex items-center justify-center p-8">
+                    <div className="w-full h-48 md:h-64" />
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

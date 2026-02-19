@@ -8,6 +8,8 @@ import { EventCard } from '@/components/birthday/EventCard';
 import { ThreeDecoration } from '@/components/birthday/ThreeDecoration';
 import { Star, Camera, Gift, PartyPopper, Cake, Loader2, Heart, Sparkles } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 export default function SurpriseView({ params }: { params: Promise<{ code: string }> }) {
   const { code } = use(params);
@@ -24,9 +26,10 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       setError(null);
 
       try {
+        const decodedCode = decodeURIComponent(code);
         const pagesQuery = query(
           collectionGroup(db, 'celebrationPages'),
-          where('accessCode', '==', code)
+          where('accessCode', '==', decodedCode)
         );
         
         const pageSnap = await getDocs(pagesQuery);
@@ -47,7 +50,13 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         
         setEvents(eventsSnap.docs.map(doc => ({ ...doc.data(), id: doc.id })));
       } catch (err: any) {
-        console.error(err);
+        // Emit contextual error for debugging
+        const permissionError = new FirestorePermissionError({
+          path: 'celebrationPages',
+          operation: 'list',
+        } satisfies SecurityRuleContext);
+        
+        errorEmitter.emit('permission-error', permissionError);
         setError("Something went wrong while loading your surprise.");
       } finally {
         setIsLoading(false);

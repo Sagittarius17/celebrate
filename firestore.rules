@@ -1,3 +1,4 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -5,8 +6,7 @@ service cloud.firestore {
     /**
      * CORE PHILOSOPHY:
      * This ruleset supports a "Secret Code" access model. 
-     * Recipients can read celebration data across the database if they know the specific access code,
-     * which is verified via Collection Group queries.
+      * Recipients can read celebration data across the database if they know the specific access code.
      */
 
     function isSignedIn() {
@@ -17,13 +17,12 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    /** 
+     /** 
      * @description Collection Group rules to allow recipients to find surprises by code.
-     * These rules allow "read" (get and list) operations on any celebrationPages or birthdayEvents 
-     * collection, regardless of the user path.
+     * These rules are essential for collectionGroup queries used in the 'view' pages.
      */
     match /{path=**}/celebrationPages/{celebrationPageId} {
-      allow read: if true; 
+      allow read: if  true; 
     }
 
     match /{path=**}/birthdayEvents/{birthdayEventId} {
@@ -32,7 +31,7 @@ service cloud.firestore {
 
     /** 
      * @description Path-based rules for creators.
-     * Owners have full access to their own user document and all sub-resources.
+     * Owners have full access to their own user document and all sub- resources.
      */
     match /users/{userId} {
       allow read, write: if isOwner(userId);

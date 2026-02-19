@@ -119,8 +119,12 @@ export default function Dashboard() {
           </div>
           
           <div className="flex gap-4">
-            <Button variant="ghost" className="rounded-full" onClick={handleLogout}>
-              <LogOut className="mr-2 h-4 w-4" /> Log Out
+            <Button 
+              variant="secondary" 
+              className="rounded-full h-12 px-6 shadow-md hover:shadow-lg transition-all" 
+              onClick={handleLogout}
+            >
+              <LogOut className="mr-2 h-5 w-5" /> Log Out
             </Button>
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
               <DialogTrigger asChild>

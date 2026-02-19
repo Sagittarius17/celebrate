@@ -1,9 +1,8 @@
-
 "use client";
 
 import React, { useEffect, useRef } from 'react';
 import { EventCard } from './EventCard';
-import { PlaceHolderImages } from '@/app/lib/placeholder-images';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { ThreeDecoration } from './ThreeDecoration';
 import { Star, Heart, Gift, Camera, PartyPopper, Cake } from 'lucide-react';
 

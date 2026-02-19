@@ -1,3 +1,40 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "baby",
+      "description": "Baby smiling",
+      "imageUrl": "https://images.unsplash.com/photo-1533483595632-c5f0e57a1936?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxiYWJ5JTIwc21pbGluZ3xlbnwwfHx8fDE3NzE0NjIyMzh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "baby smiling"
+    },
+    {
+      "id": "toddler",
+      "description": "First steps toddler",
+      "imageUrl": "https://images.unsplash.com/photo-1608093602519-ccd31f515f83?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx0b2RkbGVyJTIwd2Fsa2luZ3xlbnwwfHx8fDE3NzE0OTY1MTh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "toddler walking"
+    },
+    {
+      "id": "school",
+      "description": "First day of school",
+      "imageUrl": "https://images.unsplash.com/photo-1580067644090-a03da9d1e360?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxzY2hvb2wlMjBjaGlsZHxlbnwwfHx8fDE3NzE0OTY1MTl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "school child"
+    },
+    {
+      "id": "teen",
+      "description": "Graduation moment",
+      "imageUrl": "https://images.unsplash.com/photo-1590012314607-cda9d9b699ae?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxncmFkdWF0aW9uJTIwY2FwfGVufDB8fHx8MTc3MTQ5NjUxOHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "graduation cap"
+    },
+    {
+      "id": "cake",
+      "description": "Birthday cake",
+      "imageUrl": "https://images.unsplash.com/photo-1578922864601-79dcc7cbcea9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxiaXJ0aGRheSUyMGNha2V8ZW58MHx8fHwxNzcxNDY1ODc0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "birthday cake"
+    },
+    {
+      "id": "friends",
+      "description": "Celebration with friends",
+      "imageUrl": "https://images.unsplash.com/photo-1541532713592-79a0317b6b77?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxwYXJ0eSUyMGZyaWVuZHN8ZW58MHx8fHwxNzcxNDk2NTE4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "party friends"
+    }
+  ]
 }

@@ -46,7 +46,10 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       const height = rect.height;
       
       const progress = ((triggerPoint - start) / height) * 100;
-      setScrollProgress(Math.min(Math.max(progress, 0), 100));
+      const clampedProgress = Math.min(Math.max(progress, 0), 100);
+      
+      // Only update if current scroll is further than previous max scroll (Sticky)
+      setScrollProgress(prev => Math.max(prev, clampedProgress));
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -61,6 +64,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
           if (entry.isIntersecting) {
             entry.target.classList.add('visible');
           }
+          // Note: No 'else' here ensures once visible, it stays visible (Sticky)
         });
       }, { threshold: 0.1 });
 

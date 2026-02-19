@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Calendar, User, Key, ArrowRight, Gift, LogOut, Copy, Check } from 'lucide-react';
+import { Plus, Calendar, User, Key, ArrowRight, Gift, LogOut, Copy, Check, Type } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -27,6 +27,24 @@ const OCCASIONS = [
   "Other"
 ];
 
+const FONTS = [
+  "Playfair Display",
+  "PT Sans",
+  "Montserrat",
+  "Lora",
+  "Quicksand",
+  "Merriweather",
+  "Oswald",
+  "Dancing Script",
+  "Caveat",
+  "Pacifico",
+  "Lobster",
+  "Cinzel",
+  "Comfortaa",
+  "Great Vibes",
+  "Sacramento"
+];
+
 export default function Dashboard() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
@@ -40,11 +58,11 @@ export default function Dashboard() {
     title: '',
     occasion: 'Birthday',
     accessCode: '',
+    font: 'Playfair Display',
   });
 
   const celebrationPagesQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
-    // Query top-level collection filtered by ownerId
     return query(collection(db, 'celebrationPages'), where('ownerId', '==', user.uid));
   }, [db, user]);
 
@@ -65,7 +83,7 @@ export default function Dashboard() {
 
     addDocumentNonBlocking(collection(db, 'celebrationPages'), payload);
     setIsCreateOpen(false);
-    setNewSurprise({ recipientName: '', title: '', occasion: 'Birthday', accessCode: '' });
+    setNewSurprise({ recipientName: '', title: '', occasion: 'Birthday', accessCode: '', font: 'Playfair Display' });
   };
 
   const handleLogout = () => {
@@ -137,21 +155,39 @@ export default function Dashboard() {
                   <DialogTitle>Create a New Surprise Page</DialogTitle>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="occasion">What's the occasion?</Label>
-                    <Select 
-                      value={newSurprise.occasion} 
-                      onValueChange={(val) => setNewSurprise({...newSurprise, occasion: val})}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select occasion" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {OCCASIONS.map(occ => (
-                          <SelectItem key={occ} value={occ}>{occ}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="occasion">Occasion</Label>
+                      <Select 
+                        value={newSurprise.occasion} 
+                        onValueChange={(val) => setNewSurprise({...newSurprise, occasion: val})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {OCCASIONS.map(occ => (
+                            <SelectItem key={occ} value={occ}>{occ}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="font">Choose a Font</Label>
+                      <Select 
+                        value={newSurprise.font} 
+                        onValueChange={(val) => setNewSurprise({...newSurprise, font: val})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Font Style" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {FONTS.map(font => (
+                            <SelectItem key={font} value={font} style={{ fontFamily: font }}>{font}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="recipient">Who is this for?</Label>
@@ -179,7 +215,6 @@ export default function Dashboard() {
                       value={newSurprise.accessCode}
                       onChange={(e) => setNewSurprise({...newSurprise, accessCode: e.target.value})}
                     />
-                    <p className="text-xs text-muted-foreground italic">The recipient will need this to view their surprise.</p>
                   </div>
                 </div>
                 <DialogFooter>
@@ -229,7 +264,7 @@ export default function Dashboard() {
                     </Button>
                   </div>
                   <div className="flex items-center text-sm text-muted-foreground">
-                    <Calendar className="h-4 w-4 mr-2" /> Created: {new Date(surprise.createdAt).toLocaleDateString()}
+                    <Type className="h-4 w-4 mr-2" /> Style: <span style={{ fontFamily: surprise.font || 'inherit' }}>{surprise.font || 'Default'}</span>
                   </div>
                   <Link href={`/dashboard/${surprise.id}`} className="block pt-2">
                     <Button className="w-full rounded-full group-hover:bg-primary group-hover:text-primary-foreground">

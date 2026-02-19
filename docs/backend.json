@@ -35,6 +35,11 @@
           "type": "string",
           "description": "A final message or quote shown at the end of the timeline."
         },
+        "font": {
+          "type": "string",
+          "description": "The font family selected for the celebration page.",
+          "enum": ["Playfair Display", "PT Sans", "Montserrat", "Lora", "Quicksand", "Merriweather", "Oswald", "Dancing Script", "Caveat", "Pacifico", "Lobster", "Cinzel", "Comfortaa", "Great Vibes", "Sacramento"]
+        },
         "ownerId": {
           "type": "string",
           "description": "UID of the creator."

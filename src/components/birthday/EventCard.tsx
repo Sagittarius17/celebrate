@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -37,11 +38,11 @@ export const EventCard: React.FC<EventCardProps> = ({ title, date, message, imag
               {icon}
             </div>
           )}
-          <h3 className="font-headline text-2xl sm:text-3xl font-bold text-foreground tracking-tight line-clamp-2">
+          <h3 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight line-clamp-2">
             {title}
           </h3>
         </div>
-        <p className="text-muted-foreground leading-relaxed text-base sm:text-lg font-body italic">
+        <p className="text-muted-foreground leading-relaxed text-base sm:text-lg italic">
           "{message}"
         </p>
       </CardContent>

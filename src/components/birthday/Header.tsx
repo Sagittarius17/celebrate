@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -14,7 +15,7 @@ export const Header: React.FC<HeaderProps> = ({ title, occasion = "Celebration" 
         <div className="inline-block px-6 py-2 rounded-full bg-secondary/20 text-secondary-foreground font-bold tracking-widest uppercase text-xs sm:text-sm mb-4">
           A special {occasion.toLowerCase()} surprise
         </div>
-        <h1 className="font-headline text-5xl sm:text-7xl md:text-9xl font-extrabold text-foreground leading-tight drop-shadow-sm px-2">
+        <h1 className="text-5xl sm:text-7xl md:text-9xl font-extrabold text-foreground leading-tight drop-shadow-sm px-2">
           {title ? (
             <>
               {title.includes(',') ? (
@@ -31,7 +32,7 @@ export const Header: React.FC<HeaderProps> = ({ title, occasion = "Celebration" 
             </>
           )}
         </h1>
-        <p className="font-body text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed px-4">
+        <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed px-4">
           Relive the beautiful moments that shaped an extraordinary life and journey through time together.
         </p>
       </div>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { use, useEffect, useState, useRef } from 'react';
@@ -49,7 +50,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       const progress = ((triggerPoint - start) / height) * 100;
       const clampedProgress = Math.min(Math.max(progress, 0), 100);
       
-      // Only update if progress is higher (one-way reveal)
+      // One-way reveal
       setScrollProgress(prev => Math.max(prev, clampedProgress));
     };
 
@@ -173,13 +174,18 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
   const icons = [<Star />, <Camera />, <Gift />, <PartyPopper />, <Cake />, <Heart />, <Sparkles />];
   const finalQuoteToDisplay = page?.finalQuote || DEFAULT_QUOTES[page?.occasion] || DEFAULT_QUOTES["Other"];
   
+  // Apply selected font globally within the surprise view
+  const globalStyle = {
+    fontFamily: page?.font ? `${page.font}, sans-serif` : 'inherit'
+  };
+
   return (
-    <main className="min-h-screen bg-background overflow-x-hidden">
+    <main className="min-h-screen bg-background overflow-x-hidden" style={globalStyle}>
       <Header title={page?.title} occasion={page?.occasion} />
        
       <section className="py-12 sm:py-20 overflow-hidden">
         <div className="text-center mb-12 sm:mb-16 px-4">
-          <h2 className="font-headline text-3xl sm:text-5xl font-bold mb-4">{page?.title || 'Our Journey'}</h2>
+          <h2 className="text-3xl sm:text-5xl font-bold mb-4" style={{ fontFamily: page?.font || 'inherit' }}>{page?.title || 'Our Journey'}</h2>
           <div className="w-16 sm:w-24 h-1 bg-secondary mx-auto rounded-full" />
         </div>
         
@@ -215,7 +221,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
                   />
                 </div>
 
-                {/* Timeline Dot - Hidden on Mobile, Centered on Desktop */}
+                {/* Timeline Dot - Solid on Desktop, Hidden on Mobile */}
                 <div className={cn(
                   "hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center justify-center w-10 h-10 sm:w-14 sm:h-14 rounded-full border-[3px] transition-all duration-500 z-20 bg-background shadow-sm",
                   scrollProgress > (index / events.length) * 100 ? "border-secondary scale-110 shadow-[0_0_15px_rgba(255,182,193,0.4)]" : "border-primary/40"
@@ -230,19 +236,19 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
               </div>
             ))}
 
-            {/* Final Reveal Section */}
-            <div className="flex flex-col items-center justify-center pt-20 sm:pt-32 pb-10 relative min-h-[70vh] sm:min-h-[85vh]">
+            {/* Final Reveal Section - Sticky Centering */}
+            <div className="flex flex-col items-center justify-center pt-20 sm:pt-32 pb-10 relative min-h-[85vh]">
               <div className={cn(
                 "relative transition-all duration-1000 transform w-full max-w-2xl flex flex-col items-center px-4",
                 scrollProgress > 95 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20 pointer-events-none"
               )}>
-                {/* Connecting Tail Line - Always Centered */}
+                {/* Connecting Tail Line */}
                 <div 
                   className="absolute -top-32 left-1/2 transform -translate-x-1/2 w-1.5 timeline-glow-line z-10" 
                   style={{ height: scrollProgress > 95 ? '128px' : '0' }}
                 />
 
-                <div className="z-30 mb-6 sm:mb-8 bg-white p-3 sm:p-4 rounded-full shadow-2xl border-4 border-secondary animate-float">
+                <div className="z-30 mb-6 sm:mb-8 bg-white p-3 sm:p-4 rounded-full shadow-2xl border-4 border-secondary">
                   <Heart className="w-8 h-8 sm:w-10 sm:h-10 text-secondary fill-secondary" />
                 </div>
 
@@ -251,10 +257,10 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
                   
                   <CardContent className="p-8 sm:p-12 text-center space-y-4 sm:space-y-6 pt-12 sm:pt-16">
                     <Quote className="w-10 h-10 sm:w-12 sm:h-12 text-secondary/30 mx-auto mb-2 sm:mb-4" />
-                    <h3 className="font-headline text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
+                    <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
                       To Many More Years of Joy, {page?.recipientName}!
                     </h3>
-                    <p className="font-body text-lg sm:text-xl md:text-2xl text-muted-foreground italic leading-relaxed">
+                    <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground italic leading-relaxed">
                       "{finalQuoteToDisplay}"
                     </p>
                     <div className="flex items-center justify-center gap-3 sm:gap-4 pt-2 sm:pt-4">

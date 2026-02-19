@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { use, useEffect, useState, useRef } from 'react';
@@ -52,6 +53,23 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
     handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, [events.length]);
+
+  useEffect(() => {
+    if (events.length > 0) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, { threshold: 0.1 });
+
+      const elements = document.querySelectorAll('.reveal-on-scroll');
+      elements.forEach(el => observer.observe(el));
+
+      return () => observer.disconnect();
+    }
+  }, [events]);
 
   useEffect(() => {
     const loadSurprise = async () => {
@@ -162,10 +180,8 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         </div>
         
         <div ref={timelineRef} className="relative max-w-6xl mx-auto px-4 pt-20">
-          {/* Base Timeline Line */}
           <div className="absolute left-1/2 transform -translate-x-1/2 w-1 timeline-line h-full z-0 opacity-20 hidden md:block" />
           
-          {/* Glowing Progress Line */}
           <div 
             className="absolute left-1/2 transform -translate-x-1/2 w-1.5 z-10 hidden md:block timeline-glow-line"
             style={{ height: `${scrollProgress}%` }}
@@ -184,7 +200,10 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
                     index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
                   )}
                 >
-                  <div className="w-full md:w-[45%]">
+                  <div className={cn(
+                    "w-full md:w-[45%] reveal-on-scroll",
+                    index % 2 === 0 ? "reveal-left" : "reveal-right"
+                  )}>
                     <EventCard 
                       title={event.title}
                       date={new Date(event.eventDate).toLocaleDateString()}
@@ -194,7 +213,6 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
                     />
                   </div>
 
-                  {/* Timeline Dot - Stable Solid Design */}
                   <div className={cn(
                     "hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center justify-center w-14 h-14 rounded-full border-[3px] transition-all duration-500 z-20 bg-background shadow-sm",
                     isActive ? "border-secondary scale-110 shadow-[0_0_15px_rgba(255,182,193,0.4)]" : "border-primary/40"
@@ -210,21 +228,20 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
               );
             })}
 
-            {/* Final Quote Section */}
-            <div className="flex flex-col items-center justify-center pt-20">
+            <div className="flex flex-col items-center justify-center pt-20 relative">
               <div className={cn(
-                "relative transition-all duration-1000 transform w-full max-w-2xl",
-                scrollProgress > 95 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20 pointer-events-none"
+                "relative transition-all duration-1000 transform w-full max-w-2xl flex flex-col items-center",
+                scrollProgress > 98 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20 pointer-events-none"
               )}>
-                {/* Connecting tail line segment */}
-                <div className="absolute -top-20 left-1/2 transform -translate-x-1/2 w-1.5 h-20 timeline-glow-line z-10 hidden md:block" />
+                <div className="absolute -top-32 left-1/2 transform -translate-x-1/2 w-1.5 h-32 timeline-glow-line z-10 hidden md:block" />
 
-                <Card className="border-none shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[3rem] overflow-hidden bg-white/95 backdrop-blur-md relative z-20">
+                <div className="z-30 mb-8 bg-white p-4 rounded-full shadow-2xl border-4 border-secondary animate-float">
+                  <Heart className="w-10 h-10 text-secondary fill-secondary" />
+                </div>
+
+                <Card className="border-none shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[3rem] overflow-hidden bg-white/95 backdrop-blur-md relative z-20 w-full">
                   <div className="h-2 w-full bg-gradient-to-r from-primary via-secondary to-primary" />
                   
-                  {/* Visual intersection point */}
-                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1.5 h-4 bg-secondary shadow-[0_0_10px_hsl(var(--secondary))] hidden md:block" />
-
                   <CardContent className="p-12 text-center space-y-6 pt-16">
                     <Quote className="w-12 h-12 text-secondary/30 mx-auto mb-4" />
                     <h3 className="font-headline text-3xl md:text-4xl font-bold text-foreground">

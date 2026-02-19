@@ -21,13 +21,13 @@ export default function Home() {
             disabled={isUserLoading}
           >
             <Sparkles className="mr-3 h-6 w-6" />
-            Start Creating
+            Create a Surprise
           </Button>
         ) : (
           <Link href="/dashboard">
             <Button size="lg" className="rounded-full px-10 py-8 text-xl font-bold shadow-xl hover:scale-105 transition-all bg-[#E6E6FA] text-[#2D2D5F] border-none hover:bg-[#D8D8F0]">
               <Sparkles className="mr-3 h-6 w-6" />
-              My Dashboard
+              Create a Surprise
             </Button>
           </Link>
         )}

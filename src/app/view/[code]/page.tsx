@@ -40,6 +40,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       const rect = element.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
       
+      // Calculate progress based on how much of the timeline has passed the trigger point
       const triggerPoint = viewportHeight * 0.75;
       const start = rect.top;
       const height = rect.height;
@@ -179,60 +180,61 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         </div>
         
         <div ref={timelineRef} className="relative max-w-6xl mx-auto px-4 pt-20">
-          <div className="absolute left-1/2 transform -translate-x-1/2 w-1 timeline-line h-full z-0 opacity-20 hidden md:block" />
+          {/* Main Timeline Spine */}
+          <div className="absolute left-1/2 transform -translate-x-1/2 w-1 timeline-line h-[calc(100%-400px)] z-0 opacity-20 hidden md:block" />
           
           <div 
             className="absolute left-1/2 transform -translate-x-1/2 w-1.5 z-10 hidden md:block timeline-glow-line"
-            style={{ height: `${scrollProgress}%` }}
+            style={{ height: `${Math.min(scrollProgress, 95)}%` }}
           />
 
           <div className="space-y-32 relative z-10">
-            {events.map((event, index) => {
-              const eventProgress = (index / (events.length || 1)) * 100;
-              const isActive = scrollProgress >= eventProgress;
-
-              return (
-                <div 
-                  key={event.id} 
-                  className={cn(
-                    "flex flex-col md:flex-row items-center justify-between group",
-                    index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
-                  )}
-                >
-                  <div className={cn(
-                    "w-full md:w-[45%] reveal-on-scroll",
-                    index % 2 === 0 ? "reveal-left" : "reveal-right"
-                  )}>
-                    <EventCard 
-                      title={event.title}
-                      date={new Date(event.eventDate).toLocaleDateString()}
-                      message={event.message}
-                      imageUrl={event.imageUrl}
-                      icon={React.cloneElement(icons[index % icons.length] as React.ReactElement, { className: "w-6 h-6 text-primary-foreground" })}
-                    />
-                  </div>
-
-                  <div className={cn(
-                    "hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center justify-center w-14 h-14 rounded-full border-[3px] transition-all duration-500 z-20 bg-background shadow-sm",
-                    isActive ? "border-secondary scale-110 shadow-[0_0_15px_rgba(255,182,193,0.4)]" : "border-primary/40"
-                  )}> 
-                    <div className={cn(
-                      "w-5 h-5 rounded-full transition-colors duration-500",
-                      isActive ? "bg-secondary" : "bg-primary/20"
-                    )} />
-                  </div>
-
-                  <div className="w-full md:w-[45%] flex items-center justify-center p-8" />
+            {events.map((event, index) => (
+              <div 
+                key={event.id} 
+                className={cn(
+                  "flex flex-col md:flex-row items-center justify-between group",
+                  index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
+                )}
+              >
+                <div className={cn(
+                  "w-full md:w-[45%] reveal-on-scroll",
+                  index % 2 === 0 ? "reveal-left" : "reveal-right"
+                )}>
+                  <EventCard 
+                    title={event.title}
+                    date={new Date(event.eventDate).toLocaleDateString()}
+                    message={event.message}
+                    imageUrl={event.imageUrl}
+                    icon={React.cloneElement(icons[index % icons.length] as React.ReactElement, { className: "w-6 h-6 text-primary-foreground" })}
+                  />
                 </div>
-              );
-            })}
 
-            <div className="flex flex-col items-center justify-center pt-32 pb-[35vh] relative">
+                <div className={cn(
+                  "hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center justify-center w-14 h-14 rounded-full border-[3px] transition-all duration-500 z-20 bg-background shadow-sm",
+                  scrollProgress > (index / events.length) * 100 ? "border-secondary scale-110 shadow-[0_0_15px_rgba(255,182,193,0.4)]" : "border-primary/40"
+                )}> 
+                  <div className={cn(
+                    "w-5 h-5 rounded-full transition-colors duration-500",
+                    scrollProgress > (index / events.length) * 100 ? "bg-secondary" : "bg-primary/20"
+                  )} />
+                </div>
+
+                <div className="w-full md:w-[45%] flex items-center justify-center p-8" />
+              </div>
+            ))}
+
+            {/* Final Reveal Section */}
+            <div className="flex flex-col items-center justify-center pt-32 pb-10 relative min-h-[85vh]">
               <div className={cn(
                 "relative transition-all duration-1000 transform w-full max-w-2xl flex flex-col items-center",
-                scrollProgress > 98 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20 pointer-events-none"
+                scrollProgress > 95 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20 pointer-events-none"
               )}>
-                <div className="absolute -top-32 left-1/2 transform -translate-x-1/2 w-1.5 h-32 timeline-glow-line z-10 hidden md:block" />
+                {/* Connecting Tail Line */}
+                <div 
+                  className="absolute -top-32 left-1/2 transform -translate-x-1/2 w-1.5 timeline-glow-line z-10 hidden md:block" 
+                  style={{ height: scrollProgress > 95 ? '128px' : '0' }}
+                />
 
                 <div className="z-30 mb-8 bg-white p-4 rounded-full shadow-2xl border-4 border-secondary animate-float">
                   <Heart className="w-10 h-10 text-secondary fill-secondary" />

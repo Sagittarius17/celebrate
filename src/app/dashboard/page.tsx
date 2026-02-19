@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase, useAuth } from '@/firebase';
-import { collection, doc } from 'firebase/firestore';
+import { collection, doc, query, where } from 'firebase/firestore';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,7 +44,8 @@ export default function Dashboard() {
 
   const celebrationPagesQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
-    return collection(db, 'users', user.uid, 'celebrationPages');
+    // Query top-level collection filtered by ownerId
+    return query(collection(db, 'celebrationPages'), where('ownerId', '==', user.uid));
   }, [db, user]);
 
   const { data: surprises, isLoading } = useCollection(celebrationPagesQuery);
@@ -58,12 +59,11 @@ export default function Dashboard() {
       id: pageId,
       creatorName: user.displayName || 'Creator',
       ownerId: user.uid,
-      viewerUids: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
-    addDocumentNonBlocking(collection(db, 'users', user.uid, 'celebrationPages'), payload);
+    addDocumentNonBlocking(collection(db, 'celebrationPages'), payload);
     setIsCreateOpen(false);
     setNewSurprise({ recipientName: '', title: '', occasion: 'Birthday', accessCode: '' });
   };

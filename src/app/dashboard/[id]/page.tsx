@@ -31,7 +31,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
 
   const pageRef = useMemoFirebase(() => {
     if (!db || !user) return null;
-    return doc(db, 'users', user.uid, 'celebrationPages', id);
+    return doc(db, 'celebrationPages', id);
   }, [db, user, id]);
 
   const { data: page, isLoading: isPageLoading } = useDoc(pageRef);
@@ -39,7 +39,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
   const eventsQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
     return query(
-      collection(db, 'users', user.uid, 'celebrationPages', id, 'birthdayEvents'),
+      collection(db, 'celebrationPages', id, 'birthdayEvents'),
       orderBy('eventDate', 'asc')
     );
   }, [db, user, id]);
@@ -56,18 +56,17 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
       celebrationPageId: id,
       order: (events?.length || 0) + 1,
       ownerId: user.uid,
-      viewerUids: page.viewerUids || [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
-    addDocumentNonBlocking(collection(db, 'users', user.uid, 'celebrationPages', id, 'birthdayEvents'), payload);
+    addDocumentNonBlocking(collection(db, 'celebrationPages', id, 'birthdayEvents'), payload);
     setNewEvent({ title: '', message: '', eventDate: '', imageUrl: PlaceHolderImages[0].imageUrl });
   };
 
   const handleDeleteEvent = (eventId: string) => {
     if (!user || !db) return;
-    const eventRef = doc(db, 'users', user.uid, 'celebrationPages', id, 'birthdayEvents', eventId);
+    const eventRef = doc(db, 'celebrationPages', id, 'birthdayEvents', eventId);
     deleteDocumentNonBlocking(eventRef);
   };
 
@@ -81,11 +80,12 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
       title: "Link Copied!",
       description: "You can now share this surprise link with your recipient.",
     });
-    setTimeout(() => setIsCopied(null), 2000);
+    setTimeout(() => setIsCopied(false), 2000);
   };
 
   if (isPageLoading) return <div className="p-20 text-center">Loading editor...</div>;
   if (!page) return <div className="p-20 text-center">Surprise not found.</div>;
+  if (page.ownerId !== user?.uid) return <div className="p-20 text-center text-destructive">Unauthorized access.</div>;
 
   return (
     <div className="min-h-screen bg-muted/30 p-8">

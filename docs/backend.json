@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "CelebrationPage": {
@@ -30,6 +31,10 @@
           "type": "string",
           "description": "A secret code required to securely access this particular page."
         },
+        "ownerId": {
+          "type": "string",
+          "description": "UID of the creator."
+        },
         "createdAt": {
           "type": "string",
           "description": "Timestamp indicating when the celebration page was initially created.",
@@ -48,6 +53,7 @@
         "creatorName",
         "occasion",
         "accessCode",
+        "ownerId",
         "createdAt"
       ]
     },
@@ -90,11 +96,6 @@
           "type": "string",
           "description": "UID of the creator."
         },
-        "viewerUids": {
-          "type": "array",
-          "items": { "type": "string" },
-          "description": "Array of UIDs authorized to view."
-        },
         "createdAt": {
           "type": "string",
           "description": "Timestamp indicating when this event record was created.",
@@ -113,6 +114,7 @@
         "title",
         "message",
         "order",
+        "ownerId",
         "createdAt"
       ]
     }
@@ -124,11 +126,11 @@
     ]
   },
   "firestore": {
-    "/users/{userId}/celebrationPages/{celebrationPageId}": {
+    "/celebrationPages/{celebrationPageId}": {
       "schema": { "$ref": "#/backend/entities/CelebrationPage" },
-      "description": "User-owned celebration pages."
+      "description": "Publicly accessible celebration pages (via code)."
     },
-    "/users/{userId}/celebrationPages/{celebrationPageId}/birthdayEvents/{birthdayEventId}": {
+    "/celebrationPages/{celebrationPageId}/birthdayEvents/{birthdayEventId}": {
       "schema": { "$ref": "#/backend/entities/BirthdayEvent" },
       "description": "Events within a celebration page."
     }

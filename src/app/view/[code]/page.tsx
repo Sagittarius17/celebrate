@@ -3,7 +3,7 @@
 
 import React, { use, useEffect, useState } from 'react';
 import { useFirestore } from '@/firebase';
-import { collectionGroup, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { Header } from '@/components/birthday/Header';
 import { EventCard } from '@/components/birthday/EventCard';
 import { ThreeDecoration } from '@/components/birthday/ThreeDecoration';
@@ -29,9 +29,9 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       try {
         const decodedCode = decodeURIComponent(code);
         
-        // Find the page by its access code using a collection group query
+        // Query top-level collection (automatically indexed for single field equality)
         const pagesQuery = query(
-          collectionGroup(db, 'celebrationPages'),
+          collection(db, 'celebrationPages'),
           where('accessCode', '==', decodedCode)
         );
          
@@ -47,12 +47,9 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         const pageData = { ...pageDoc.data(), id: pageDoc.id };
         setPage(pageData);
 
-        // Load the events for this page. 
-        // We remove orderBy from the query to avoid requiring a composite index on the collection group.
-        // We will sort them manually in memory.
+        // Load the events for this specific page
         const eventsQuery = query(
-          collectionGroup(db, 'birthdayEvents'),
-          where('celebrationPageId', '==', pageData.id)
+          collection(db, 'celebrationPages', pageData.id, 'birthdayEvents')
         );
         const eventsSnap = await getDocs(eventsQuery);
         
@@ -67,10 +64,8 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
 
         setEvents(fetchedEvents);
       } catch (err: any) {
-        // Detailed error logging for developers
         console.error("Firestore Error:", err);
 
-        // Emit contextual error for debugging if it's a permission issue
         if (err.code === 'permission-denied' || err.message?.toLowerCase().includes('permissions')) {
           const permissionError = new FirestorePermissionError({
             path: 'celebrationPages',
@@ -79,13 +74,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
           errorEmitter.emit('permission-error', permissionError);
         }
         
-        const errorMessage = err.message || "Something went wrong while loading your surprise.";
-        
-        if (errorMessage.includes('index')) {
-          setError("This surprise is still being prepared by the database (indexing). This usually takes 2-5 minutes after the first event is added. Please refresh in a moment.");
-        } else {
-          setError("Something went wrong while loading your surprise. Please try again later.");
-        }
+        setError("Something went wrong while loading your surprise. Please try again later.");
       } finally {
         setIsLoading(false);
       }

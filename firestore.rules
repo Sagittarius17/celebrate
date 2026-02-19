@@ -3,12 +3,6 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    /**
-     * CORE PHILOSOPHY:
-     * This ruleset supports a "Secret Code" access model. 
-      * Recipients can read celebration data across the database if they know the specific access code.
-     */
-
     function isSignedIn() {
       return request.auth != null;
     }
@@ -17,25 +11,29 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-     /** 
-     * @description Collection Group rules to allow recipients to find surprises by code.
-     * These rules are essential for collectionGroup queries used in the 'view' pages.
-     */
-    match /{path=**}/celebrationPages/{celebrationPageId} {
-      allow read: if  true; 
-    }
-
-    match /{path=**}/birthdayEvents/{birthdayEventId} {
+    // Celebration Pages
+    match /celebrationPages/{pageId} {
+      // Allow public read for surprise lookup via accessCode
       allow read: if true;
+      
+      // Creators can manage their own pages
+      allow create: if isSignedIn() && request.resource.data.ownerId == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+
+      // Events sub-collection
+      match /birthdayEvents/{eventId} {
+        // Allow public read for viewing
+        allow read: if true;
+        
+        // Only owners can modify events
+        allow create: if isSignedIn() && request.resource.data.ownerId == request.auth.uid;
+        allow update, delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      }
     }
 
-    /** 
-     * @description Path-based rules for creators.
-     * Owners have full access to their own user document and all sub- resources.
-     */
+    // Support legacy user paths if any exist, though refactored to top-level
     match /users/{userId} {
       allow read, write: if isOwner(userId);
-
       match /{allPaths=**} {
         allow read, write: if isOwner(userId);
       }

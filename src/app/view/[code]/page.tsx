@@ -1,9 +1,9 @@
 
 "use client";
 
-import React,  { use, useEffect, useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import { useFirestore } from '@/firebase';
-import { collectionGroup, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { collectionGroup, query, where, getDocs } from 'firebase/firestore';
 import { Header } from '@/components/birthday/Header';
 import { EventCard } from '@/components/birthday/EventCard';
 import { ThreeDecoration } from '@/components/birthday/ThreeDecoration';
@@ -13,12 +13,12 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 export default function SurpriseView({ params }: { params: Promise<{ code: string }> }) {
-  const { code } =  use(params);
+  const { code } = use(params);
   const db = useFirestore();
   const [page, setPage] = useState<any>(null);
   const [events, setEvents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError ] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadSurprise = async () => {
@@ -28,9 +28,8 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
 
       try {
         const decodedCode = decodeURIComponent(code);
-         
+        
         // Find the page by its access code using a collection group query
-        // This query requires a Firestore index.
         const pagesQuery = query(
           collectionGroup(db, 'celebrationPages'),
           where('accessCode', '==', decodedCode)
@@ -48,17 +47,29 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         const pageData = { ...pageDoc.data(), id: pageDoc.id };
         setPage(pageData);
 
-        // Load the events for this page using collectionGroup to bypass potential hierarchy restrictions
-        // and ensure we can read them as a recipient. 
+        // Load the events for this page. 
+        // We remove orderBy from the query to avoid requiring a composite index on the collection group.
+        // We will sort them manually in memory.
         const eventsQuery = query(
           collectionGroup(db, 'birthdayEvents'),
-          where('celebrationPageId', '==', pageData.id),
-          orderBy('eventDate', 'asc')
+          where('celebrationPageId', '==', pageData.id)
         );
         const eventsSnap = await getDocs(eventsQuery);
-         
-        setEvents(eventsSnap.docs.map(doc => ({ ...doc.data(), id: doc.id })));
+        
+        const fetchedEvents = eventsSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+        
+        // Sort events by date client-side
+        fetchedEvents.sort((a, b) => {
+          const dateA = new Date(a.eventDate).getTime();
+          const dateB = new Date(b.eventDate).getTime();
+          return dateA - dateB;
+        });
+
+        setEvents(fetchedEvents);
       } catch (err: any) {
+        // Detailed error logging for developers
+        console.error("Firestore Error:", err);
+
         // Emit contextual error for debugging if it's a permission issue
         if (err.code === 'permission-denied' || err.message?.toLowerCase().includes('permissions')) {
           const permissionError = new FirestorePermissionError({
@@ -66,11 +77,15 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
             operation: 'list',
           } satisfies SecurityRuleContext);
           errorEmitter.emit('permission-error', permissionError);
-         }
+        }
         
-        // Detailed error for non-permission issues (e.g., missing index)
         const errorMessage = err.message || "Something went wrong while loading your surprise.";
-        setError(errorMessage.includes('index') ? "This surprise is still being prepared (indexing). Please try again in a few minutes." : "Something went wrong while loading your surprise.");
+        
+        if (errorMessage.includes('index')) {
+          setError("This surprise is still being prepared by the database (indexing). This usually takes 2-5 minutes after the first event is added. Please refresh in a moment.");
+        } else {
+          setError("Something went wrong while loading your surprise. Please try again later.");
+        }
       } finally {
         setIsLoading(false);
       }
@@ -92,15 +107,21 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="max-w-md w-full">
-          <Alert  variant="destructive" className="rounded-3xl p-8 border-none shadow-2xl bg-white">
+          <Alert variant="destructive" className="rounded-3xl p-8 border-none shadow-2xl bg-white">
             <AlertTitle className="text-xl font-bold mb-2 flex items-center gap-2 text-destructive">
-              <Gift className="h-6 w-6"  /> Oops!
+              <Gift className="h-6 w-6" /> Oops!
             </AlertTitle>
             <AlertDescription className="text-lg text-muted-foreground">
               {error}
               <div className="mt-8">
+                <button 
+                  onClick={() => window.location.reload()}
+                  className="w-full bg-primary text-primary-foreground py-4 rounded-full font-bold shadow-lg active:scale-95 transition-all mb-3"
+                >
+                  Refresh Page
+                </button>
                 <a href="/view">
-                  <button className="w-full bg-primary text-primary-foreground  py-4 rounded-full font-bold shadow-lg active:scale-95 transition-all">
+                  <button className="w-full border-2 border-primary text-primary py-4 rounded-full font-bold active:scale-95 transition-all">
                     Try Another Code
                   </button>
                 </a>
@@ -112,7 +133,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
     );
   }
 
-  const  icons = [<Star />, <Camera />, <Gift />, <PartyPopper />, <Cake />, <Heart />, <Sparkles />];
+  const icons = [<Star />, <Camera />, <Gift />, <PartyPopper />, <Cake />, <Heart />, <Sparkles />];
 
   return (
     <main className="min-h-screen bg-background">
@@ -121,15 +142,15 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       <section className="py-20">
         <div className="text-center mb-16 px-4">
           <h2 className="font-headline text-5xl font-bold mb-4">{page?.title || 'Our Journey'}</h2>
-          <div className ="w-24 h-1 bg-secondary mx-auto rounded-full" />
+          <div className="w-24 h-1 bg-secondary mx-auto rounded-full" />
         </div>
         
         <div className="relative max-w-6xl mx-auto px-4 py-20 overflow-hidden">
-          <div className="absolute left-1/2 transform  -translate-x-1/2 w-1 timeline-line h-full z-0 opacity-50 hidden md:block" />
+          <div className="absolute left-1/2 transform -translate-x-1/2 w-1 timeline-line h-full z-0 opacity-50 hidden md:block" />
 
           <div className="space-y-32 relative z-10">
             {events.map((event, index) => (
-              < div 
+              <div 
                 key={event.id} 
                 className={`flex flex-col md:flex-row items-center justify-between group reveal-on-scroll visible ${
                   index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse '
@@ -167,7 +188,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       <footer className="py-20 text-center bg-primary/5">
         <div className="max-w-2xl mx-auto px-4 space-y-6">
           <h3 className="font-headline text-3xl font-bold">To Many More Years of Joy, {page?.recipientName}!</h3>
-          <p className ="font-body text-muted-foreground italic">
+          <p className="font-body text-muted-foreground italic">
             "Every moment together is a treasure."
           </p>
         </div>

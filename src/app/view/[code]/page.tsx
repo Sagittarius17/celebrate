@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { use, useEffect, useState, useRef } from 'react';
@@ -53,7 +52,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
     window.addEventListener('scroll', handleScroll);
     handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [events.length]); // Re-run if events length changes
+  }, [events.length]);
 
   useEffect(() => {
     const loadSurprise = async () => {
@@ -153,8 +152,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
   const icons = [<Star />, <Camera />, <Gift />, <PartyPopper />, <Cake />, <Heart />, <Sparkles />];
   const finalQuoteToDisplay = page?.finalQuote || DEFAULT_QUOTES[page?.occasion] || DEFAULT_QUOTES["Other"];
   
-  // Trigger finished state slightly before reaching the absolute bottom to ensure it shows
-  const isFinished = scrollProgress > 95;
+  const isFinished = scrollProgress >= 99.5;
 
   return (
     <main className="min-h-screen bg-background pb-40">
@@ -166,7 +164,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
           <div className="w-24 h-1 bg-secondary mx-auto rounded-full" />
         </div>
         
-        <div ref={timelineRef} className="relative max-w-6xl mx-auto px-4 pt-20 pb-40">
+        <div ref={timelineRef} className="relative max-w-6xl mx-auto px-4 pt-20 pb-4">
           {/* Base Timeline Line */}
           <div className="absolute left-1/2 transform -translate-x-1/2 w-1 timeline-line h-full z-0 opacity-20 hidden md:block" />
           
@@ -176,9 +174,8 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
             style={{ height: `${scrollProgress}%` }}
           />
 
-          <div className="space-y-32 relative z-10">
+          <div className="space-y-32 relative z-10 pb-20">
             {events.map((event, index) => {
-              // Approximate position of this specific event
               const eventProgress = (index / (events.length || 1)) * 100;
               const isActive = scrollProgress >= eventProgress;
 
@@ -211,49 +208,46 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
                     )} />
                   </div>
 
-                  <div className="w-full md:w-[45%] flex items-center justify-center p-8">
-                    {/* Empty side spacer */}
-                  </div>
+                  <div className="w-full md:w-[45%] flex items-center justify-center p-8" />
                 </div>
               );
             })}
           </div>
+
+          {/* Final Tail and Heart Point */}
+          <div className="relative w-full flex justify-center pb-20 mt-10">
+            <div className={cn(
+              "hidden md:flex items-center justify-center w-20 h-20 rounded-full bg-secondary shadow-[0_0_30px_rgba(255,182,193,0.8)] z-30 transition-all duration-1000 transform",
+              isFinished ? "scale-100 opacity-100" : "scale-0 opacity-0"
+            )}>
+              <Heart className="w-10 h-10 text-white animate-pulse" />
+            </div>
+          </div>
         </div>
 
-        {/* Final Quote Section - Placed outside of measured timeline container for reliability */}
-        <div className="max-w-6xl mx-auto px-4 -mt-20">
+        {/* Final Quote Section - Appears below the Heart */}
+        <div className="max-w-6xl mx-auto px-4 mt-8">
           <div className={cn(
             "flex flex-col items-center justify-center transition-all duration-1000 transform",
             isFinished ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20 pointer-events-none"
           )}>
-            {/* The Quote Box */}
-            <div className="relative w-full flex justify-center">
-               {/* Final Timeline Point Connector */}
-              <div className={cn(
-                "hidden md:flex absolute left-1/2 -top-20 transform -translate-x-1/2 items-center justify-center w-20 h-20 rounded-full bg-secondary shadow-[0_0_30px_rgba(255,182,193,0.8)] z-30 transition-all duration-1000 delay-300",
-                isFinished ? "scale-100" : "scale-0"
-              )}>
-                <Heart className="w-10 h-10 text-white animate-pulse" />
-              </div>
-
-              <Card className="max-w-2xl w-full mx-auto border-none shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[3rem] overflow-hidden bg-white/95 backdrop-blur-md">
-                <div className="h-2 w-full bg-gradient-to-r from-primary via-secondary to-primary" />
-                <CardContent className="p-12 text-center space-y-6">
-                  <Quote className="w-12 h-12 text-secondary/30 mx-auto mb-4" />
-                  <h3 className="font-headline text-3xl md:text-4xl font-bold text-foreground">
-                    To Many More Years of Joy, {page?.recipientName}!
-                  </h3>
-                  <p className="font-body text-xl md:text-2xl text-muted-foreground italic leading-relaxed">
-                    "{finalQuoteToDisplay}"
-                  </p>
-                  <div className="flex items-center justify-center gap-4 pt-4">
-                    <Sparkles className="text-secondary w-6 h-6" />
-                    <div className="h-px w-20 bg-secondary/20" />
-                    <Sparkles className="text-secondary w-6 h-6" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <Card className="max-w-2xl w-full mx-auto border-none shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[3rem] overflow-hidden bg-white/95 backdrop-blur-md">
+              <div className="h-2 w-full bg-gradient-to-r from-primary via-secondary to-primary" />
+              <CardContent className="p-12 text-center space-y-6">
+                <Quote className="w-12 h-12 text-secondary/30 mx-auto mb-4" />
+                <h3 className="font-headline text-3xl md:text-4xl font-bold text-foreground">
+                  To Many More Years of Joy, {page?.recipientName}!
+                </h3>
+                <p className="font-body text-xl md:text-2xl text-muted-foreground italic leading-relaxed">
+                  "{finalQuoteToDisplay}"
+                </p>
+                <div className="flex items-center justify-center gap-4 pt-4">
+                  <Sparkles className="text-secondary w-6 h-6" />
+                  <div className="h-px w-20 bg-secondary/20" />
+                  <Sparkles className="text-secondary w-6 h-6" />
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>

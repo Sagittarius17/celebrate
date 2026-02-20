@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, use, useRef } from 'react';
+import React, { useState, use, useRef, useEffect } from 'react';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc, query, orderBy } from 'firebase/firestore';
 import { addDocumentNonBlocking, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -43,12 +43,14 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
   const db = useFirestore();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
   
   const [isCopied, setIsCopied] = useState(false);
   const [isSavingQuote, setIsSavingQuote] = useState(false);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [customQuote, setCustomQuote] = useState('');
   const [showLivePreview, setShowLivePreview] = useState(false);
+  const [previewScale, setPreviewScale] = useState(1);
 
   const pageRef = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -57,11 +59,28 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
 
   const { data: page, isLoading: isPageLoading } = useDoc(pageRef);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (page?.finalQuote) {
       setCustomQuote(page.finalQuote);
     }
   }, [page]);
+
+  // Handle scaling for the miniature preview
+  useEffect(() => {
+    if (showLivePreview && previewContainerRef.current) {
+      const updateScale = () => {
+        if (!previewContainerRef.current) return;
+        const containerWidth = previewContainerRef.current.offsetWidth;
+        // Target desktop width is 1200px
+        const newScale = containerWidth / 1200;
+        setPreviewScale(newScale);
+      };
+      
+      updateScale();
+      window.addEventListener('resize', updateScale);
+      return () => window.removeEventListener('resize', updateScale);
+    }
+  }, [showLivePreview]);
 
   const eventsQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -194,7 +213,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
               className="rounded-full"
               onClick={() => setShowLivePreview(!showLivePreview)}
             >
-              {showLivePreview ? <><EyeOff className="h-4 w-4 mr-2" /> Hide Preview</> : <><Eye className="h-4 w-4 mr-2" /> Live Preview</>}
+              {showLivePreview ? <><EyeOff className="h-4 w-4 mr-2" /> Show List</> : <><Eye className="h-4 w-4 mr-2" /> Live Preview</>}
             </Button>
           </div>
         </div>
@@ -359,34 +378,34 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
           <div className="lg:col-span-2 space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold flex items-center gap-2">
-                <Calendar className="h-6 w-6 text-primary" /> {showLivePreview ? "Live Preview" : "Memory Editor"}
+                <Calendar className="h-6 w-6 text-primary" /> {showLivePreview ? "Miniature Preview (Desktop)" : "Memory Editor"}
               </h2>
-              
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="rounded-full"
-                onClick={() => setShowLivePreview(!showLivePreview)}
-              >
-                {showLivePreview ? <><EyeOff className="h-3 w-3 mr-2" /> Exit Preview</> : <><Eye className="h-3 w-3 mr-2" /> View Live</>}
-              </Button>
             </div>
             
             {showLivePreview ? (
-              <div className="relative w-full h-[70vh] bg-white rounded-[2rem] overflow-hidden shadow-2xl border-4 border-primary/20">
-                <iframe 
-                  src={livePreviewUrl} 
-                  className="w-full h-full border-none"
-                  title="Live Preview"
-                />
-                <Button 
-                  size="icon" 
-                  variant="secondary" 
-                  className="absolute top-4 right-4 rounded-full shadow-lg"
-                  onClick={() => setShowLivePreview(false)}
+              <div 
+                ref={previewContainerRef}
+                className="w-full h-[800px] bg-white rounded-[2rem] overflow-hidden shadow-2xl border-4 border-primary/20 relative"
+              >
+                <div 
+                  className="absolute top-0 left-0 w-[1200px] h-[1800px] origin-top-left"
+                  style={{ transform: `scale(${previewScale})` }}
                 >
-                  <X className="h-4 w-4" />
-                </Button>
+                  <iframe 
+                    src={livePreviewUrl} 
+                    className="w-full h-full border-none"
+                    title="Live Preview"
+                  />
+                </div>
+                <div className="absolute bottom-6 right-6 z-50">
+                   <Button 
+                    variant="secondary" 
+                    className="rounded-full shadow-lg"
+                    onClick={() => setShowLivePreview(false)}
+                  >
+                    <X className="h-4 w-4 mr-2" /> Exit Preview
+                  </Button>
+                </div>
               </div>
             ) : isEventsLoading ? (
               <div className="text-center py-10">Loading events...</div>
@@ -407,9 +426,9 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
                         <div className="flex justify-between items-start">
                           <div className="space-y-1 w-full mr-4">
                             <Label className="text-[10px] font-bold text-primary uppercase tracking-widest">Date of Memory</Label>
-                            <Input 
+                            <input 
                               type="date" 
-                              className="border-none bg-transparent p-0 h-auto font-bold text-primary text-sm focus-visible:ring-0 shadow-none cursor-pointer"
+                              className="w-full border-none bg-transparent p-0 h-auto font-bold text-primary text-sm focus-visible:ring-0 shadow-none cursor-pointer outline-none"
                               value={event.eventDate}
                               onChange={(e) => handleUpdateEvent(event.id, { eventDate: e.target.value })}
                             />

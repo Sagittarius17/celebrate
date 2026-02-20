@@ -2,11 +2,11 @@
 "use client";
 
 import React, { use, useEffect, useState, useRef } from 'react';
-import { useFirestore } from '@/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, where, getDocs, doc } from 'firebase/firestore';
 import { Header } from '@/components/birthday/Header';
 import { EventCard } from '@/components/birthday/EventCard';
-import { Star, Camera, Gift, PartyPopper, Cake, Loader2, Heart, Sparkles, Quote, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Star, Camera, Gift, PartyPopper, Cake, Loader2, Heart, Sparkles, Quote } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
@@ -36,12 +36,57 @@ const DEFAULT_QUOTES: Record<string, string> = {
 export default function SurpriseView({ params }: { params: Promise<{ code: string }> }) {
   const { code } = use(params);
   const db = useFirestore();
-  const [page, setPage] = useState<any>(null);
-  const [events, setEvents] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [pageId, setPageId] = useState<string | null>(null);
+  const [isFindingPage, setIsFindingPage] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const timelineRef = useRef<HTMLDivElement>(null);
+
+  // 1. Initial lookup to find the Page ID from the Access Code
+  useEffect(() => {
+    const findPage = async () => {
+      if (!db) return;
+      try {
+        const decodedCode = decodeURIComponent(code);
+        const q = query(collection(db, 'celebrationPages'), where('accessCode', '==', decodedCode));
+        const snap = await getDocs(q);
+        if (snap.empty) {
+          setError("Invalid secret code. Please check with the person who created your surprise!");
+        } else {
+          setPageId(snap.docs[0].id);
+        }
+      } catch (err) {
+        setError("Something went wrong while loading your surprise.");
+      } finally {
+        setIsFindingPage(false);
+      }
+    };
+    findPage();
+  }, [db, code]);
+
+  // 2. Real-time hooks for the page and events
+  const pageDocRef = useMemoFirebase(() => {
+    if (!db || !pageId) return null;
+    return doc(db, 'celebrationPages', pageId);
+  }, [db, pageId]);
+
+  const { data: page, isLoading: isPageLoading } = useDoc(pageDocRef);
+
+  const eventsColQuery = useMemoFirebase(() => {
+    if (!db || !pageId) return null;
+    return collection(db, 'celebrationPages', pageId, 'birthdayEvents');
+  }, [db, pageId]);
+
+  const { data: rawEvents, isLoading: isEventsLoading } = useCollection(eventsColQuery);
+
+  const events = React.useMemo(() => {
+    if (!rawEvents) return [];
+    return [...rawEvents].sort((a, b) => {
+      const dateA = new Date(a.eventDate).getTime();
+      const dateB = new Date(b.eventDate).getTime();
+      return dateA - dateB;
+    });
+  }, [rawEvents]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -82,63 +127,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
     }
   }, [events, page?.layout]);
 
-  useEffect(() => {
-    const loadSurprise = async () => {
-      if (!db) return;
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const decodedCode = decodeURIComponent(code);
-        
-        const pagesQuery = query(
-          collection(db, 'celebrationPages'),
-          where('accessCode', '==', decodedCode)
-        );
-         
-        const pageSnap = await getDocs(pagesQuery);
-        
-        if (pageSnap.empty) {
-          setError("Invalid secret code. Please check with the person who created your surprise!");
-          setIsLoading(false);
-          return;
-        }
-
-        const pageDoc = pageSnap.docs[0];
-        const pageData = { ...pageDoc.data(), id: pageDoc.id };
-        setPage(pageData);
-
-        const eventsQuery = collection(db, 'celebrationPages', pageData.id, 'birthdayEvents');
-        const eventsSnap = await getDocs(eventsQuery);
-        
-        const fetchedEvents = eventsSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-        
-        fetchedEvents.sort((a, b) => {
-          const dateA = new Date(a.eventDate).getTime();
-          const dateB = new Date(b.eventDate).getTime();
-          return dateA - dateB;
-        });
-
-        setEvents(fetchedEvents);
-      } catch (err: any) {
-        if (err.code === 'permission-denied' || err.message?.toLowerCase().includes('permissions')) {
-          const permissionError = new FirestorePermissionError({
-            path: 'celebrationPages',
-            operation: 'list',
-          } satisfies SecurityRuleContext);
-          errorEmitter.emit('permission-error', permissionError);
-        }
-        
-        setError("Something went wrong while loading your surprise. Please try again later.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadSurprise();
-  }, [db, code]);
-
-  if (isLoading) {
+  if (isFindingPage || isPageLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center space-y-4 px-4">
         <Loader2 className="h-10 w-10 sm:h-12 sm:w-12 animate-spin text-primary" />
@@ -147,7 +136,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
     );
   }
 
-  if (error) {
+  if (error || !page) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="max-w-md w-full">
@@ -156,7 +145,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
               <Gift className="h-6 w-6" /> Oops!
             </AlertTitle>
             <AlertDescription className="text-base sm:text-lg text-muted-foreground">
-              {error}
+              {error || "Surprise not found."}
               <div className="mt-8 space-y-3">
                 <button 
                   onClick={() => window.location.reload()}
@@ -235,7 +224,6 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       );
     }
 
-    // Default: Timeline
     return (
       <div ref={timelineRef} className="relative max-w-6xl mx-auto px-4 pt-10 sm:pt-20">
         <div className="absolute left-1/2 transform -translate-x-1/2 w-1 timeline-line h-[calc(100%-300px)] z-0 opacity-20" />
@@ -297,7 +285,6 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         
         {renderMemories()}
 
-        {/* Final Reveal Section */}
         <div className="flex flex-col items-center justify-center pt-20 sm:pt-32 pb-20 relative min-h-[85vh]">
           <div className={cn(
             "relative transition-all duration-1000 transform w-full max-w-2xl flex flex-col items-center px-4",

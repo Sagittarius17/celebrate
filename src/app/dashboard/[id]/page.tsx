@@ -6,6 +6,7 @@ import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@
 import { collection, doc, query, orderBy } from 'firebase/firestore';
 import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Copy, Check, Eye, EyeOff, Settings2, Key, Calendar, Sun, Moon, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
@@ -184,9 +185,16 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
 
           <div className="lg:col-span-2">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold flex items-center gap-2">
-                <Calendar className="h-6 w-6 text-primary" /> {showLivePreview ? "Miniature Preview" : "Memory Editor"}
-              </h2>
+              <div className="flex items-center gap-3">
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  <Calendar className="h-6 w-6 text-primary" /> {showLivePreview ? "Miniature Preview" : "Memory Editor"}
+                </h2>
+                {!isEventsLoading && events && (
+                  <Badge variant="secondary" className="rounded-full px-3 py-1 font-bold bg-primary/20 text-primary-foreground border-none">
+                    {events.length} {events.length === 1 ? 'Card' : 'Cards'}
+                  </Badge>
+                )}
+              </div>
               {!showLivePreview && (
                 <Button 
                   onClick={handleAddEmptyCard} 

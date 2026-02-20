@@ -3,7 +3,7 @@
 
 import React, { use, useEffect, useState, useRef } from 'react';
 import { useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where, getDocs, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { Header } from '@/components/birthday/Header';
 import { TimelineLayout } from '@/components/birthday/TimelineLayout';
 import { GridLayout } from '@/components/birthday/GridLayout';
@@ -40,9 +40,26 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       try {
         const decodedSlug = decodeURIComponent(slug);
         const parts = decodedSlug.split('-');
-        const accessCode = parts[parts.length - 1];
+        
+        // Use ID-CODE format: ID is the first part, CODE is the last part
+        const pageIdFromUrl = parts[0];
+        const accessCodeFromUrl = parts[parts.length - 1];
 
-        const q = query(collection(db, 'celebrationPages'), where('accessCode', 'in', [decodedSlug, accessCode]));
+        // 1. Direct fetch by ID (Efficient)
+        const docRef = doc(db, 'celebrationPages', pageIdFromUrl);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data.accessCode === accessCodeFromUrl) {
+            setPageId(pageIdFromUrl);
+            setIsFindingPage(false);
+            return;
+          }
+        }
+
+        // 2. Fallback search (For legacy links or direct code entry)
+        const q = query(collection(db, 'celebrationPages'), where('accessCode', '==', accessCodeFromUrl));
         const snap = await getDocs(q);
         
         if (snap.empty) {
@@ -93,22 +110,18 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       const heartRect = heartTrigger.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
       
-      // Use a higher trigger point (e.g. 70% of viewport) to make the connection more deliberate
       const triggerPoint = viewportHeight * 0.7; 
       
       const journeyTop = journeyRect.top;
-      const heartTop = heartRect.top + 24; // Offset for the pt-24 on the heart container
+      const heartTop = heartRect.top + 24; 
       
-      // Total height of the journey from start to heart center
       const totalHeight = heartTop - journeyTop;
-      // Current distance relative to start
       const currentDistance = triggerPoint - journeyTop;
       
       const progress = (currentDistance / totalHeight) * 100;
       const clampedProgress = Math.min(Math.max(progress, 0), 100);
       
       setScrollProgress(prev => {
-        // Once connected (100%), it stays locked
         if (prev >= 100) return 100;
         return clampedProgress;
       });
@@ -176,7 +189,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
     <main className="min-h-screen bg-background overflow-x-hidden" style={globalStyle}>
       <Header title={page?.title} occasion={page?.occasion} />
        
-      <section ref={journeyRef} className="pt-12 pb-0 sm:pt-20 sm:pb-0 relative">
+      <section ref={journeyRef} className="pt-12 pb-0 sm:pt-20 relative">
         <div className="text-center mb-12 sm:mb-16 px-4">
           <h2 className="text-3xl sm:text-5xl font-bold mb-4" style={{ fontFamily: page?.font || 'inherit' }}>{page?.title || 'Our Journey'}</h2>
           <div className="w-16 sm:w-24 h-1 bg-secondary mx-auto rounded-full" />
@@ -185,11 +198,10 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         <div className="max-w-7xl mx-auto px-4">
           {layout === 'Timeline' ? (
             <div className="relative flex flex-col items-center">
-              {/* Unified spine terminates exactly at heart top */}
               <div 
                 className="absolute left-1/2 transform -translate-x-1/2 w-1.5 z-0 pointer-events-none" 
                 style={{ 
-                  height: 'calc(100% - 110px)', // Precise height to stop at the heart container content
+                  height: 'calc(100% - 110px)', 
                   top: '10px' 
                 }}
               >
@@ -204,7 +216,6 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
                 <TimelineLayout events={events} scrollProgress={scrollProgress} />
               </div>
 
-              {/* Heart Beat Moment - Destination for the spine */}
               <div ref={endTriggerRef} className="flex flex-col items-center pt-24 pb-8 relative z-20">
                 <div className={cn(
                   "transition-all duration-1000 transform relative z-20",
@@ -223,7 +234,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
               </div>
             </div>
           ) : (
-            <div className="pb-20">
+            <div>
               {layout === 'Carousel' ? (
                 <CarouselLayout events={events} />
               ) : (

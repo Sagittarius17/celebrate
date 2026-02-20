@@ -39,16 +39,6 @@ const OCCASIONS = [
   "Other"
 ];
 
-function slugify(text: string) {
-  return text
-    .toString()
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/[^\w-]+/g, '')
-    .replace(/--+/g, '-');
-}
-
 export default function Dashboard() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
@@ -134,13 +124,12 @@ export default function Dashboard() {
 
   const copyShareLink = (surprise: any) => {
     const baseUrl = window.location.origin;
-    const nameSlug = slugify(surprise.recipientName);
-    const shareUrl = `${baseUrl}/view/${encodeURIComponent(`${nameSlug}-${surprise.accessCode}`)}`;
+    const shareUrl = `${baseUrl}/view/${surprise.id}-${surprise.accessCode}`;
     navigator.clipboard.writeText(shareUrl);
     setCopiedId(surprise.id);
     toast({
       title: "Link Copied!",
-      description: `Share this personalized link for ${surprise.recipientName}.`,
+      description: `Share this unique link for ${surprise.recipientName}.`,
     });
     setTimeout(() => setCopiedId(null), 2000);
   };

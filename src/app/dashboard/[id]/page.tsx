@@ -15,16 +15,6 @@ import { MemoryEditorList } from '@/components/dashboard/MemoryEditorList';
 import { LivePreviewFrame } from '@/components/dashboard/LivePreviewFrame';
 import { useDashboardTheme } from '../layout';
 
-function slugify(text: string) {
-  return text
-    .toString()
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/[^\w-]+/g, '')
-    .replace(/--+/g, '-');
-}
-
 export default function SurpriseEditor({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { user } = useUser();
@@ -99,13 +89,12 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
   const copyShareLink = () => {
     if (!page) return;
     const baseUrl = window.location.origin;
-    const nameSlug = slugify(page.recipientName);
-    const shareUrl = `${baseUrl}/view/${encodeURIComponent(`${nameSlug}-${page.accessCode}`)}`;
+    const shareUrl = `${baseUrl}/view/${page.id}-${page.accessCode}`;
     navigator.clipboard.writeText(shareUrl);
     setIsCopied(true);
     toast({
       title: "Link Copied!",
-      description: `Share this personalized link for ${page.recipientName}.`,
+      description: `Share this unique link for ${page.recipientName}.`,
     });
     setTimeout(() => setIsCopied(false), 2000);
   };
@@ -114,8 +103,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
   if (!page) return <div className="p-20 text-center">Surprise not found.</div>;
   if (page.ownerId !== user?.uid) return <div className="p-20 text-center text-destructive">Unauthorized access.</div>;
 
-  const nameSlug = slugify(page.recipientName);
-  const livePreviewUrl = `/view/${encodeURIComponent(`${nameSlug}-${page.accessCode}`)}`;
+  const livePreviewUrl = `/view/${page.id}-${page.accessCode}`;
 
   const headerButtonStyle = "rounded-full h-12 w-12 p-0 flex items-center justify-center border-none bg-secondary hover:bg-secondary/80 text-secondary-foreground transition-all shadow-sm";
 
@@ -189,7 +177,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
                   <Calendar className="h-6 w-6 text-primary" /> {showLivePreview ? "Miniature Preview" : "Memory Editor"}
                 </h2>
                 {!isEventsLoading && events && (
-                  <Badge variant="secondary" className="rounded-full px-4 py-1.5 font-bold bg-primary/20 text-primary border-none shadow-sm">
+                  <Badge variant="secondary" className="rounded-full px-4 py-1.5 font-bold bg-primary/20 text-primary-foreground border-none shadow-sm">
                     {events.length} {events.length === 1 ? 'Card' : 'Cards'}
                   </Badge>
                 )}

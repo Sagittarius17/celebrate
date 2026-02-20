@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState } from 'react';
@@ -11,23 +10,54 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Home() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
+  const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
-    initiateEmailSignUp(auth, email, password);
+    
+    setIsSubmitting(true);
+    initiateEmailSignUp(auth, email, password)
+      .catch((error: any) => {
+        setIsSubmitting(false);
+        if (error.code === 'auth/email-already-in-use') {
+          toast({
+            variant: "destructive",
+            title: "Account exists",
+            description: "This email is already registered. Please log in instead.",
+          });
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Sign up failed",
+            description: error.message || "An unexpected error occurred.",
+          });
+        }
+      });
   };
 
-  const handleSignIn = (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
-    initiateEmailSignIn(auth, email, password);
+    
+    setIsSubmitting(true);
+    initiateEmailSignIn(auth, email, password)
+      .catch((error: any) => {
+        setIsSubmitting(false);
+        toast({
+          variant: "destructive",
+          title: "Login failed",
+          description: "Invalid email or password. Please try again.",
+        });
+      });
   };
 
   // Only allow dashboard access if the user is signed in and NOT anonymous
@@ -78,7 +108,9 @@ export default function Home() {
                       <Label htmlFor="s-password">Password</Label>
                       <Input id="s-password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
                     </div>
-                    <Button type="submit" className="w-full rounded-full h-12 text-lg">Create Account</Button>
+                    <Button type="submit" className="w-full rounded-full h-12 text-lg" disabled={isSubmitting}>
+                      {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : "Create Account"}
+                    </Button>
                   </form>
                 </TabsContent>
                 <TabsContent value="login" className="space-y-4">
@@ -91,7 +123,9 @@ export default function Home() {
                       <Label htmlFor="l-password">Password</Label>
                       <Input id="l-password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
                     </div>
-                    <Button type="submit" className="w-full rounded-full h-12 text-lg">Sign In</Button>
+                    <Button type="submit" className="w-full rounded-full h-12 text-lg" disabled={isSubmitting}>
+                      {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : "Sign In"}
+                    </Button>
                   </form>
                 </TabsContent>
               </Tabs>

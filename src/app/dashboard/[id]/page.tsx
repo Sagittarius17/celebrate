@@ -396,7 +396,8 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
             {showLivePreview ? (
               <div 
                 ref={previewContainerRef}
-                className="w-full h-[600px] bg-white rounded-[2rem] overflow-hidden shadow-2xl border-4 border-primary/20 relative"
+                className="w-full bg-white rounded-[2rem] overflow-hidden shadow-2xl border-4 border-primary/20 relative"
+                style={{ height: `${800 * previewScale}px` }}
               >
                 <div 
                   className="absolute top-0 left-0 w-[1200px] h-[800px] origin-top-left"
@@ -409,15 +410,6 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
                     className="w-full h-full border-none"
                     title="Live Preview"
                   />
-                </div>
-                <div className="absolute bottom-6 right-6 z-50">
-                   <Button 
-                    variant="secondary" 
-                    className="rounded-full shadow-lg"
-                    onClick={() => setShowLivePreview(false)}
-                  >
-                    <X className="h-4 w-4 mr-2" /> Exit Preview
-                  </Button>
                 </div>
               </div>
             ) : isEventsLoading ? (

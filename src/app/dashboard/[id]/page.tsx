@@ -177,7 +177,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
                   <Calendar className="h-6 w-6 text-primary" /> {showLivePreview ? "Miniature Preview" : "Memory Editor"}
                 </h2>
                 {!isEventsLoading && events && (
-                  <Badge variant="secondary" className="rounded-full px-4 py-1.5 font-bold bg-primary/20 text-primary-foreground border-none shadow-sm">
+                  <Badge variant="secondary" className="rounded-full px-4 py-1.5 font-bold bg-primary text-primary-foreground border-none shadow-sm">
                     {events.length} {events.length === 1 ? 'Card' : 'Cards'}
                   </Badge>
                 )}

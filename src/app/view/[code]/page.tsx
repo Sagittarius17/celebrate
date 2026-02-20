@@ -297,7 +297,10 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
               />
             )}
 
-            <div className="z-30 mb-6 sm:mb-8 bg-white p-3 sm:p-4 rounded-full shadow-2xl border-4 border-secondary">
+            <div className={cn(
+              "z-30 mb-6 sm:mb-8 bg-white p-3 sm:p-4 rounded-full shadow-2xl border-4 border-secondary transition-all duration-700",
+              (layout !== 'Timeline' || scrollProgress > 95) && "animate-heart-pulse"
+            )}>
               <Heart className="w-8 h-8 sm:w-10 sm:h-10 text-secondary fill-secondary" />
             </div>
 

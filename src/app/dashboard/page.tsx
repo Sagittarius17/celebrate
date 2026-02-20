@@ -4,14 +4,14 @@
 import React, { useState } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase, useAuth } from '@/firebase';
 import { collection, doc, query, where } from 'firebase/firestore';
-import { addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { addDocumentNonBlocking, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, User, Key, ArrowRight, Gift, LogOut, Copy, Check, Type, Trash2 } from 'lucide-react';
+import { Plus, User, Key, ArrowRight, Gift, LogOut, Copy, Check, Type, Trash2, Edit2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -34,6 +34,7 @@ export default function Dashboard() {
   const router = useRouter();
   const { toast } = useToast();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [newSurprise, setNewSurprise] = useState({
     recipientName: '',
@@ -41,6 +42,7 @@ export default function Dashboard() {
     occasion: 'Birthday',
     accessCode: '',
   });
+  const [editingSurprise, setEditingSurprise] = useState<any>(null);
 
   const celebrationPagesQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -66,6 +68,26 @@ export default function Dashboard() {
     addDocumentNonBlocking(collection(db, 'celebrationPages'), payload);
     setIsCreateOpen(false);
     setNewSurprise({ recipientName: '', title: '', occasion: 'Birthday', accessCode: '' });
+    toast({ title: "Surprise Created", description: "Start adding memories to your timeline!" });
+  };
+
+  const handleOpenEdit = (surprise: any) => {
+    setEditingSurprise(surprise);
+    setIsEditOpen(true);
+  };
+
+  const handleUpdate = () => {
+    if (!db || !editingSurprise) return;
+    
+    const pageRef = doc(db, 'celebrationPages', editingSurprise.id);
+    updateDocumentNonBlocking(pageRef, {
+      ...editingSurprise,
+      updatedAt: new Date().toISOString(),
+    });
+    
+    setIsEditOpen(false);
+    setEditingSurprise(null);
+    toast({ title: "Surprise Updated", description: "The details have been saved." });
   };
 
   const handleDelete = (id: string) => {
@@ -201,6 +223,62 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Edit Dialog */}
+        <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Edit Surprise Details</DialogTitle>
+            </DialogHeader>
+            {editingSurprise && (
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-occasion">Occasion</Label>
+                  <Select 
+                    value={editingSurprise.occasion} 
+                    onValueChange={(val) => setEditingSurprise({...editingSurprise, occasion: val})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {OCCASIONS.map(occ => (
+                        <SelectItem key={occ} value={occ}>{occ}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-recipient">Who is this for?</Label>
+                  <Input 
+                    id="edit-recipient" 
+                    value={editingSurprise.recipientName}
+                    onChange={(e) => setEditingSurprise({...editingSurprise, recipientName: e.target.value})}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-title">Page Title</Label>
+                  <Input 
+                    id="edit-title" 
+                    value={editingSurprise.title}
+                    onChange={(e) => setEditingSurprise({...editingSurprise, title: e.target.value})}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-code">Secret Access Code</Label>
+                  <Input 
+                    id="edit-code" 
+                    value={editingSurprise.accessCode}
+                    onChange={(e) => setEditingSurprise({...editingSurprise, accessCode: e.target.value})}
+                  />
+                </div>
+              </div>
+            )}
+            <DialogFooter>
+              <Button className="w-full" onClick={handleUpdate}>Save Changes</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {isLoading ? (
           <div className="text-center py-20">Loading your surprises...</div>
         ) : surprises?.length === 0 ? (
@@ -230,33 +308,41 @@ export default function Dashboard() {
                     <div className="flex items-center">
                       <Key className="h-4 w-4 mr-2" /> Code: <code className="bg-muted px-2 py-0.5 rounded ml-2 font-bold">{surprise.accessCode}</code>
                     </div>
-                    <div className="flex gap-1">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-8 px-2"
-                        onClick={() => copyShareLink(surprise.accessCode, surprise.id)}
-                      >
-                        {copiedId === surprise.id ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-8 px-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => handleDelete(surprise.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 px-2"
+                      onClick={() => copyShareLink(surprise.accessCode, surprise.id)}
+                    >
+                      {copiedId === surprise.id ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                    </Button>
                   </div>
                   <div className="flex items-center text-sm text-muted-foreground">
                     <Type className="h-4 w-4 mr-2" /> Style: <span style={{ fontFamily: surprise.font || 'inherit' }}>{surprise.font || 'Default'}</span>
                   </div>
-                  <Link href={`/dashboard/${surprise.id}`} className="block pt-2">
-                    <Button className="w-full rounded-full group-hover:bg-primary group-hover:text-primary-foreground">
-                      Edit Timeline <ArrowRight className="ml-2 h-4 w-4" />
+                  <div className="flex gap-2 pt-2">
+                    <Link href={`/dashboard/${surprise.id}`} className="flex-1">
+                      <Button className="w-full rounded-full group-hover:bg-primary group-hover:text-primary-foreground">
+                        Edit Timeline <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="rounded-full shrink-0 h-10 w-10 border-muted hover:bg-muted"
+                      onClick={() => handleOpenEdit(surprise)}
+                    >
+                      <Edit2 className="h-4 w-4 text-muted-foreground" />
                     </Button>
-                  </Link>
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="rounded-full shrink-0 h-10 w-10 border-muted hover:bg-destructive/10 hover:text-destructive hover:border-destructive"
+                      onClick={() => handleDelete(surprise.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))}

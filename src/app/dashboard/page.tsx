@@ -22,10 +22,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, User, Key, ArrowRight, Gift, LogOut, Copy, Check, Type, Trash2, Edit2 } from 'lucide-react';
+import { Plus, User, Key, ArrowRight, Gift, LogOut, Copy, Check, Type, Trash2, Edit2, Sun, Moon } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import { useDashboardTheme } from './layout';
 
 const OCCASIONS = [
   "Birthday",
@@ -54,6 +55,8 @@ export default function Dashboard() {
   const db = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
+  const { isDark, toggleTheme } = useDashboardTheme();
+  
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -174,7 +177,7 @@ export default function Dashboard() {
             <p className="text-muted-foreground">Manage and create interactive surprises</p>
           </div>
           
-          <div className="flex gap-4">
+          <div className="flex items-center gap-3">
             <Button 
               variant="secondary" 
               className="rounded-full h-12 px-6 shadow-md hover:shadow-lg transition-all" 
@@ -182,6 +185,16 @@ export default function Dashboard() {
             >
               <LogOut className="mr-2 h-5 w-5" /> Log Out
             </Button>
+
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="rounded-full h-12 w-12 border-none bg-secondary/10 hover:bg-secondary/20"
+              onClick={toggleTheme}
+            >
+              {isDark ? <Sun className="h-5 w-5 text-yellow-400" /> : <Moon className="h-5 w-5 text-slate-700" />}
+            </Button>
+
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
               <DialogTrigger asChild>
                 <Button className="rounded-full shadow-lg h-12 px-6">

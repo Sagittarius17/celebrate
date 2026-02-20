@@ -6,12 +6,13 @@ import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@
 import { collection, doc, query, orderBy } from 'firebase/firestore';
 import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Copy, Check, Eye, EyeOff, Settings2, Key, Calendar } from 'lucide-react';
+import { ArrowLeft, Copy, Check, Eye, EyeOff, Settings2, Key, Calendar, Sun, Moon } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { EditorSidebar } from '@/components/dashboard/EditorSidebar';
 import { MemoryEditorList } from '@/components/dashboard/MemoryEditorList';
 import { LivePreviewFrame } from '@/components/dashboard/LivePreviewFrame';
+import { useDashboardTheme } from '../layout';
 
 function slugify(text: string) {
   return text
@@ -28,6 +29,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
   const { user } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
+  const { isDark, toggleTheme } = useDashboardTheme();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [isCopied, setIsCopied] = useState(false);
@@ -154,11 +156,20 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
             </Button>
           </Link>
           
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 bg-secondary/10 px-3 h-9 rounded-full border border-secondary/20 mr-1">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 bg-secondary/10 px-3 h-9 rounded-full border border-secondary/20">
               <Key className="h-3 w-3 text-secondary-foreground opacity-70" />
               <span className="text-xs font-bold text-secondary-foreground">{page.accessCode}</span>
             </div>
+
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="rounded-full h-9 w-9 border-none bg-secondary/10 hover:bg-secondary/20"
+              onClick={toggleTheme}
+            >
+              {isDark ? <Sun className="h-4 w-4 text-yellow-400" /> : <Moon className="h-4 w-4 text-slate-700" />}
+            </Button>
 
             <Button variant="outline" size="sm" onClick={copyShareLink} className="rounded-full h-9">
               {isCopied ? <Check className="h-4 w-4 mr-2 text-green-500" /> : <Copy className="h-4 w-4 mr-2" />}

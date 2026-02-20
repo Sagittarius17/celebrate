@@ -399,8 +399,10 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
                 className="w-full h-[600px] bg-white rounded-[2rem] overflow-hidden shadow-2xl border-4 border-primary/20 relative"
               >
                 <div 
-                  className="absolute top-0 left-0 w-[1200px] h-[1800px] origin-top-left"
-                  style={{ transform: `scale(${previewScale})` }}
+                  className="absolute top-0 left-0 w-[1200px] h-[800px] origin-top-left"
+                  style={{ 
+                    transform: `scale(${previewScale})`,
+                  }}
                 >
                   <iframe 
                     src={livePreviewUrl} 

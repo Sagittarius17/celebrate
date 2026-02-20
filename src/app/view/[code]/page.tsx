@@ -87,19 +87,19 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       if (!journeyRef.current || !endTriggerRef.current) return;
       
       const journey = journeyRef.current;
-      const heart = endTriggerRef.current;
+      const heartTrigger = endTriggerRef.current;
       
       const journeyRect = journey.getBoundingClientRect();
-      const heartRect = heart.getBoundingClientRect();
+      const heartRect = heartTrigger.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
       
-      // The trigger point is where the "current" scroll position is visually evaluated
-      const triggerPoint = viewportHeight * 0.85; 
+      // Use a higher trigger point (e.g. 70% of viewport) to make the connection more deliberate
+      const triggerPoint = viewportHeight * 0.7; 
       
       const journeyTop = journeyRect.top;
-      const heartTop = heartRect.top;
+      const heartTop = heartRect.top + 24; // Offset for the pt-24 on the heart container
       
-      // Total height of the journey from start to heart top
+      // Total height of the journey from start to heart center
       const totalHeight = heartTop - journeyTop;
       // Current distance relative to start
       const currentDistance = triggerPoint - journeyTop;
@@ -108,7 +108,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       const clampedProgress = Math.min(Math.max(progress, 0), 100);
       
       setScrollProgress(prev => {
-        // Once connected (100%), it stops going up and down
+        // Once connected (100%), it stays locked
         if (prev >= 100) return 100;
         return clampedProgress;
       });
@@ -189,7 +189,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
               <div 
                 className="absolute left-1/2 transform -translate-x-1/2 w-1.5 z-0 pointer-events-none" 
                 style={{ 
-                  height: 'calc(100% - 92px)', // Ends exactly at the heart button top edge
+                  height: 'calc(100% - 110px)', // Precise height to stop at the heart container content
                   top: '10px' 
                 }}
               >
@@ -208,7 +208,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
               <div ref={endTriggerRef} className="flex flex-col items-center pt-24 pb-8 relative z-20">
                 <div className={cn(
                   "transition-all duration-1000 transform relative z-20",
-                  scrollProgress > 80 ? "opacity-100 scale-100" : "opacity-0 scale-50"
+                  scrollProgress > 95 ? "opacity-100 scale-100" : "opacity-0 scale-50"
                 )}>
                   <div className={cn(
                     "bg-white p-3 sm:p-4 rounded-full shadow-2xl border-4 transition-all duration-700",

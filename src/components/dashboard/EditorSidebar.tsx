@@ -7,6 +7,13 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
 import { LayoutTemplate, Quote, Save } from 'lucide-react';
 import { DocumentReference, Firestore } from 'firebase/firestore';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -61,33 +68,43 @@ export function EditorSidebar({
           <CardContent className="space-y-4 pt-6">
             <div className="space-y-2">
               <Label>Choose Layout</Label>
-              <select 
-                className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm"
+              <Select 
                 value={page.layout || 'Timeline'} 
-                onChange={(e) => {
-                  handleUpdatePage({ layout: e.target.value });
-                  toast({ title: "Layout Updated", description: `Switched to ${e.target.value} view.` });
+                onValueChange={(val) => {
+                  handleUpdatePage({ layout: val });
+                  toast({ title: "Layout Updated", description: `Switched to ${val} view.` });
                 }}
               >
-                {LAYOUTS.map(layout => (
-                  <option key={layout} value={layout}>{layout}</option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full h-10 rounded-xl border border-input bg-background">
+                  <SelectValue placeholder="Select layout" />
+                </SelectTrigger>
+                <SelectContent>
+                  {LAYOUTS.map(layout => (
+                    <SelectItem key={layout} value={layout}>{layout}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label>Choose Font</Label>
-              <select 
-                className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm"
+              <Select 
                 value={page.font || 'Playfair Display'} 
-                onChange={(e) => {
-                  handleUpdatePage({ font: e.target.value });
-                  toast({ title: "Font Updated", description: `Style changed to ${e.target.value}.` });
+                onValueChange={(val) => {
+                  handleUpdatePage({ font: val });
+                  toast({ title: "Font Updated", description: `Style changed to ${val}.` });
                 }}
               >
-                {FONTS.map(font => (
-                  <option key={font} value={font} style={{ fontFamily: font }}>{font}</option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full h-10 rounded-xl border border-input bg-background">
+                  <SelectValue placeholder="Select font" />
+                </SelectTrigger>
+                <SelectContent>
+                  {FONTS.map(font => (
+                    <SelectItem key={font} value={font}>
+                      <span style={{ fontFamily: font }} className="text-lg">{font}</span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>

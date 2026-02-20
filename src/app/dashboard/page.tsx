@@ -38,6 +38,16 @@ const OCCASIONS = [
   "Other"
 ];
 
+function slugify(text: string) {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-');
+}
+
 export default function Dashboard() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
@@ -119,14 +129,15 @@ export default function Dashboard() {
     });
   };
 
-  const copyShareLink = (code: string, id: string) => {
+  const copyShareLink = (surprise: any) => {
     const baseUrl = window.location.origin;
-    const shareUrl = `${baseUrl}/view/${encodeURIComponent(code)}`;
+    const nameSlug = slugify(surprise.recipientName);
+    const shareUrl = `${baseUrl}/view/${encodeURIComponent(`${nameSlug}-${surprise.accessCode}`)}`;
     navigator.clipboard.writeText(shareUrl);
-    setCopiedId(id);
+    setCopiedId(surprise.id);
     toast({
       title: "Link Copied!",
-      description: "Share this link and the code with your recipient.",
+      description: `Share this personalized link for ${surprise.recipientName}.`,
     });
     setTimeout(() => setCopiedId(null), 2000);
   };
@@ -322,7 +333,7 @@ export default function Dashboard() {
                       variant="ghost" 
                       size="sm" 
                       className="h-8 px-2"
-                      onClick={() => copyShareLink(surprise.accessCode, surprise.id)}
+                      onClick={() => copyShareLink(surprise)}
                     >
                       {copiedId === surprise.id ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                     </Button>

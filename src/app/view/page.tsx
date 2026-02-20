@@ -10,6 +10,17 @@ import { Label } from '@/components/ui/label';
 import { Key, Gift, AlertCircle, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+
+function slugify(text: string) {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-');
+}
 
 export default function SurpriseEntry() {
   const [code, setCode] = useState('');
@@ -23,9 +34,22 @@ export default function SurpriseEntry() {
     setIsVerifying(true);
 
     try {
-      // Since the security rules allow public read for collection groups with the correct code,
-      // we can simply redirect. The verification happens on the [code] page during data load.
-      router.push(`/view/${encodeURIComponent(code)}`);
+      const q = query(collection(db, 'celebrationPages'), where('accessCode', '==', code.trim()));
+      const snap = await getDocs(q);
+      
+      if (snap.empty) {
+        toast({
+          variant: "destructive",
+          title: "Invalid Code",
+          description: "We couldn't find a surprise with that code. Please try again.",
+        });
+        setIsVerifying(false);
+        return;
+      }
+
+      const page = snap.docs[0].data();
+      const nameSlug = slugify(page.recipientName);
+      router.push(`/view/${encodeURIComponent(`${nameSlug}-${code.trim()}`)}`);
     } catch (error: any) {
       toast({
         variant: "destructive",

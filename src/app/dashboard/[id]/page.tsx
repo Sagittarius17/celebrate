@@ -37,6 +37,16 @@ const FONTS = [
 
 const LAYOUTS = ["Timeline", "Carousel", "Grid"];
 
+function slugify(text: string) {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-');
+}
+
 export default function SurpriseEditor({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { user } = useUser();
@@ -71,7 +81,6 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
       const updateScale = () => {
         if (!previewContainerRef.current) return;
         const containerWidth = previewContainerRef.current.offsetWidth;
-        // Target desktop width is 1200px
         const newScale = containerWidth / 1200;
         setPreviewScale(newScale);
       };
@@ -175,12 +184,13 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
   const copyShareLink = () => {
     if (!page) return;
     const baseUrl = window.location.origin;
-    const shareUrl = `${baseUrl}/view/${encodeURIComponent(page.accessCode)}`;
+    const nameSlug = slugify(page.recipientName);
+    const shareUrl = `${baseUrl}/view/${encodeURIComponent(`${nameSlug}-${page.accessCode}`)}`;
     navigator.clipboard.writeText(shareUrl);
     setIsCopied(true);
     toast({
       title: "Link Copied!",
-      description: "You can now share this surprise link with your recipient.",
+      description: `Share this personalized link for ${page.recipientName}.`,
     });
     setTimeout(() => setIsCopied(false), 2000);
   };
@@ -189,7 +199,8 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
   if (!page) return <div className="p-20 text-center">Surprise not found.</div>;
   if (page.ownerId !== user?.uid) return <div className="p-20 text-center text-destructive">Unauthorized access.</div>;
 
-  const livePreviewUrl = `/view/${encodeURIComponent(page.accessCode)}`;
+  const nameSlug = slugify(page.recipientName);
+  const livePreviewUrl = `/view/${encodeURIComponent(`${nameSlug}-${page.accessCode}`)}`;
 
   return (
     <div className="min-h-screen bg-muted/30 p-8">
@@ -227,7 +238,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
           <Card className="w-full md:w-1/3 rounded-2xl">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm uppercase tracking-wider text-muted-foreground">Access Details</CardTitle>
-            </CardHeader>
+            </Header>
             <CardContent>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Secret Code:</span>

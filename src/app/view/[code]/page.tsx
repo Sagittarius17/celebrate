@@ -8,8 +8,6 @@ import { Header } from '@/components/birthday/Header';
 import { EventCard } from '@/components/birthday/EventCard';
 import { Star, Camera, Gift, PartyPopper, Cake, Loader2, Heart, Sparkles, Quote } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -34,7 +32,7 @@ const DEFAULT_QUOTES: Record<string, string> = {
 };
 
 export default function SurpriseView({ params }: { params: Promise<{ code: string }> }) {
-  const { code } = use(params);
+  const { code: slug } = use(params);
   const db = useFirestore();
   const [pageId, setPageId] = useState<string | null>(null);
   const [isFindingPage, setIsFindingPage] = useState(true);
@@ -42,16 +40,21 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
   const [scrollProgress, setScrollProgress] = useState(0);
   const timelineRef = useRef<HTMLDivElement>(null);
 
-  // 1. Initial lookup to find the Page ID from the Access Code
   useEffect(() => {
     const findPage = async () => {
       if (!db) return;
       try {
-        const decodedCode = decodeURIComponent(code);
-        const q = query(collection(db, 'celebrationPages'), where('accessCode', '==', decodedCode));
+        const decodedSlug = decodeURIComponent(slug);
+        // The slug is expected to be [name-slug]-[accessCode]
+        // We try the full slug first (backward compatibility) then extract the last part
+        const parts = decodedSlug.split('-');
+        const accessCode = parts[parts.length - 1];
+
+        const q = query(collection(db, 'celebrationPages'), where('accessCode', 'in', [decodedSlug, accessCode]));
         const snap = await getDocs(q);
+        
         if (snap.empty) {
-          setError("Invalid secret code. Please check with the person who created your surprise!");
+          setError("Invalid secret link. Please check with the person who created your surprise!");
         } else {
           setPageId(snap.docs[0].id);
         }
@@ -62,9 +65,8 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       }
     };
     findPage();
-  }, [db, code]);
+  }, [db, slug]);
 
-  // 2. Real-time hooks for the page and events
   const pageDocRef = useMemoFirebase(() => {
     if (!db || !pageId) return null;
     return doc(db, 'celebrationPages', pageId);

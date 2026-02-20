@@ -9,6 +9,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle, 
+  AlertDialogTrigger 
+} from "@/components/ui/alert-dialog";
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, User, Key, ArrowRight, Gift, LogOut, Copy, Check, Type, Trash2, Edit2 } from 'lucide-react';
@@ -58,7 +69,7 @@ export default function Dashboard() {
     const payload = {
       ...newSurprise,
       id: pageId,
-      font: 'Playfair Display', // Default font
+      font: 'Playfair Display',
       creatorName: user.displayName || 'Creator',
       ownerId: user.uid,
       createdAt: new Date().toISOString(),
@@ -72,7 +83,7 @@ export default function Dashboard() {
   };
 
   const handleOpenEdit = (surprise: any) => {
-    setEditingSurprise(surprise);
+    setEditingSurprise({ ...surprise });
     setIsEditOpen(true);
   };
 
@@ -80,8 +91,10 @@ export default function Dashboard() {
     if (!db || !editingSurprise) return;
     
     const pageRef = doc(db, 'celebrationPages', editingSurprise.id);
+    const { id, ...updateData } = editingSurprise;
+    
     updateDocumentNonBlocking(pageRef, {
-      ...editingSurprise,
+      ...updateData,
       updatedAt: new Date().toISOString(),
     });
     
@@ -92,14 +105,12 @@ export default function Dashboard() {
 
   const handleDelete = (id: string) => {
     if (!db) return;
-    if (window.confirm("Are you sure you want to delete this surprise? This will permanently remove the celebration page.")) {
-      const pageRef = doc(db, 'celebrationPages', id);
-      deleteDocumentNonBlocking(pageRef);
-      toast({
-        title: "Surprise Deleted",
-        description: "The celebration page has been removed.",
-      });
-    }
+    const pageRef = doc(db, 'celebrationPages', id);
+    deleteDocumentNonBlocking(pageRef);
+    toast({
+      title: "Surprise Deleted",
+      description: "The celebration page has been removed.",
+    });
   };
 
   const handleLogout = () => {
@@ -223,7 +234,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Edit Dialog */}
         <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
@@ -334,14 +344,31 @@ export default function Dashboard() {
                     >
                       <Edit2 className="h-4 w-4 text-muted-foreground" />
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      size="icon" 
-                      className="rounded-full shrink-0 h-10 w-10 border-muted hover:bg-destructive/10 hover:text-destructive hover:border-destructive"
-                      onClick={() => handleDelete(surprise.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          size="icon" 
+                          className="rounded-full shrink-0 h-10 w-10 border-muted hover:bg-destructive/10 hover:text-destructive hover:border-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will permanently delete "{surprise.title}" and remove all memory events from the timeline.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(surprise.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </CardContent>
               </Card>

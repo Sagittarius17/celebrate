@@ -39,7 +39,7 @@
 }
 
 .timeline-line {
-  background: hsl(var(--primary) / 0.3);
+  background: hsl(var(--primary));
 }
 
 .timeline-glow-line {

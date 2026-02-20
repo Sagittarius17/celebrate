@@ -89,9 +89,12 @@ export default {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-15px)' },
         },
-        'heart-pulse': {
-          '0%, 100%': { transform: 'scale(1)', boxShadow: '0 0 0 rgba(255, 182, 193, 0)' },
-          '50%': { transform: 'scale(1.15)', boxShadow: '0 0 40px 10px rgba(255, 182, 193, 0.4)' },
+        'heartbeat': {
+          '0%, 100%': { transform: 'scale(1)' },
+          '10%': { transform: 'scale(1.2)' },
+          '20%': { transform: 'scale(1)' },
+          '30%': { transform: 'scale(1.2)' },
+          '40%': { transform: 'scale(1)' },
         },
       },
       animation: {
@@ -99,7 +102,7 @@ export default {
         'accordion-up': 'accordion-up 0.2s ease-out',
         'fade-in': 'fade-in 0.5s ease-out forwards',
         'float-up': 'float-up 4s ease-in-out infinite',
-        'heart-pulse': 'heart-pulse 3s ease-in-out infinite',
+        'heartbeat': 'heartbeat 3s ease-in-out infinite',
       },
     },
   },

@@ -10,8 +10,6 @@ import { Star, Camera, Gift, PartyPopper, Cake, Loader2, Heart, Sparkles, Quote 
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
 import {
   Carousel,
   CarouselContent,
@@ -38,7 +36,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
   const [isFindingPage, setIsFindingPage] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const timelineRef = useRef<HTMLDivElement>(null);
+  const journeyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const findPage = async () => {
@@ -90,8 +88,8 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
 
   useEffect(() => {
     const handleScroll = () => {
-      if (!timelineRef.current) return;
-      const element = timelineRef.current;
+      if (!journeyRef.current) return;
+      const element = journeyRef.current;
       const rect = element.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
       
@@ -225,50 +223,41 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
     }
 
     return (
-      <div ref={timelineRef} className="relative max-w-6xl mx-auto px-4 pt-10 sm:pt-20">
-        <div className="absolute left-1/2 transform -translate-x-1/2 w-1 timeline-line h-full z-0 opacity-20" />
-        <div 
-          className="absolute left-1/2 transform -translate-x-1/2 w-1.5 z-10 timeline-glow-line"
-          style={{ height: `${scrollProgress}%` }}
-        />
-
-        <div className="space-y-16 sm:space-y-32 relative z-10">
-          {events.map((event, index) => (
-            <div 
-              key={event.id} 
-              className={cn(
-                "flex flex-col md:flex-row items-center justify-between group gap-8 md:gap-0 relative",
-                index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
-              )}
-            >
-              <div className={cn(
-                "w-full md:w-[45%] reveal-on-scroll",
-                index % 2 === 0 ? "reveal-left" : "reveal-right"
-              )}>
-                <EventCard 
-                  title={event.title}
-                  date={new Date(event.eventDate).toLocaleDateString()}
-                  message={event.message}
-                  imageUrl={event.imageUrl}
-                  icon={React.cloneElement(icons[index % icons.length] as React.ReactElement, { className: "w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" })}
-                />
-              </div>
-
-              <div className={cn(
-                "hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center justify-center w-10 h-10 sm:w-14 sm:h-14 rounded-full border-[3px] transition-all duration-500 z-20 bg-background shadow-sm",
-                scrollProgress > (index / events.length) * 100 ? "border-secondary scale-110 shadow-[0_0_15px_rgba(255,182,193,0.4)]" : "border-primary/40"
-              )}> 
-                <div className={cn(
-                  "w-3 h-3 sm:w-5 sm:h-5 rounded-full transition-colors duration-500",
-                  scrollProgress > (index / events.length) * 100 ? "bg-secondary" : "bg-primary/20"
-                )} />
-              </div>
-
-              <div className="hidden md:block md:w-[45%]" />
+      <div className="space-y-16 sm:space-y-32 relative z-10 pt-10 sm:pt-20">
+        {events.map((event, index) => (
+          <div 
+            key={event.id} 
+            className={cn(
+              "flex flex-col md:flex-row items-center justify-between group gap-8 md:gap-0 relative",
+              index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
+            )}
+          >
+            <div className={cn(
+              "w-full md:w-[45%] reveal-on-scroll",
+              index % 2 === 0 ? "reveal-left" : "reveal-right"
+            )}>
+              <EventCard 
+                title={event.title}
+                date={new Date(event.eventDate).toLocaleDateString()}
+                message={event.message}
+                imageUrl={event.imageUrl}
+                icon={React.cloneElement(icons[index % icons.length] as React.ReactElement, { className: "w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" })}
+              />
             </div>
-          ))}
-          <div className="h-32" />
-        </div>
+
+            <div className={cn(
+              "hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center justify-center w-10 h-10 sm:w-14 sm:h-14 rounded-full border-[3px] transition-all duration-500 z-20 bg-background shadow-sm",
+              scrollProgress > (index / events.length) * 100 ? "border-secondary scale-110 shadow-[0_0_15px_rgba(255,182,193,0.4)]" : "border-primary/40"
+            )}> 
+              <div className={cn(
+                "w-3 h-3 sm:w-5 sm:h-5 rounded-full transition-colors duration-500",
+                scrollProgress > (index / events.length) * 100 ? "bg-secondary" : "bg-primary/20"
+              )} />
+            </div>
+
+            <div className="hidden md:block md:w-[45%]" />
+          </div>
+        ))}
       </div>
     );
   };
@@ -277,44 +266,56 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
     <main className="min-h-screen bg-background overflow-x-hidden" style={globalStyle}>
       <Header title={page?.title} occasion={page?.occasion} />
        
-      <section className="py-12 sm:py-20 overflow-hidden">
+      <section ref={journeyRef} className="py-12 sm:py-20 relative">
         <div className="text-center mb-12 sm:mb-16 px-4">
           <h2 className="text-3xl sm:text-5xl font-bold mb-4" style={{ fontFamily: page?.font || 'inherit' }}>{page?.title || 'Our Journey'}</h2>
           <div className="w-16 sm:w-24 h-1 bg-secondary mx-auto rounded-full" />
         </div>
         
-        {renderMemories()}
+        <div className="relative max-w-6xl mx-auto px-4">
+          {layout === 'Timeline' && (
+            <>
+              <div className="absolute left-1/2 transform -translate-x-1/2 w-1 timeline-line h-full z-0 opacity-20" />
+              <div 
+                className="absolute left-1/2 transform -translate-x-1/2 w-1.5 z-10 timeline-glow-line"
+                style={{ height: `${scrollProgress}%` }}
+              />
+            </>
+          )}
 
-        <div className="flex flex-col items-center justify-center pt-20 sm:pt-32 pb-20 relative min-h-[50vh]">
-          <div className={cn(
-            "relative transition-all duration-1000 transform w-full max-w-2xl flex flex-col items-center px-4",
-            (layout !== 'Timeline' || scrollProgress > 95) ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20 pointer-events-none"
-          )}>
+          {renderMemories()}
+
+          <div className="flex flex-col items-center justify-center pt-20 sm:pt-48 pb-20 relative min-h-[60vh]">
             <div className={cn(
-              "z-30 mb-6 sm:mb-8 bg-white p-3 sm:p-4 rounded-full shadow-2xl border-4 border-secondary transition-all duration-700",
-              (layout !== 'Timeline' || scrollProgress > 95) && "animate-heart-pulse"
+              "relative transition-all duration-1000 transform w-full max-w-2xl flex flex-col items-center px-4",
+              (layout !== 'Timeline' || scrollProgress > 95) ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20 pointer-events-none"
             )}>
-              <Heart className="w-8 h-8 sm:w-10 sm:h-10 text-secondary fill-secondary" />
-            </div>
+              <div className="z-30 mb-6 sm:mb-8 bg-white p-3 sm:p-4 rounded-full shadow-2xl border-4 border-secondary transition-all duration-700">
+                <Heart className={cn(
+                  "w-8 h-8 sm:w-10 sm:h-10 text-secondary fill-secondary",
+                  (layout !== 'Timeline' || scrollProgress > 95) && "animate-heartbeat"
+                )} />
+              </div>
 
-            <Card className="border-none shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[2rem] sm:rounded-[3rem] overflow-hidden bg-white/95 backdrop-blur-md relative z-20 w-full mb-12">
-              <div className="h-1.5 sm:h-2 w-full bg-gradient-to-r from-primary via-secondary to-primary" />
-              
-              <CardContent className="p-8 sm:p-12 text-center space-y-4 sm:space-y-6 pt-12 sm:pt-16">
-                <Quote className="w-10 h-10 sm:w-12 sm:h-12 text-secondary/30 mx-auto mb-2 sm:mb-4" />
-                <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
-                  To Many More Years of Joy, {page?.recipientName}!
-                </h3>
-                <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground italic leading-relaxed">
-                  "{finalQuoteToDisplay}"
-                </p>
-                <div className="flex items-center justify-center gap-3 sm:gap-4 pt-2 sm:pt-4">
-                  <span className="text-secondary text-lg">❤️</span>
-                  <div className="h-px w-12 sm:w-20 bg-secondary/20" />
-                  <span className="text-secondary text-lg">❤️</span>
-                </div>
-              </CardContent>
-            </Card>
+              <Card className="border-none shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[2rem] sm:rounded-[3rem] overflow-hidden bg-white/95 backdrop-blur-md relative z-20 w-full mb-12">
+                <div className="h-1.5 sm:h-2 w-full bg-gradient-to-r from-primary via-secondary to-primary" />
+                
+                <CardContent className="p-8 sm:p-12 text-center space-y-4 sm:space-y-6 pt-12 sm:pt-16">
+                  <Quote className="w-10 h-10 sm:w-12 sm:h-12 text-secondary/30 mx-auto mb-2 sm:mb-4" />
+                  <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
+                    To Many More Years of Joy, {page?.recipientName}!
+                  </h3>
+                  <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground italic leading-relaxed">
+                    "{finalQuoteToDisplay}"
+                  </p>
+                  <div className="flex items-center justify-center gap-3 sm:gap-4 pt-2 sm:pt-4">
+                    <span className="text-secondary text-lg">❤️</span>
+                    <div className="h-px w-12 sm:w-20 bg-secondary/20" />
+                    <span className="text-secondary text-lg">❤️</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </section>

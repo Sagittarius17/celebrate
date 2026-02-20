@@ -2,8 +2,10 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Quote as QuoteIcon, Heart } from 'lucide-react';
+import { Quote as QuoteIcon, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 interface FinalMessageProps {
   isVisible: boolean;
@@ -37,6 +39,15 @@ export function FinalMessage({ isVisible, recipientName, quote, creatorName }: F
             </div>
           </CardContent>
         </Card>
+
+        <div className="flex flex-col items-center gap-6 mb-12">
+          <Link href="/">
+            <Button size="lg" className="rounded-full px-8 py-7 text-lg font-bold shadow-xl hover:scale-105 transition-all bg-primary text-primary-foreground border-none hover:bg-primary/90">
+              <Sparkles className="mr-2 h-5 w-5" />
+              Create a surprise for your loved one
+            </Button>
+          </Link>
+        </div>
 
         <div className="text-center pb-8">
           <p className="text-sm font-medium text-muted-foreground/60 flex items-center gap-1.5">

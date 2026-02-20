@@ -10,11 +10,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Plus, Trash2, Calendar, Quote, Copy, Check, Save, Upload, LayoutTemplate, Eye, EyeOff, X } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Calendar, Quote, Copy, Check, Save, Upload, LayoutTemplate, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const FONTS = [
   "Playfair Display",
@@ -74,13 +75,11 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
     }
   }, [page]);
 
-  // Handle scaling for the miniature preview
   useEffect(() => {
     if (showLivePreview && previewContainerRef.current) {
       const updateScale = () => {
         if (!previewContainerRef.current) return;
         const containerWidth = previewContainerRef.current.offsetWidth;
-        // Target internal width of 1200px for desktop view
         const newScale = containerWidth / 1200;
         setPreviewScale(newScale);
       };
@@ -224,7 +223,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
               className="rounded-full"
               onClick={() => setShowLivePreview(!showLivePreview)}
             >
-              {showLivePreview ? <><EyeOff className="h-4 w-4 mr-2" /> Show List</> : <><Eye className="h-4 w-4 mr-2" /> Live Preview</>}
+              {showLivePreview ? <><EyeOff className="h-4 w-4 mr-2" /> Show Editor</> : <><Eye className="h-4 w-4 mr-2" /> Live Preview</>}
             </Button>
           </div>
         </div>
@@ -251,139 +250,143 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="space-y-6 lg:col-span-1">
-            <Card className="h-fit rounded-3xl shadow-lg border-none overflow-hidden">
-              <CardHeader className="bg-primary/10">
-                <CardTitle className="flex items-center gap-2 text-primary-foreground">
-                  <Plus className="h-5 w-5" /> Add Memory
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6 pt-6">
-                <div className="space-y-3">
-                  <Label className="text-muted-foreground font-bold uppercase text-[10px] tracking-widest">Upload Image</Label>
-                  
-                  <div 
-                    onClick={() => fileInputRef.current?.click()}
-                    className={cn(
-                      "relative aspect-video rounded-2xl border-2 border-dashed border-muted-foreground/30 flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-all overflow-hidden",
-                      selectedImageUrl && "border-solid border-primary"
-                    )}
-                  >
-                    {selectedImageUrl ? (
-                      <>
-                        <Image src={selectedImageUrl} alt="Preview" fill className="object-cover" />
-                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                          <p className="text-white text-xs font-bold flex items-center gap-1">
-                            <Upload className="h-3 w-3" /> Change Photo
-                          </p>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                        <Upload className="h-8 w-8" />
-                        <span className="text-xs font-medium">Choose from device</span>
+          <div className="lg:col-span-1">
+            <ScrollArea className="h-[calc(100vh-320px)] pr-4">
+              <div className="space-y-6">
+                <Card className="h-fit rounded-3xl shadow-lg border-none overflow-hidden">
+                  <CardHeader className="bg-primary/10">
+                    <CardTitle className="flex items-center gap-2 text-primary-foreground">
+                      <Plus className="h-5 w-5" /> Add Memory
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6 pt-6">
+                    <div className="space-y-3">
+                      <Label className="text-muted-foreground font-bold uppercase text-[10px] tracking-widest">Upload Image</Label>
+                      
+                      <div 
+                        onClick={() => fileInputRef.current?.click()}
+                        className={cn(
+                          "relative aspect-video rounded-2xl border-2 border-dashed border-muted-foreground/30 flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-all overflow-hidden",
+                          selectedImageUrl && "border-solid border-primary"
+                        )}
+                      >
+                        {selectedImageUrl ? (
+                          <>
+                            <Image src={selectedImageUrl} alt="Preview" fill className="object-cover" />
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                              <p className="text-white text-xs font-bold flex items-center gap-1">
+                                <Upload className="h-3 w-3" /> Change Photo
+                              </p>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                            <Upload className="h-8 w-8" />
+                            <span className="text-xs font-medium">Choose from device</span>
+                          </div>
+                        )}
+                        <input 
+                          type="file" 
+                          ref={fileInputRef} 
+                          className="hidden" 
+                          accept="image/*"
+                          onChange={handleFileChange} 
+                        />
                       </div>
-                    )}
-                    <input 
-                      type="file" 
-                      ref={fileInputRef} 
-                      className="hidden" 
-                      accept="image/*"
-                      onChange={handleFileChange} 
-                    />
-                  </div>
-                </div>
+                    </div>
 
-                <Button 
-                  className="w-full rounded-full h-12 shadow-md hover:shadow-lg transition-all" 
-                  onClick={handleAddEvent}
-                  disabled={!selectedImageUrl}
-                >
-                  <Plus className="mr-2 h-4 w-4" /> Add to Timeline
-                </Button>
-              </CardContent>
-            </Card>
+                    <Button 
+                      className="w-full rounded-full h-12 shadow-md hover:shadow-lg transition-all" 
+                      onClick={handleAddEvent}
+                      disabled={!selectedImageUrl}
+                    >
+                      <Plus className="mr-2 h-4 w-4" /> Add to Timeline
+                    </Button>
+                  </CardContent>
+                </Card>
 
-            <Card className="h-fit rounded-3xl shadow-lg border-none overflow-hidden">
-              <CardHeader className="bg-accent/10">
-                <CardTitle className="flex items-center gap-2 text-accent-foreground">
-                  <LayoutTemplate className="h-5 w-5" /> Page Layout & Style
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 pt-6">
-                <div className="space-y-2">
-                  <Label>Choose Layout</Label>
-                  <Select 
-                    value={page.layout || 'Timeline'} 
-                    onValueChange={(val) => {
-                      if (db && pageRef) {
-                        updateDocumentNonBlocking(pageRef, { layout: val, updatedAt: new Date().toISOString() });
-                        toast({ title: "Layout Updated", description: `Switched to ${val} view.` });
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="rounded-xl">
-                      <SelectValue placeholder="Select layout" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {LAYOUTS.map(layout => (
-                        <SelectItem key={layout} value={layout}>{layout}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Choose Font</Label>
-                  <Select 
-                    value={page.font || 'Playfair Display'} 
-                    onValueChange={(val) => {
-                      if (db && pageRef) {
-                        updateDocumentNonBlocking(pageRef, { font: val, updatedAt: new Date().toISOString() });
-                        toast({ title: "Font Updated", description: `Style changed to ${val}.` });
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="rounded-xl">
-                      <SelectValue placeholder="Select font" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {FONTS.map(font => (
-                        <SelectItem key={font} value={font} style={{ fontFamily: font }}>
-                          <span style={{ fontFamily: font }}>{font}</span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
+                <Card className="h-fit rounded-3xl shadow-lg border-none overflow-hidden">
+                  <CardHeader className="bg-accent/10">
+                    <CardTitle className="flex items-center gap-2 text-accent-foreground">
+                      <LayoutTemplate className="h-5 w-5" /> Page Layout & Style
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4 pt-6">
+                    <div className="space-y-2">
+                      <Label>Choose Layout</Label>
+                      <Select 
+                        value={page.layout || 'Timeline'} 
+                        onValueChange={(val) => {
+                          if (db && pageRef) {
+                            updateDocumentNonBlocking(pageRef, { layout: val, updatedAt: new Date().toISOString() });
+                            toast({ title: "Layout Updated", description: `Switched to ${val} view.` });
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="rounded-xl">
+                          <SelectValue placeholder="Select layout" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {LAYOUTS.map(layout => (
+                            <SelectItem key={layout} value={layout}>{layout}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Choose Font</Label>
+                      <Select 
+                        value={page.font || 'Playfair Display'} 
+                        onValueChange={(val) => {
+                          if (db && pageRef) {
+                            updateDocumentNonBlocking(pageRef, { font: val, updatedAt: new Date().toISOString() });
+                            toast({ title: "Font Updated", description: `Style changed to ${val}.` });
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="rounded-xl">
+                          <SelectValue placeholder="Select font" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {FONTS.map(font => (
+                            <SelectItem key={font} value={font} style={{ fontFamily: font }}>
+                              <span style={{ fontFamily: font }}>{font}</span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </CardContent>
+                </Card>
 
-            <Card className="h-fit rounded-3xl shadow-lg border-none overflow-hidden">
-              <CardHeader className="bg-secondary/10">
-                <CardTitle className="flex items-center gap-2 text-secondary-foreground">
-                  <Quote className="h-5 w-5" /> Final Quote
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 pt-6">
-                <div className="space-y-2">
-                  <Label>The Ending Message</Label>
-                  <Textarea 
-                    placeholder="A final heart-warming message..." 
-                    value={customQuote}
-                    onChange={(e) => setCustomQuote(e.target.value)}
-                    className="min-h-[80px]"
-                  />
-                </div>
-                <Button 
-                  variant="secondary"
-                  className="w-full rounded-full" 
-                  onClick={handleSaveFinalQuote}
-                  disabled={isSavingQuote}
-                >
-                  {isSavingQuote ? "Saving..." : <><Save className="mr-2 h-4 w-4" /> Save Ending</>}
-                </Button>
-              </CardContent>
-            </Card>
+                <Card className="h-fit rounded-3xl shadow-lg border-none overflow-hidden">
+                  <CardHeader className="bg-secondary/10">
+                    <CardTitle className="flex items-center gap-2 text-secondary-foreground">
+                      <Quote className="h-5 w-5" /> Final Quote
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4 pt-6">
+                    <div className="space-y-2">
+                      <Label>The Ending Message</Label>
+                      <Textarea 
+                        placeholder="A final heart-warming message..." 
+                        value={customQuote}
+                        onChange={(e) => setCustomQuote(e.target.value)}
+                        className="min-h-[80px]"
+                      />
+                    </div>
+                    <Button 
+                      variant="secondary"
+                      className="w-full rounded-full" 
+                      onClick={handleSaveFinalQuote}
+                      disabled={isSavingQuote}
+                    >
+                      {isSavingQuote ? "Saving..." : <><Save className="mr-2 h-4 w-4" /> Save Ending</>}
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </ScrollArea>
           </div>
 
           <div className="lg:col-span-2 space-y-4">
@@ -397,7 +400,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
               <div 
                 ref={previewContainerRef}
                 className="w-full bg-white rounded-[2rem] overflow-hidden shadow-2xl border-4 border-primary/20 relative"
-                style={{ height: `${800 * previewScale}px` }}
+                style={{ height: `${600}px` }}
               >
                 <div 
                   className="absolute top-0 left-0 w-[1200px] h-[800px] origin-top-left"
@@ -420,58 +423,60 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
                 <p className="text-muted-foreground">Your timeline is empty. Upload a photo from the left panel!</p>
               </div>
             ) : (
-              <div className="space-y-6">
-                {events?.map((event) => (
-                  <Card key={event.id} className="rounded-[2rem] overflow-hidden border-none shadow-md hover:shadow-xl transition-shadow group bg-white/80 backdrop-blur-sm">
-                    <div className="flex flex-col md:flex-row">
-                      <div className="relative w-full md:w-56 h-56 md:h-auto">
-                        <Image src={event.imageUrl} alt={event.title} fill className="object-cover" />
-                      </div>
-                      <CardContent className="p-8 flex-1 space-y-4">
-                        <div className="flex justify-between items-start">
-                          <div className="space-y-1 w-full mr-4">
-                            <Label className="text-[10px] font-bold text-primary uppercase tracking-widest">Date of Memory</Label>
-                            <input 
-                              type="date" 
-                              className="w-full border-none bg-transparent p-0 h-auto font-bold text-primary text-sm focus-visible:ring-0 shadow-none cursor-pointer outline-none"
-                              value={event.eventDate}
-                              onChange={(e) => handleUpdateEvent(event.id, { eventDate: e.target.value })}
+              <ScrollArea className="h-[calc(100vh-320px)] pr-4">
+                <div className="space-y-6">
+                  {events?.map((event) => (
+                    <Card key={event.id} className="rounded-[2rem] overflow-hidden border-none shadow-md hover:shadow-xl transition-shadow group bg-white/80 backdrop-blur-sm">
+                      <div className="flex flex-col md:flex-row">
+                        <div className="relative w-full md:w-56 h-56 md:h-auto">
+                          <Image src={event.imageUrl} alt={event.title} fill className="object-cover" />
+                        </div>
+                        <CardContent className="p-8 flex-1 space-y-4">
+                          <div className="flex justify-between items-start">
+                            <div className="space-y-1 w-full mr-4">
+                              <Label className="text-[10px] font-bold text-primary uppercase tracking-widest">Date of Memory</Label>
+                              <input 
+                                type="date" 
+                                className="w-full border-none bg-transparent p-0 h-auto font-bold text-primary text-sm focus-visible:ring-0 shadow-none cursor-pointer outline-none"
+                                value={event.eventDate}
+                                onChange={(e) => handleUpdateEvent(event.id, { eventDate: e.target.value })}
+                              />
+                            </div>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="text-muted-foreground hover:text-destructive transition-colors shrink-0"
+                              onClick={() => handleDeleteEvent(event.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          
+                          <div className="space-y-1">
+                            <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Memory Title</Label>
+                            <Input 
+                              placeholder="e.g. First Steps" 
+                              className="border-none bg-transparent p-0 h-auto text-2xl font-headline font-bold focus-visible:ring-0 shadow-none"
+                              value={event.title}
+                              onChange={(e) => handleUpdateEvent(event.id, { title: e.target.value })}
                             />
                           </div>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="text-muted-foreground hover:text-destructive transition-colors shrink-0"
-                            onClick={() => handleDeleteEvent(event.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        
-                        <div className="space-y-1">
-                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Memory Title</Label>
-                          <Input 
-                            placeholder="e.g. First Steps" 
-                            className="border-none bg-transparent p-0 h-auto text-2xl font-headline font-bold focus-visible:ring-0 shadow-none"
-                            value={event.title}
-                            onChange={(e) => handleUpdateEvent(event.id, { title: e.target.value })}
-                          />
-                        </div>
 
-                        <div className="space-y-1">
-                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">The Story</Label>
-                          <Textarea 
-                            placeholder="Tell the story of this moment..." 
-                            className="border-none bg-transparent p-0 h-auto min-h-[60px] italic text-muted-foreground focus-visible:ring-0 shadow-none resize-none leading-relaxed"
-                            value={event.message}
-                            onChange={(e) => handleUpdateEvent(event.id, { message: e.target.value })}
-                          />
-                        </div>
-                      </CardContent>
-                    </div>
-                  </Card>
-                ))}
-              </div>
+                          <div className="space-y-1">
+                            <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">The Story</Label>
+                            <Textarea 
+                              placeholder="Tell the story of this moment..." 
+                              className="border-none bg-transparent p-0 h-auto min-h-[60px] italic text-muted-foreground focus-visible:ring-0 shadow-none resize-none leading-relaxed"
+                              value={event.message}
+                              onChange={(e) => handleUpdateEvent(event.id, { message: e.target.value })}
+                            />
+                          </div>
+                        </CardContent>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </ScrollArea>
             )}
           </div>
         </div>

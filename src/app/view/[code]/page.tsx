@@ -178,8 +178,8 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         <div className="max-w-7xl mx-auto px-4">
           {layout === 'Timeline' ? (
             <div className="relative flex flex-col items-center">
-              {/* SINGLE UNIFIED SPINE CONTAINER */}
-              <div className="absolute left-1/2 transform -translate-x-1/2 w-1.5 h-full z-0 pointer-events-none">
+              {/* SINGLE UNIFIED SPINE CONTAINER - Stopped exactly at heart top */}
+              <div className="absolute left-1/2 transform -translate-x-1/2 w-1.5 z-0 pointer-events-none" style={{ height: 'calc(100% - 90px)', top: 0 }}>
                 <div className="w-full h-full timeline-line opacity-10" />
                 <div 
                   className="absolute top-0 left-0 w-full z-10 timeline-glow-line"

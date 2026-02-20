@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { use, useEffect, useState, useRef } from 'react';
@@ -266,7 +267,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
               <div className="hidden md:block md:w-[45%]" />
             </div>
           ))}
-          <div className="h-64 relative">
+          <div className="h-32 relative">
              {layout === 'Timeline' && (
               <div 
                 className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1.5 timeline-glow-line z-10" 
@@ -291,7 +292,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         
         {renderMemories()}
 
-        <div className="flex flex-col items-center justify-center pt-20 sm:pt-32 pb-20 relative min-h-[85vh]">
+        <div className="flex flex-col items-center justify-center pt-20 sm:pt-32 pb-20 relative min-h-[50vh]">
           <div className={cn(
             "relative transition-all duration-1000 transform w-full max-w-2xl flex flex-col items-center px-4",
             (layout !== 'Timeline' || scrollProgress > 95) ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20 pointer-events-none"
@@ -315,21 +316,12 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
                   "{finalQuoteToDisplay}"
                 </p>
                 <div className="flex items-center justify-center gap-3 sm:gap-4 pt-2 sm:pt-4">
-                  <Sparkles className="text-secondary w-5 h-5 sm:w-6 sm:h-6" />
+                  <span className="text-secondary text-lg">❤️</span>
                   <div className="h-px w-12 sm:w-20 bg-secondary/20" />
-                  <Sparkles className="text-secondary w-5 h-5 sm:w-6 sm:h-6" />
+                  <span className="text-secondary text-lg">❤️</span>
                 </div>
               </CardContent>
             </Card>
-
-            <div className="z-20">
-              <Link href="/">
-                <Button size="lg" className="rounded-full px-8 py-7 text-lg font-bold shadow-2xl hover:scale-105 transition-all bg-secondary text-secondary-foreground hover:bg-secondary/90 border-none">
-                  <Gift className="mr-2 h-6 w-6" />
-                  Create a surprise for your loved one
-                </Button>
-              </Link>
-            </div>
           </div>
         </div>
       </section>

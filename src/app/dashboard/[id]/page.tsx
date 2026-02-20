@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, use, useRef, useEffect } from 'react';
@@ -10,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Plus, Trash2, Calendar, Quote, Copy, Check, Save, Upload, LayoutTemplate, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Calendar, Quote, Copy, Check, Save, Upload, LayoutTemplate, Eye, EyeOff, Settings2 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
@@ -199,7 +200,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
   if (page.ownerId !== user?.uid) return <div className="p-20 text-center text-destructive">Unauthorized access.</div>;
 
   const nameSlug = slugify(page.recipientName);
-  const livePreviewUrl = `/view/${encodeURIComponent(`${nameSlug}-${page.accessCode}`)}`;
+  const livePreviewUrl = `/view/${encodeURIComponent(`${nameSlug}-${page.accessCode}`)}?preview=true`;
 
   return (
     <div className="min-h-screen bg-muted/30 p-8">
@@ -250,9 +251,12 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1">
-            <ScrollArea className="h-[calc(100vh-320px)] pr-4">
-              <div className="space-y-6">
+          <div className="lg:col-span-1 space-y-4">
+            <h2 className="text-2xl font-bold flex items-center gap-2">
+              <Settings2 className="h-6 w-6 text-primary" /> Customize
+            </h2>
+            <ScrollArea className="h-[calc(100vh-360px)] pr-4">
+              <div className="space-y-6 pb-6">
                 <Card className="h-fit rounded-3xl shadow-lg border-none overflow-hidden">
                   <CardHeader className="bg-primary/10">
                     <CardTitle className="flex items-center gap-2 text-primary-foreground">
@@ -423,8 +427,8 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
                 <p className="text-muted-foreground">Your timeline is empty. Upload a photo from the left panel!</p>
               </div>
             ) : (
-              <ScrollArea className="h-[calc(100vh-320px)] pr-4">
-                <div className="space-y-6">
+              <ScrollArea className="h-[calc(100vh-360px)] pr-4">
+                <div className="space-y-6 pb-6">
                   {events?.map((event) => (
                     <Card key={event.id} className="rounded-[2rem] overflow-hidden border-none shadow-md hover:shadow-xl transition-shadow group bg-white/80 backdrop-blur-sm">
                       <div className="flex flex-col md:flex-row">

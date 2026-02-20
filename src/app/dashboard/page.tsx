@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState } from 'react';
@@ -166,7 +165,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30 p-8">
+    <div className="dark min-h-screen bg-background text-foreground p-8">
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="flex justify-between items-center">
           <div>
@@ -303,7 +302,7 @@ export default function Dashboard() {
         {isLoading ? (
           <div className="text-center py-20">Loading your surprises...</div>
         ) : surprises?.length === 0 ? (
-          <Card className="p-12 text-center border-dashed">
+          <Card className="p-12 text-center border-dashed bg-card/50">
             <Gift className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-xl font-bold">No surprises yet</h3>
             <p className="text-muted-foreground mb-6">Start by creating your first celebration page.</p>
@@ -312,11 +311,11 @@ export default function Dashboard() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {surprises?.map((surprise) => (
-              <Card key={surprise.id} className="group hover:shadow-xl transition-all duration-300 rounded-[2rem] overflow-hidden border-none shadow-md relative">
+              <Card key={surprise.id} className="group hover:shadow-xl transition-all duration-300 rounded-[2rem] overflow-hidden border-none shadow-md relative bg-card">
                 <CardHeader className="bg-primary/10">
                   <div className="flex justify-between items-start">
                     <CardTitle className="font-headline text-2xl truncate pr-4">{surprise.title}</CardTitle>
-                    <div className="bg-white/50 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest text-primary-foreground">
+                    <div className="bg-primary/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest text-primary-foreground">
                       {surprise.occasion}
                     </div>
                   </div>

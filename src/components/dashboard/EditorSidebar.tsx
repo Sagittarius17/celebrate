@@ -63,7 +63,7 @@ export function EditorSidebar({
   return (
     <ScrollArea className="h-[calc(100vh-320px)] pr-4">
       <div className="space-y-6 pb-6">
-        <Card className="h-fit rounded-3xl shadow-lg border-none overflow-hidden">
+        <Card className="h-fit rounded-3xl shadow-lg border-none overflow-hidden bg-card">
           <CardHeader className="bg-primary/10">
             <CardTitle className="flex items-center gap-2 text-primary-foreground">
               <Plus className="h-5 w-5" /> Add Memory
@@ -113,7 +113,7 @@ export function EditorSidebar({
           </CardContent>
         </Card>
 
-        <Card className="h-fit rounded-3xl shadow-lg border-none overflow-hidden">
+        <Card className="h-fit rounded-3xl shadow-lg border-none overflow-hidden bg-card">
           <CardHeader className="bg-accent/10">
             <CardTitle className="flex items-center gap-2 text-accent-foreground">
               <LayoutTemplate className="h-5 w-5" /> Page Layout & Style
@@ -153,7 +153,7 @@ export function EditorSidebar({
           </CardContent>
         </Card>
 
-        <Card className="h-fit rounded-3xl shadow-lg border-none overflow-hidden">
+        <Card className="h-fit rounded-3xl shadow-lg border-none overflow-hidden bg-card">
           <CardHeader className="bg-secondary/10">
             <CardTitle className="flex items-center gap-2 text-secondary-foreground">
               <Quote className="h-5 w-5" /> Final Quote

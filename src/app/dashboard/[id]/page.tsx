@@ -144,7 +144,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
   const livePreviewUrl = `/view/${encodeURIComponent(`${nameSlug}-${page.accessCode}`)}`;
 
   return (
-    <div className="min-h-screen bg-muted/30 p-8">
+    <div className="dark min-h-screen bg-background text-foreground p-8">
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="flex justify-between items-center">
           <Link href="/dashboard">

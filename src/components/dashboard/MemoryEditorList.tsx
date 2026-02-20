@@ -42,7 +42,7 @@ export function MemoryEditorList({ events, isLoading, pageId, db }: MemoryEditor
   if (isLoading) return <div className="text-center py-10">Loading events...</div>;
   if (!events || events.length === 0) {
     return (
-      <div className="text-center py-20 bg-white/50 rounded-[3rem] border-2 border-dashed border-muted">
+      <div className="text-center py-20 bg-card/50 rounded-[3rem] border-2 border-dashed border-muted">
         <Calendar className="mx-auto h-12 w-12 text-muted-foreground/30 mb-2" />
         <p className="text-muted-foreground">Your timeline is empty. Upload a photo from the left panel!</p>
       </div>
@@ -53,7 +53,7 @@ export function MemoryEditorList({ events, isLoading, pageId, db }: MemoryEditor
     <ScrollArea className="h-[calc(100vh-320px)] pr-4">
       <div className="space-y-6 pb-6">
         {events.map((event) => (
-          <Card key={event.id} className="rounded-[2rem] overflow-hidden border-none shadow-md hover:shadow-xl transition-shadow group bg-white/80 backdrop-blur-sm">
+          <Card key={event.id} className="rounded-[2rem] overflow-hidden border-none shadow-md hover:shadow-xl transition-shadow group bg-card">
             <div className="flex flex-col md:flex-row">
               <div className="relative w-full md:w-56 h-56 md:h-auto">
                 <Image src={event.imageUrl} alt={event.title} fill className="object-cover" />
@@ -64,7 +64,7 @@ export function MemoryEditorList({ events, isLoading, pageId, db }: MemoryEditor
                     <Label className="text-[10px] font-bold text-primary uppercase tracking-widest">Date of Memory</Label>
                     <input 
                       type="date" 
-                      className="w-full border-none bg-transparent p-0 h-auto font-bold text-primary text-sm focus-visible:ring-0 shadow-none cursor-pointer outline-none"
+                      className="w-full border-none bg-transparent p-0 h-auto font-bold text-primary text-sm focus-visible:ring-0 shadow-none cursor-pointer outline-none dark:invert dark:hue-rotate-180"
                       value={event.eventDate}
                       onChange={(e) => handleUpdateEvent(event.id, { eventDate: e.target.value })}
                     />

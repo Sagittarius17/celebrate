@@ -67,7 +67,7 @@
 .timeline-glow-line {
   background: linear-gradient(to bottom, hsl(var(--primary)), hsl(var(--secondary)));
   box-shadow: 0 0 15px hsl(var(--secondary) / 0.5), 0 0 30px hsl(var(--secondary) / 0.2);
-  transition: height 0.1s linear;
+  transition: height 0.05s linear;
   border-radius: 100px;
 }
 

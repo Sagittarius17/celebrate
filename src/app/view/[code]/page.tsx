@@ -93,17 +93,25 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       const heartRect = heart.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
       
-      const triggerPoint = viewportHeight * 0.85;
+      // The trigger point is where the "current" scroll position is visually evaluated
+      const triggerPoint = viewportHeight * 0.85; 
+      
       const journeyTop = journeyRect.top;
+      const heartTop = heartRect.top;
       
-      // Calculate total distance from journey top to heart top
-      const totalDistance = heartRect.top - journeyTop + (triggerPoint - viewportHeight * 0.85);
-      const currentProgress = triggerPoint - journeyTop;
+      // Total height of the journey from start to heart top
+      const totalHeight = heartTop - journeyTop;
+      // Current distance relative to start
+      const currentDistance = triggerPoint - journeyTop;
       
-      const progress = (currentProgress / totalDistance) * 100;
+      const progress = (currentDistance / totalHeight) * 100;
       const clampedProgress = Math.min(Math.max(progress, 0), 100);
       
-      setScrollProgress(prev => Math.max(prev, clampedProgress));
+      setScrollProgress(prev => {
+        // Once connected (100%), it stops going up and down
+        if (prev >= 100) return 100;
+        return clampedProgress;
+      });
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -162,14 +170,13 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
   const globalStyle = { fontFamily: page?.font ? `${page.font}, sans-serif` : 'inherit' };
   const layout = page?.layout || 'Timeline';
   
-  // Connect animation only when spine actually reaches the heart
   const isFullyConnected = scrollProgress >= 100;
 
   return (
     <main className="min-h-screen bg-background overflow-x-hidden" style={globalStyle}>
       <Header title={page?.title} occasion={page?.occasion} />
        
-      <section ref={journeyRef} className="pt-12 pb-6 sm:pt-20 sm:pb-8 relative">
+      <section ref={journeyRef} className="pt-12 pb-0 sm:pt-20 sm:pb-0 relative">
         <div className="text-center mb-12 sm:mb-16 px-4">
           <h2 className="text-3xl sm:text-5xl font-bold mb-4" style={{ fontFamily: page?.font || 'inherit' }}>{page?.title || 'Our Journey'}</h2>
           <div className="w-16 sm:w-24 h-1 bg-secondary mx-auto rounded-full" />
@@ -178,12 +185,18 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         <div className="max-w-7xl mx-auto px-4">
           {layout === 'Timeline' ? (
             <div className="relative flex flex-col items-center">
-              {/* SINGLE UNIFIED SPINE CONTAINER - Stopped exactly at heart top */}
-              <div className="absolute left-1/2 transform -translate-x-1/2 w-1.5 z-0 pointer-events-none" style={{ height: 'calc(100% - 90px)', top: 0 }}>
+              {/* Unified spine terminates exactly at heart top */}
+              <div 
+                className="absolute left-1/2 transform -translate-x-1/2 w-1.5 z-0 pointer-events-none" 
+                style={{ 
+                  height: 'calc(100% - 92px)', // Ends exactly at the heart button top edge
+                  top: '10px' 
+                }}
+              >
                 <div className="w-full h-full timeline-line opacity-10" />
                 <div 
                   className="absolute top-0 left-0 w-full z-10 timeline-glow-line"
-                  style={{ height: `${Math.min(scrollProgress, 100)}%` }}
+                  style={{ height: `${scrollProgress}%` }}
                 />
               </div>
               
@@ -191,7 +204,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
                 <TimelineLayout events={events} scrollProgress={scrollProgress} />
               </div>
 
-              {/* Heart Beat Moment - Connects to the end of the spine */}
+              {/* Heart Beat Moment - Destination for the spine */}
               <div ref={endTriggerRef} className="flex flex-col items-center pt-24 pb-8 relative z-20">
                 <div className={cn(
                   "transition-all duration-1000 transform relative z-20",
@@ -210,13 +223,13 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
               </div>
             </div>
           ) : (
-            <>
+            <div className="pb-20">
               {layout === 'Carousel' ? (
                 <CarouselLayout events={events} />
               ) : (
                 <GridLayout events={events} />
               )}
-            </>
+            </div>
           )}
 
           <FinalMessage 

@@ -17,7 +17,6 @@ import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
 
 const FONTS = [
   "Playfair Display",
@@ -242,8 +241,8 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1 space-y-4">
-            <h2 className="text-2xl font-bold flex items-center gap-2">
+          <div className="lg:col-span-1">
+            <h2 className="text-2xl font-bold flex items-center gap-2 mb-4">
               <Settings2 className="h-6 w-6 text-primary" /> Customize
             </h2>
             <ScrollArea className="h-[calc(100vh-300px)] pr-4">
@@ -384,8 +383,8 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
             </ScrollArea>
           </div>
 
-          <div className="lg:col-span-2 space-y-4">
-            <div className="flex justify-between items-center">
+          <div className="lg:col-span-2">
+            <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold flex items-center gap-2">
                 <Calendar className="h-6 w-6 text-primary" /> {showLivePreview ? "Miniature Preview (Desktop)" : "Memory Editor"}
               </h2>
@@ -395,7 +394,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
               <div 
                 ref={previewContainerRef}
                 className="w-full bg-white rounded-[2rem] overflow-hidden shadow-2xl border-4 border-primary/20 relative"
-                style={{ height: `600px` }}
+                style={{ height: `${800 * previewScale}px` }}
               >
                 <div 
                   className="absolute top-0 left-0 w-[1200px] h-[800px] origin-top-left"

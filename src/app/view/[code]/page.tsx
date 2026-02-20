@@ -275,7 +275,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         <div className="relative max-w-6xl mx-auto px-4">
           {layout === 'Timeline' && (
             <>
-              <div className="absolute left-1/2 transform -translate-x-1/2 w-1 timeline-line h-full z-0 opacity-20" />
+              <div className="absolute left-1/2 transform -translate-x-1/2 w-1.5 timeline-line h-full z-0 opacity-10" />
               <div 
                 className="absolute left-1/2 transform -translate-x-1/2 w-1.5 z-10 timeline-glow-line"
                 style={{ height: `${scrollProgress}%` }}

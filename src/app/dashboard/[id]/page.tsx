@@ -146,26 +146,26 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
   const nameSlug = slugify(page.recipientName);
   const livePreviewUrl = `/view/${encodeURIComponent(`${nameSlug}-${page.accessCode}`)}`;
 
+  const headerButtonStyle = "rounded-full h-12 w-12 p-0 flex items-center justify-center border-none bg-secondary hover:bg-secondary/80 text-secondary-foreground transition-all shadow-sm";
+
   return (
     <div className="p-8">
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="flex justify-between items-center">
           <Link href="/dashboard">
-            <Button variant="ghost" className="rounded-full hover:bg-secondary/10 px-4 transition-all">
+            <Button variant="ghost" className="rounded-full hover:bg-secondary/10 px-4 transition-all h-12">
               <ArrowLeft className="mr-2 h-4 w-4" /> Back
             </Button>
           </Link>
           
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-secondary/10 px-4 h-12 rounded-full border border-secondary/20 shadow-sm" title="Secret Access Code">
-              <Key className="h-4 w-4 text-secondary-foreground opacity-70" />
-              <span className="text-sm font-bold text-secondary-foreground">{page.accessCode}</span>
+            <div className="flex items-center gap-3 bg-secondary px-6 h-12 rounded-full border-none shadow-sm" title="Secret Access Code">
+              <Key className="h-5 w-5 text-secondary-foreground opacity-60" />
+              <span className="text-base font-bold text-secondary-foreground tracking-wider">{page.accessCode}</span>
             </div>
 
             <Button 
-              variant="outline" 
-              size="icon" 
-              className="rounded-full h-12 w-12 p-0 flex items-center justify-center border-none bg-secondary/10 hover:bg-secondary/20 transition-all shadow-sm"
+              className={headerButtonStyle}
               onClick={toggleTheme}
               title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
@@ -173,8 +173,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
             </Button>
 
             <Button 
-              variant="outline" 
-              className="rounded-full h-12 w-12 p-0 flex items-center justify-center border-none bg-secondary/10 hover:bg-secondary/20 transition-all shadow-sm"
+              className={headerButtonStyle}
               onClick={copyShareLink} 
               title="Copy Share Link"
             >
@@ -182,10 +181,9 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
             </Button>
             
             <Button 
-              variant={showLivePreview ? "default" : "secondary"} 
-              className="rounded-full h-12 w-12 p-0 flex items-center justify-center shadow-sm transition-all"
+              className={`${headerButtonStyle} ${showLivePreview ? 'ring-2 ring-primary ring-offset-2' : ''}`}
               onClick={() => setShowLivePreview(!showLivePreview)}
-              title={showLivePreview ? "Show Editor" : "Live Preview"}
+              title={showLivePreview ? "Hide Preview" : "Show Preview"}
             >
               {showLivePreview ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             </Button>

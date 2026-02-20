@@ -160,13 +160,15 @@ export default function Dashboard() {
           </p>
           <div className="flex flex-col gap-3">
             <Link href="/">
-              <Button className="w-full rounded-full">Go to Sign Up</Button>
+              <Button className="w-full rounded-full h-12">Go to Sign Up</Button>
             </Link>
           </div>
         </Card>
       </div>
     );
   }
+
+  const headerButtonStyle = "rounded-full h-12 w-12 p-0 flex items-center justify-center border-none bg-secondary hover:bg-secondary/80 text-secondary-foreground transition-all shadow-sm";
 
   return (
     <div className="p-8">
@@ -179,8 +181,7 @@ export default function Dashboard() {
           
           <div className="flex items-center gap-4">
             <Button 
-              variant="secondary" 
-              className="rounded-full h-12 w-12 p-0 flex items-center justify-center shadow-md bg-destructive/10 hover:bg-destructive/20 text-destructive border-none transition-all" 
+              className={`${headerButtonStyle} bg-destructive/10 hover:bg-destructive/20 text-destructive`}
               onClick={handleLogout}
               title="Log Out"
             >
@@ -188,9 +189,7 @@ export default function Dashboard() {
             </Button>
 
             <Button 
-              variant="outline" 
-              size="icon" 
-              className="rounded-full h-12 w-12 p-0 flex items-center justify-center border-none bg-secondary/10 hover:bg-secondary/20 transition-all"
+              className={headerButtonStyle}
               onClick={toggleTheme}
               title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
@@ -200,7 +199,7 @@ export default function Dashboard() {
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
               <DialogTrigger asChild>
                 <Button 
-                  className="rounded-full h-12 w-12 p-0 flex items-center justify-center shadow-lg transition-all"
+                  className={headerButtonStyle}
                   title="New Surprise"
                 >
                   <Plus className="h-6 w-6" />
@@ -256,7 +255,7 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button className="w-full" onClick={handleCreate} disabled={!newSurprise.recipientName || !newSurprise.accessCode}>Create Surprise</Button>
+                  <Button className="w-full rounded-full h-12" onClick={handleCreate} disabled={!newSurprise.recipientName || !newSurprise.accessCode}>Create Surprise</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -313,7 +312,7 @@ export default function Dashboard() {
               </div>
             )}
             <DialogFooter>
-              <Button className="w-full" onClick={handleUpdate}>Save Changes</Button>
+              <Button className="w-full rounded-full h-12" onClick={handleUpdate}>Save Changes</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -321,16 +320,16 @@ export default function Dashboard() {
         {isLoading ? (
           <div className="text-center py-20">Loading your surprises...</div>
         ) : surprises?.length === 0 ? (
-          <Card className="p-12 text-center border-dashed bg-card/50">
+          <Card className="p-12 text-center border-dashed bg-card/50 rounded-[3rem]">
             <Gift className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-xl font-bold">No surprises yet</h3>
             <p className="text-muted-foreground mb-6">Start by creating your first celebration page.</p>
-            <Button onClick={() => setIsCreateOpen(true)} variant="outline">Create Now</Button>
+            <Button onClick={() => setIsCreateOpen(true)} variant="outline" className="rounded-full px-8">Create Now</Button>
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {surprises?.map((surprise) => (
-              <Card key={surprise.id} className="group hover:shadow-xl transition-all duration-300 rounded-[2rem] overflow-hidden border-none shadow-md relative bg-card">
+              <Card key={surprise.id} className="group hover:shadow-xl transition-all duration-300 rounded-[2.5rem] overflow-hidden border-none shadow-md relative bg-card">
                 <CardHeader className="bg-primary/10">
                   <div className="flex justify-between items-start">
                     <CardTitle className="font-headline text-2xl truncate pr-4">{surprise.title}</CardTitle>
@@ -350,7 +349,7 @@ export default function Dashboard() {
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="h-8 px-2"
+                      className="h-10 w-10 p-0 rounded-full hover:bg-secondary/20"
                       onClick={() => copyShareLink(surprise)}
                       title="Copy Share Link"
                     >
@@ -358,18 +357,18 @@ export default function Dashboard() {
                     </Button>
                   </div>
                   <div className="flex items-center text-sm text-muted-foreground">
-                    <Type className="h-4 w-4 mr-2" /> Style: <span style={{ fontFamily: surprise.font || 'inherit' }}>{surprise.font || 'Default'}</span>
+                    <Type className="h-4 w-4 mr-2" /> Style: <span className="font-medium" style={{ fontFamily: surprise.font || 'inherit' }}>{surprise.font || 'Default'}</span>
                   </div>
                   <div className="flex gap-2 pt-2">
                     <Link href={`/dashboard/${surprise.id}`} className="flex-1">
-                      <Button className="w-full rounded-full group-hover:bg-primary group-hover:text-primary-foreground">
+                      <Button className="w-full rounded-full h-11 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                         Edit Timeline <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
                     </Link>
                     <Button 
                       variant="outline" 
                       size="icon" 
-                      className="rounded-full shrink-0 h-10 w-10 border-muted hover:bg-muted"
+                      className="rounded-full shrink-0 h-11 w-11 border-muted hover:bg-muted"
                       onClick={() => handleOpenEdit(surprise)}
                       title="Edit Details"
                     >
@@ -380,13 +379,13 @@ export default function Dashboard() {
                         <Button 
                           variant="outline" 
                           size="icon" 
-                          className="rounded-full shrink-0 h-10 w-10 border-muted hover:bg-destructive/10 hover:text-destructive hover:border-destructive"
+                          className="rounded-full shrink-0 h-11 w-11 border-muted hover:bg-destructive/10 hover:text-destructive hover:border-destructive"
                           title="Delete Surprise"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent>
+                      <AlertDialogContent className="rounded-[2rem]">
                         <AlertDialogHeader>
                           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                           <AlertDialogDescription>
@@ -394,8 +393,8 @@ export default function Dashboard() {
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDelete(surprise.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          <AlertDialogCancel className="rounded-full">Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(surprise.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-full">
                             Delete
                           </AlertDialogAction>
                         </AlertDialogFooter>

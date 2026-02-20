@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useRef } from 'react';
@@ -7,11 +8,12 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Calendar, Trash2, Upload } from 'lucide-react';
+import { Calendar, Trash2, Upload, Image as ImageIcon } from 'lucide-react';
 import Image from 'next/image';
 import { Firestore, doc } from 'firebase/firestore';
 import { updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 interface MemoryEditorListProps {
   events: any[] | null;
@@ -60,18 +62,33 @@ function MemoryItemEditor({ event, pageId, db }: { event: any, pageId: string, d
     toast({ title: "Memory Removed", description: "The memory has been deleted." });
   };
 
+  const isPlaceholder = event.imageUrl?.includes('picsum.photos/seed/placeholder');
+
   return (
     <Card className="rounded-[2rem] overflow-hidden border-none shadow-md hover:shadow-xl transition-shadow group bg-card">
       <div className="flex flex-col md:flex-row">
         <div 
-          className="relative w-full md:w-56 h-56 md:h-auto group cursor-pointer overflow-hidden"
+          className="relative w-full md:w-56 h-56 md:h-auto group cursor-pointer overflow-hidden bg-muted"
           onClick={() => fileInputRef.current?.click()}
           title="Click to change photo"
         >
-          <Image src={event.imageUrl} alt={event.title} fill className="object-cover transition-transform duration-500 group-hover:scale-110" />
-          <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          {event.imageUrl ? (
+            <Image src={event.imageUrl} alt={event.title} fill className="object-cover transition-transform duration-500 group-hover:scale-110" />
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
+              <ImageIcon className="h-8 w-8" />
+              <span className="text-[10px] font-bold uppercase tracking-widest">No Image</span>
+            </div>
+          )}
+          
+          <div className={cn(
+            "absolute inset-0 bg-black/40 flex flex-col items-center justify-center transition-opacity",
+            isPlaceholder ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+          )}>
             <Upload className="h-6 w-6 text-white mb-2" />
-            <span className="text-white text-[10px] font-bold uppercase tracking-widest">Change Photo</span>
+            <span className="text-white text-[10px] font-bold uppercase tracking-widest">
+              {isPlaceholder ? "Upload Photo" : "Change Photo"}
+            </span>
           </div>
           <input 
             type="file" 
@@ -85,12 +102,15 @@ function MemoryItemEditor({ event, pageId, db }: { event: any, pageId: string, d
           <div className="flex justify-between items-start">
             <div className="space-y-1 w-full mr-4">
               <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Date of Memory</Label>
-              <input 
-                type="date" 
-                className="w-full border-none bg-transparent p-0 h-auto font-bold text-foreground text-sm focus-visible:ring-0 shadow-none cursor-pointer outline-none block"
-                value={event.eventDate}
-                onChange={(e) => handleUpdateEvent({ eventDate: e.target.value })}
-              />
+              <div className="relative flex items-center">
+                <input 
+                  type="date" 
+                  className="w-full border-none bg-transparent p-0 h-auto font-bold text-foreground text-sm focus-visible:ring-0 shadow-none cursor-pointer outline-none block dark:text-white"
+                  value={event.eventDate}
+                  onChange={(e) => handleUpdateEvent({ eventDate: e.target.value })}
+                />
+                <Calendar className="h-4 w-4 absolute right-0 text-muted-foreground pointer-events-none opacity-40" />
+              </div>
             </div>
             <Button 
               variant="ghost" 
@@ -133,8 +153,8 @@ export function MemoryEditorList({ events, isLoading, pageId, db }: MemoryEditor
   if (!events || events.length === 0) {
     return (
       <div className="text-center py-20 bg-card/50 rounded-[3rem] border-2 border-dashed border-muted">
-        <Calendar className="mx-auto h-12 w-12 text-muted-foreground/30 mb-2" />
-        <p className="text-muted-foreground">Your timeline is empty. Upload a photo from the left panel!</p>
+        <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground/30 mb-2" />
+        <p className="text-muted-foreground">Your timeline is empty. Click "Add Card" to begin!</p>
       </div>
     );
   }

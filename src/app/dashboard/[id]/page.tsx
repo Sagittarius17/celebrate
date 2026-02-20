@@ -6,7 +6,7 @@ import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@
 import { collection, doc, query, orderBy } from 'firebase/firestore';
 import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Copy, Check, Eye, EyeOff, Settings2, Key, Calendar, Sun, Moon } from 'lucide-react';
+import { ArrowLeft, Copy, Check, Eye, EyeOff, Settings2, Key, Calendar, Sun, Moon, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { EditorSidebar } from '@/components/dashboard/EditorSidebar';
@@ -30,11 +30,9 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
   const db = useFirestore();
   const { toast } = useToast();
   const { isDark, toggleTheme } = useDashboardTheme();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [isCopied, setIsCopied] = useState(false);
   const [isSavingQuote, setIsSavingQuote] = useState(false);
-  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [customQuote, setCustomQuote] = useState('');
   const [showLivePreview, setShowLivePreview] = useState(false);
 
@@ -61,45 +59,20 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
 
   const { data: events, isLoading: isEventsLoading } = useCollection(eventsQuery);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        toast({
-          variant: "destructive",
-          title: "File too large",
-          description: "Please choose an image under 2MB for the best experience.",
-        });
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setSelectedImageUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleAddEvent = () => {
+  const handleAddEmptyCard = () => {
     if (!user || !db || !page) return;
-    if (!selectedImageUrl) {
-      toast({
-        variant: "destructive",
-        title: "No image selected",
-        description: "Please upload an image first to add a memory.",
-      });
-      return;
-    }
     
     const eventId = doc(collection(db, 'dummy')).id;
+    // Use a high-quality placeholder for the initial empty card
+    const placeholderImage = "https://picsum.photos/seed/placeholder/600/400";
+    
     const payload = {
       id: eventId,
       celebrationPageId: id,
       title: 'New Memory',
       message: '',
       eventDate: new Date().toISOString().split('T')[0],
-      imageUrl: selectedImageUrl,
+      imageUrl: placeholderImage,
       order: (events?.length || 0) + 1,
       ownerId: user.uid,
       createdAt: new Date().toISOString(),
@@ -107,9 +80,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
     };
 
     addDocumentNonBlocking(collection(db, 'celebrationPages', id, 'birthdayEvents'), payload);
-    setSelectedImageUrl(null);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-    toast({ title: "Memory Added", description: "Edit the details directly in the timeline." });
+    toast({ title: "Card Added", description: "Upload a photo and tell the story." });
   };
 
   const handleSaveFinalQuote = () => {
@@ -204,15 +175,10 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
               page={page}
               pageRef={pageRef}
               db={db}
-              selectedImageUrl={selectedImageUrl}
-              onFileClick={() => fileInputRef.current?.click()}
-              onAddEvent={handleAddEvent}
               customQuote={customQuote}
               setCustomQuote={setCustomQuote}
               onSaveQuote={handleSaveFinalQuote}
               isSavingQuote={isSavingQuote}
-              fileInputRef={fileInputRef}
-              onFileChange={handleFileChange}
             />
           </div>
 
@@ -221,6 +187,14 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
               <h2 className="text-2xl font-bold flex items-center gap-2">
                 <Calendar className="h-6 w-6 text-primary" /> {showLivePreview ? "Miniature Preview" : "Memory Editor"}
               </h2>
+              {!showLivePreview && (
+                <Button 
+                  onClick={handleAddEmptyCard} 
+                  className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 font-bold"
+                >
+                  <Plus className="mr-2 h-4 w-4" /> Add Card
+                </Button>
+              )}
             </div>
             
             {showLivePreview ? (

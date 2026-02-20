@@ -11,12 +11,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Plus, Trash2, Calendar, Quote, Copy, Check, Save, Upload, LayoutTemplate, Eye, EyeOff, Settings2 } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Calendar, Quote, Copy, Check, Save, Upload, LayoutTemplate, Eye, EyeOff, Settings2, Key } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
 
 const FONTS = [
   "Playfair Display",
@@ -212,8 +213,14 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
             </Button>
           </Link>
           
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={copyShareLink} className="rounded-full">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 bg-secondary/20 px-4 h-9 rounded-full border border-secondary/30">
+              <Key className="h-3 w-3 text-secondary-foreground opacity-70" />
+              <span className="text-[10px] uppercase font-bold tracking-widest text-secondary-foreground opacity-50">Code:</span>
+              <span className="text-sm font-bold text-secondary-foreground">{page.accessCode}</span>
+            </div>
+
+            <Button variant="outline" size="sm" onClick={copyShareLink} className="rounded-full h-9">
               {isCopied ? <Check className="h-4 w-4 mr-2 text-green-500" /> : <Copy className="h-4 w-4 mr-2" />}
               Copy Share Link
             </Button>
@@ -221,7 +228,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
             <Button 
               size="sm" 
               variant={showLivePreview ? "default" : "secondary"} 
-              className="rounded-full"
+              className="rounded-full h-9"
               onClick={() => setShowLivePreview(!showLivePreview)}
             >
               {showLivePreview ? <><EyeOff className="h-4 w-4 mr-2" /> Show Editor</> : <><Eye className="h-4 w-4 mr-2" /> Live Preview</>}
@@ -229,25 +236,9 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row justify-between items-start gap-8">
-          <div className="space-y-2 w-full md:w-2/3">
-            <h1 className="text-4xl font-headline font-bold">{page.title}</h1>
-            <p className="text-muted-foreground italic">Celebrating {page.recipientName} ({page.occasion})</p>
-          </div>
-          
-          <Card className="w-full md:w-1/3 rounded-2xl">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm uppercase tracking-wider text-muted-foreground">Access Details</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Secret Code:</span>
-                <code className="bg-secondary/20 text-secondary-foreground px-3 py-1 rounded-full font-bold">
-                  {page.accessCode}
-                </code>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="space-y-2">
+          <h1 className="text-4xl font-headline font-bold">{page.title}</h1>
+          <p className="text-muted-foreground italic">Celebrating {page.recipientName} ({page.occasion})</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -255,7 +246,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
             <h2 className="text-2xl font-bold flex items-center gap-2">
               <Settings2 className="h-6 w-6 text-primary" /> Customize
             </h2>
-            <ScrollArea className="h-[calc(100vh-360px)] pr-4">
+            <ScrollArea className="h-[calc(100vh-300px)] pr-4">
               <div className="space-y-6 pb-6">
                 <Card className="h-fit rounded-3xl shadow-lg border-none overflow-hidden">
                   <CardHeader className="bg-primary/10">
@@ -404,7 +395,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
               <div 
                 ref={previewContainerRef}
                 className="w-full bg-white rounded-[2rem] overflow-hidden shadow-2xl border-4 border-primary/20 relative"
-                style={{ height: `${800 * previewScale}px` }}
+                style={{ height: `600px` }}
               >
                 <div 
                   className="absolute top-0 left-0 w-[1200px] h-[800px] origin-top-left"
@@ -427,7 +418,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
                 <p className="text-muted-foreground">Your timeline is empty. Upload a photo from the left panel!</p>
               </div>
             ) : (
-              <ScrollArea className="h-[calc(100vh-360px)] pr-4">
+              <ScrollArea className="h-[calc(100vh-300px)] pr-4">
                 <div className="space-y-6 pb-6">
                   {events?.map((event) => (
                     <Card key={event.id} className="rounded-[2rem] overflow-hidden border-none shadow-md hover:shadow-xl transition-shadow group bg-white/80 backdrop-blur-sm">

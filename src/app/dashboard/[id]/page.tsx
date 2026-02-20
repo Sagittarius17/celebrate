@@ -64,7 +64,6 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
     if (!user || !db || !page) return;
     
     const eventId = doc(collection(db, 'dummy')).id;
-    // Use a high-quality placeholder for the initial empty card
     const placeholderImage = "https://picsum.photos/seed/placeholder/600/400";
     
     const payload = {
@@ -190,7 +189,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
                   <Calendar className="h-6 w-6 text-primary" /> {showLivePreview ? "Miniature Preview" : "Memory Editor"}
                 </h2>
                 {!isEventsLoading && events && (
-                  <Badge variant="secondary" className="rounded-full px-3 py-1 font-bold bg-primary/20 text-primary-foreground border-none">
+                  <Badge variant="secondary" className="rounded-full px-4 py-1.5 font-bold bg-primary/20 text-primary border-none shadow-sm">
                     {events.length} {events.length === 1 ? 'Card' : 'Cards'}
                   </Badge>
                 )}

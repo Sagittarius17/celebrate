@@ -126,6 +126,8 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       const endObserver = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting) {
           setIsAtEnd(true);
+        } else {
+          setIsAtEnd(false);
         }
       }, { threshold: 0.1 });
 
@@ -282,10 +284,10 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
           ) : (
             /* Timeline Layout */
             <div className="relative">
-              <div className="absolute left-1/2 transform -translate-x-1/2 w-1.5 timeline-line h-[calc(100%-80px)] z-0 opacity-10" />
+              <div className="absolute left-1/2 transform -translate-x-1/2 w-1.5 timeline-line h-[calc(100%-140px)] z-0 opacity-10" />
               <div 
                 className="absolute left-1/2 transform -translate-x-1/2 w-1.5 z-10 timeline-glow-line"
-                style={{ height: `${Math.min(scrollProgress, 99)}%`, maxHeight: 'calc(100% - 80px)' }}
+                style={{ height: `${Math.min(scrollProgress, 99)}%`, maxHeight: 'calc(100% - 140px)' }}
               />
               
               {renderMemoriesList()}

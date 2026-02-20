@@ -200,7 +200,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
   if (page.ownerId !== user?.uid) return <div className="p-20 text-center text-destructive">Unauthorized access.</div>;
 
   const nameSlug = slugify(page.recipientName);
-  const livePreviewUrl = `/view/${encodeURIComponent(`${nameSlug}-${page.accessCode}`)}?preview=true`;
+  const livePreviewUrl = `/view/${encodeURIComponent(`${nameSlug}-${page.accessCode}`)}`;
 
   return (
     <div className="min-h-screen bg-muted/30 p-8">
@@ -303,52 +303,44 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
                   <CardHeader className="bg-accent/10">
                     <CardTitle className="flex items-center gap-2 text-accent-foreground">
                       <LayoutTemplate className="h-5 w-5" /> Page Layout & Style
-                    </LayoutTemplate>
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4 pt-6">
                     <div className="space-y-2">
                       <Label>Choose Layout</Label>
-                      <Select 
+                      <select 
+                        className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm"
                         value={page.layout || 'Timeline'} 
-                        onValueChange={(val) => {
+                        onChange={(e) => {
+                          const val = e.target.value;
                           if (db && pageRef) {
                             updateDocumentNonBlocking(pageRef, { layout: val, updatedAt: new Date().toISOString() });
                             toast({ title: "Layout Updated", description: `Switched to ${val} view.` });
                           }
                         }}
                       >
-                        <SelectTrigger className="rounded-xl">
-                          <SelectValue placeholder="Select layout" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {LAYOUTS.map(layout => (
-                            <SelectItem key={layout} value={layout}>{layout}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        {LAYOUTS.map(layout => (
+                          <option key={layout} value={layout}>{layout}</option>
+                        ))}
+                      </select>
                     </div>
                     <div className="space-y-2">
                       <Label>Choose Font</Label>
-                      <Select 
+                      <select 
+                        className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm"
                         value={page.font || 'Playfair Display'} 
-                        onValueChange={(val) => {
+                        onChange={(e) => {
+                          const val = e.target.value;
                           if (db && pageRef) {
                             updateDocumentNonBlocking(pageRef, { font: val, updatedAt: new Date().toISOString() });
                             toast({ title: "Font Updated", description: `Style changed to ${val}.` });
                           }
                         }}
                       >
-                        <SelectTrigger className="rounded-xl">
-                          <SelectValue placeholder="Select font" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {FONTS.map(font => (
-                            <SelectItem key={font} value={font} style={{ fontFamily: font }}>
-                              <span style={{ fontFamily: font }}>{font}</span>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        {FONTS.map(font => (
+                          <option key={font} value={font} style={{ fontFamily: font }}>{font}</option>
+                        ))}
+                      </select>
                     </div>
                   </CardContent>
                 </Card>
@@ -386,7 +378,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
           <div className="lg:col-span-2">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold flex items-center gap-2">
-                <Calendar className="h-6 w-6 text-primary" /> {showLivePreview ? "Miniature Preview (Desktop)" : "Memory Editor"}
+                <Calendar className="h-6 w-6 text-primary" /> {showLivePreview ? "Miniature Preview" : "Memory Editor"}
               </h2>
             </div>
             
@@ -394,7 +386,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
               <div 
                 ref={previewContainerRef}
                 className="w-full bg-white rounded-[2rem] overflow-hidden shadow-2xl border-4 border-primary/20 relative"
-                style={{ height: `${800 * previewScale}px` }}
+                style={{ height: `${600 * previewScale}px` }}
               >
                 <div 
                   className="absolute top-0 left-0 w-[1200px] h-[800px] origin-top-left"
@@ -409,66 +401,68 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
                   />
                 </div>
               </div>
-            ) : isEventsLoading ? (
-              <div className="text-center py-10">Loading events...</div>
-            ) : events?.length === 0 ? (
-              <div className="text-center py-20 bg-white/50 rounded-[3rem] border-2 border-dashed border-muted">
-                <Calendar className="mx-auto h-12 w-12 text-muted-foreground/30 mb-2" />
-                <p className="text-muted-foreground">Your timeline is empty. Upload a photo from the left panel!</p>
-              </div>
             ) : (
               <ScrollArea className="h-[calc(100vh-320px)] pr-4">
                 <div className="space-y-6 pb-6">
-                  {events?.map((event) => (
-                    <Card key={event.id} className="rounded-[2rem] overflow-hidden border-none shadow-md hover:shadow-xl transition-shadow group bg-white/80 backdrop-blur-sm">
-                      <div className="flex flex-col md:flex-row">
-                        <div className="relative w-full md:w-56 h-56 md:h-auto">
-                          <Image src={event.imageUrl} alt={event.title} fill className="object-cover" />
-                        </div>
-                        <CardContent className="p-8 flex-1 space-y-4">
-                          <div className="flex justify-between items-start">
-                            <div className="space-y-1 w-full mr-4">
-                              <Label className="text-[10px] font-bold text-primary uppercase tracking-widest">Date of Memory</Label>
-                              <input 
-                                type="date" 
-                                className="w-full border-none bg-transparent p-0 h-auto font-bold text-primary text-sm focus-visible:ring-0 shadow-none cursor-pointer outline-none"
-                                value={event.eventDate}
-                                onChange={(e) => handleUpdateEvent(event.id, { eventDate: e.target.value })}
+                  {isEventsLoading ? (
+                    <div className="text-center py-10">Loading events...</div>
+                  ) : events?.length === 0 ? (
+                    <div className="text-center py-20 bg-white/50 rounded-[3rem] border-2 border-dashed border-muted">
+                      <Calendar className="mx-auto h-12 w-12 text-muted-foreground/30 mb-2" />
+                      <p className="text-muted-foreground">Your timeline is empty. Upload a photo from the left panel!</p>
+                    </div>
+                  ) : (
+                    events?.map((event) => (
+                      <Card key={event.id} className="rounded-[2rem] overflow-hidden border-none shadow-md hover:shadow-xl transition-shadow group bg-white/80 backdrop-blur-sm">
+                        <div className="flex flex-col md:flex-row">
+                          <div className="relative w-full md:w-56 h-56 md:h-auto">
+                            <Image src={event.imageUrl} alt={event.title} fill className="object-cover" />
+                          </div>
+                          <CardContent className="p-8 flex-1 space-y-4">
+                            <div className="flex justify-between items-start">
+                              <div className="space-y-1 w-full mr-4">
+                                <Label className="text-[10px] font-bold text-primary uppercase tracking-widest">Date of Memory</Label>
+                                <input 
+                                  type="date" 
+                                  className="w-full border-none bg-transparent p-0 h-auto font-bold text-primary text-sm focus-visible:ring-0 shadow-none cursor-pointer outline-none"
+                                  value={event.eventDate}
+                                  onChange={(e) => handleUpdateEvent(event.id, { eventDate: e.target.value })}
+                                />
+                              </div>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="text-muted-foreground hover:text-destructive transition-colors shrink-0"
+                                onClick={() => handleDeleteEvent(event.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            
+                            <div className="space-y-1">
+                              <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Memory Title</Label>
+                              <Input 
+                                placeholder="e.g. First Steps" 
+                                className="border-none bg-transparent p-0 h-auto text-2xl font-headline font-bold focus-visible:ring-0 shadow-none"
+                                value={event.title}
+                                onChange={(e) => handleUpdateEvent(event.id, { title: e.target.value })}
                               />
                             </div>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="text-muted-foreground hover:text-destructive transition-colors shrink-0"
-                              onClick={() => handleDeleteEvent(event.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                          
-                          <div className="space-y-1">
-                            <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Memory Title</Label>
-                            <Input 
-                              placeholder="e.g. First Steps" 
-                              className="border-none bg-transparent p-0 h-auto text-2xl font-headline font-bold focus-visible:ring-0 shadow-none"
-                              value={event.title}
-                              onChange={(e) => handleUpdateEvent(event.id, { title: e.target.value })}
-                            />
-                          </div>
 
-                          <div className="space-y-1">
-                            <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">The Story</Label>
-                            <Textarea 
-                              placeholder="Tell the story of this moment..." 
-                              className="border-none bg-transparent p-0 h-auto min-h-[60px] italic text-muted-foreground focus-visible:ring-0 shadow-none resize-none leading-relaxed"
-                              value={event.message}
-                              onChange={(e) => handleUpdateEvent(event.id, { message: e.target.value })}
-                            />
-                          </div>
-                        </CardContent>
-                      </div>
-                    </Card>
-                  ))}
+                            <div className="space-y-1">
+                              <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">The Story</Label>
+                              <Textarea 
+                                placeholder="Tell the story of this moment..." 
+                                className="border-none bg-transparent p-0 h-auto min-h-[60px] italic text-muted-foreground focus-visible:ring-0 shadow-none resize-none leading-relaxed"
+                                value={event.message}
+                                onChange={(e) => handleUpdateEvent(event.id, { message: e.target.value })}
+                              />
+                            </div>
+                          </CardContent>
+                        </div>
+                      </Card>
+                    ))
+                  )}
                 </div>
               </ScrollArea>
             )}

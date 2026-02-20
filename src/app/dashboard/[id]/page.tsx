@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, use, useRef, useEffect } from 'react';
@@ -81,6 +80,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
       const updateScale = () => {
         if (!previewContainerRef.current) return;
         const containerWidth = previewContainerRef.current.offsetWidth;
+        // Target internal width of 1200px for desktop view
         const newScale = containerWidth / 1200;
         setPreviewScale(newScale);
       };
@@ -238,7 +238,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
           <Card className="w-full md:w-1/3 rounded-2xl">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm uppercase tracking-wider text-muted-foreground">Access Details</CardTitle>
-            </Header>
+            </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Secret Code:</span>

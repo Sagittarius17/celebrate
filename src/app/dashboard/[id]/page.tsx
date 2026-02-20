@@ -245,7 +245,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
             <h2 className="text-2xl font-bold flex items-center gap-2 mb-4">
               <Settings2 className="h-6 w-6 text-primary" /> Customize
             </h2>
-            <ScrollArea className="h-[calc(100vh-300px)] pr-4">
+            <ScrollArea className="h-[calc(100vh-320px)] pr-4">
               <div className="space-y-6 pb-6">
                 <Card className="h-fit rounded-3xl shadow-lg border-none overflow-hidden">
                   <CardHeader className="bg-primary/10">
@@ -303,7 +303,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
                   <CardHeader className="bg-accent/10">
                     <CardTitle className="flex items-center gap-2 text-accent-foreground">
                       <LayoutTemplate className="h-5 w-5" /> Page Layout & Style
-                    </CardTitle>
+                    </LayoutTemplate>
                   </CardHeader>
                   <CardContent className="space-y-4 pt-6">
                     <div className="space-y-2">
@@ -417,7 +417,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
                 <p className="text-muted-foreground">Your timeline is empty. Upload a photo from the left panel!</p>
               </div>
             ) : (
-              <ScrollArea className="h-[calc(100vh-300px)] pr-4">
+              <ScrollArea className="h-[calc(100vh-320px)] pr-4">
                 <div className="space-y-6 pb-6">
                   {events?.map((event) => (
                     <Card key={event.id} className="rounded-[2rem] overflow-hidden border-none shadow-md hover:shadow-xl transition-shadow group bg-white/80 backdrop-blur-sm">

@@ -36,7 +36,9 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
   const [isFindingPage, setIsFindingPage] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [isAtEnd, setIsAtEnd] = useState(false);
   const journeyRef = useRef<HTMLDivElement>(null);
+  const endTriggerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const findPage = async () => {
@@ -121,7 +123,18 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       const elements = document.querySelectorAll('.reveal-on-scroll');
       elements.forEach(el => observer.observe(el));
 
-      return () => observer.disconnect();
+      const endObserver = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+          setIsAtEnd(true);
+        }
+      }, { threshold: 0.1 });
+
+      if (endTriggerRef.current) endObserver.observe(endTriggerRef.current);
+
+      return () => {
+        observer.disconnect();
+        endObserver.disconnect();
+      };
     }
   }, [events, page?.layout]);
 
@@ -216,7 +229,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
   };
 
   return (
-    <main className="min-h-screen bg-background overflow-x-hidden pb-20" style={globalStyle}>
+    <main className="min-h-screen bg-background overflow-x-hidden pb-10" style={globalStyle}>
       <Header title={page?.title} occasion={page?.occasion} />
        
       <section ref={journeyRef} className="py-12 sm:py-20 relative">
@@ -267,26 +280,25 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
               </div>
             </div>
           ) : (
-            /* Timeline Layout with Unified Spine Container */
+            /* Timeline Layout */
             <div className="relative">
-              <div className="absolute left-1/2 transform -translate-x-1/2 w-1.5 timeline-line h-full z-0 opacity-10" />
+              <div className="absolute left-1/2 transform -translate-x-1/2 w-1.5 timeline-line h-[calc(100%-80px)] z-0 opacity-10" />
               <div 
                 className="absolute left-1/2 transform -translate-x-1/2 w-1.5 z-10 timeline-glow-line"
-                style={{ height: `${scrollProgress}%` }}
+                style={{ height: `${Math.min(scrollProgress, 99)}%`, maxHeight: 'calc(100% - 80px)' }}
               />
               
               {renderMemoriesList()}
 
-              {/* Heart Anchor - The line ends exactly here at the bottom of its container */}
-              <div className="flex justify-center pt-24 pb-1 relative z-20">
+              <div ref={endTriggerRef} className="flex justify-center pt-24 pb-1 relative z-20">
                 <div className={cn(
                   "transition-all duration-1000 transform",
-                  (layout !== 'Timeline' || scrollProgress > 95) ? "opacity-100 scale-100" : "opacity-0 scale-50"
+                  (layout !== 'Timeline' || isAtEnd) ? "opacity-100 scale-100" : "opacity-0 scale-50"
                 )}>
                   <div className="bg-white p-3 sm:p-4 rounded-full shadow-2xl border-4 border-secondary transition-all duration-700">
                     <Heart className={cn(
                       "w-8 h-8 sm:w-10 sm:h-10 text-secondary fill-secondary",
-                      (layout !== 'Timeline' || scrollProgress > 95) && "animate-heartbeat"
+                      (layout !== 'Timeline' || isAtEnd) && "animate-heartbeat"
                     )} />
                   </div>
                 </div>
@@ -294,11 +306,10 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
             </div>
           )}
 
-          {/* Final Message Card - Outside the timeline lines container to prevent overlap */}
           <div className="flex flex-col items-center justify-center pt-16 relative">
             <div className={cn(
               "relative transition-all duration-1000 transform w-full max-w-2xl flex flex-col items-center px-4",
-              (layout !== 'Timeline' || scrollProgress > 95) ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20 pointer-events-none"
+              (layout !== 'Timeline' || isAtEnd) ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20 pointer-events-none"
             )}>
               <Card className="border-none shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[2rem] sm:rounded-[3rem] overflow-hidden bg-white/95 backdrop-blur-md relative z-20 w-full mb-12">
                 <div className="h-1.5 sm:h-2 w-full bg-gradient-to-r from-primary via-secondary to-primary" />
@@ -318,6 +329,12 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
                   </div>
                 </CardContent>
               </Card>
+
+              <div className="text-center pb-8">
+                <p className="text-sm font-medium text-muted-foreground/60 flex items-center gap-1.5">
+                  Created with love by <span className="text-foreground font-bold">{page?.creatorName}</span>
+                </p>
+              </div>
             </div>
           </div>
         </div>

@@ -60,7 +60,7 @@
 }
 
 .timeline-line {
-  background: hsl(var(--primary));
+  @apply bg-primary/30;
 }
 
 .timeline-glow-line {
@@ -68,6 +68,17 @@
   box-shadow: 0 0 15px hsl(var(--secondary) / 0.5), 0 0 30px hsl(var(--secondary) / 0.2);
   transition: height 0.1s linear;
   border-radius: 100px;
+}
+
+@keyframes rgb-border-cycle {
+  0% { border-color: #ff3b3b; box-shadow: 0 0 15px rgba(255, 59, 59, 0.4); }
+  33% { border-color: #3bff3b; box-shadow: 0 0 15px rgba(59, 255, 59, 0.4); }
+  66% { border-color: #3b3bff; box-shadow: 0 0 15px rgba(59, 59, 255, 0.4); }
+  100% { border-color: #ff3b3b; box-shadow: 0 0 15px rgba(255, 59, 59, 0.4); }
+}
+
+.animate-rgb-border {
+  animation: rgb-border-cycle 4s linear infinite;
 }
 
 .perspective-1000 {

@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { use, useEffect, useState, useRef } from 'react';
@@ -267,7 +266,14 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
               <div className="hidden md:block md:w-[45%]" />
             </div>
           ))}
-          <div className="h-64" />
+          <div className="h-64 relative">
+             {layout === 'Timeline' && (
+              <div 
+                className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1.5 timeline-glow-line z-10" 
+                style={{ height: scrollProgress > 95 ? '100%' : '0' }}
+              />
+            )}
+          </div>
         </div>
       </div>
     );
@@ -290,13 +296,6 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
             "relative transition-all duration-1000 transform w-full max-w-2xl flex flex-col items-center px-4",
             (layout !== 'Timeline' || scrollProgress > 95) ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20 pointer-events-none"
           )}>
-            {layout === 'Timeline' && (
-              <div 
-                className="absolute -top-32 left-1/2 transform -translate-x-1/2 w-1.5 timeline-glow-line z-10" 
-                style={{ height: scrollProgress > 95 ? '128px' : '0' }}
-              />
-            )}
-
             <div className={cn(
               "z-30 mb-6 sm:mb-8 bg-white p-3 sm:p-4 rounded-full shadow-2xl border-4 border-secondary transition-all duration-700",
               (layout !== 'Timeline' || scrollProgress > 95) && "animate-heart-pulse"

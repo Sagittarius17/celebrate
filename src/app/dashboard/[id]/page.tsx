@@ -11,7 +11,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Plus, Trash2, Calendar, Quote, Copy, Check, ExternalLink, Save, ImageIcon, Upload, Type, LayoutTemplate } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ArrowLeft, Plus, Trash2, Calendar, Quote, Copy, Check, ExternalLink, Save, ImageIcon, Upload, Type, LayoutTemplate, Eye } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
@@ -169,6 +170,8 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
   if (!page) return <div className="p-20 text-center">Surprise not found.</div>;
   if (page.ownerId !== user?.uid) return <div className="p-20 text-center text-destructive">Unauthorized access.</div>;
 
+  const livePreviewUrl = `/view/${encodeURIComponent(page.accessCode)}`;
+
   return (
     <div className="min-h-screen bg-muted/30 p-8">
       <div className="max-w-5xl mx-auto space-y-8">
@@ -184,11 +187,21 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
               {isCopied ? <Check className="h-4 w-4 mr-2 text-green-500" /> : <Copy className="h-4 w-4 mr-2" />}
               Copy Share Link
             </Button>
-            <Link href={`/view/${encodeURIComponent(page.accessCode)}`} target="_blank">
-              <Button size="sm" variant="secondary" className="rounded-full">
-                <ExternalLink className="h-4 w-4 mr-2" /> View Live
-              </Button>
-            </Link>
+            
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button size="sm" variant="secondary" className="rounded-full">
+                  <Eye className="h-4 w-4 mr-2" /> Live Preview
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-[95vw] sm:max-w-5xl h-[90vh] p-0 overflow-hidden rounded-[2rem]">
+                <iframe 
+                  src={livePreviewUrl} 
+                  className="w-full h-full border-none"
+                  title="Live Preview"
+                />
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
@@ -354,11 +367,21 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
               <h2 className="text-2xl font-bold flex items-center gap-2">
                 <Calendar className="h-6 w-6 text-primary" /> Memory Preview
               </h2>
-              <Link href={`/view/${encodeURIComponent(page.accessCode)}`} target="_blank">
-                <Button variant="outline" size="sm" className="rounded-full">
-                  <ExternalLink className="h-3 w-3 mr-2" /> Live Preview
-                </Button>
-              </Link>
+              
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="rounded-full">
+                    <Eye className="h-3 w-3 mr-2" /> Live Preview
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-[95vw] sm:max-w-5xl h-[90vh] p-0 overflow-hidden rounded-[2rem]">
+                  <iframe 
+                    src={livePreviewUrl} 
+                    className="w-full h-full border-none"
+                    title="Live Preview"
+                  />
+                </DialogContent>
+              </Dialog>
             </div>
             
             {isEventsLoading ? (

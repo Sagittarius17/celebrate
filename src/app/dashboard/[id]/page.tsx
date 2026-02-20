@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Plus, Trash2, Calendar, Quote, Copy, Check, ExternalLink, Save, ImageIcon, Upload, Type } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Calendar, Quote, Copy, Check, ExternalLink, Save, ImageIcon, Upload, Type, LayoutTemplate } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
@@ -35,6 +35,8 @@ const FONTS = [
   "Sacramento"
 ];
 
+const LAYOUTS = ["Timeline", "Carousel", "Grid"];
+
 export default function SurpriseEditor({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { user } = useUser();
@@ -54,7 +56,6 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
 
   const { data: page, isLoading: isPageLoading } = useDoc(pageRef);
 
-  // Sync customQuote when page data loads
   React.useEffect(() => {
     if (page?.finalQuote) {
       setCustomQuote(page.finalQuote);
@@ -74,7 +75,6 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Basic size check for prototypes (e.g., 2MB limit)
       if (file.size > 2 * 1024 * 1024) {
         toast({
           variant: "destructive",
@@ -264,19 +264,39 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
                 >
                   <Plus className="mr-2 h-4 w-4" /> Add to Timeline
                 </Button>
-                <p className="text-center text-[10px] text-muted-foreground italic">Pick a photo from your device. You can edit the date, title and story directly in the preview!</p>
               </CardContent>
             </Card>
 
             <Card className="h-fit rounded-3xl shadow-lg border-none overflow-hidden">
               <CardHeader className="bg-accent/10">
                 <CardTitle className="flex items-center gap-2 text-accent-foreground">
-                  <Type className="h-5 w-5" /> Page Style
+                  <LayoutTemplate className="h-5 w-5" /> Page Layout & Style
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 pt-6">
                 <div className="space-y-2">
-                  <Label>Choose a Font</Label>
+                  <Label>Choose Layout</Label>
+                  <Select 
+                    value={page.layout || 'Timeline'} 
+                    onValueChange={(val) => {
+                      if (db && pageRef) {
+                        updateDocumentNonBlocking(pageRef, { layout: val, updatedAt: new Date().toISOString() });
+                        toast({ title: "Layout Updated", description: `Switched to ${val} view.` });
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="rounded-xl">
+                      <SelectValue placeholder="Select layout" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LAYOUTS.map(layout => (
+                        <SelectItem key={layout} value={layout}>{layout}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Choose Font</Label>
                   <Select 
                     value={page.font || 'Playfair Display'} 
                     onValueChange={(val) => {
@@ -297,7 +317,6 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-muted-foreground italic">This font will be used for the main headings and titles on your surprise page.</p>
                 </div>
               </CardContent>
             </Card>
@@ -317,7 +336,6 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
                     onChange={(e) => setCustomQuote(e.target.value)}
                     className="min-h-[80px]"
                   />
-                  <p className="text-xs text-muted-foreground italic">If left empty, a default message based on the occasion will be used.</p>
                 </div>
                 <Button 
                   variant="secondary"
@@ -332,9 +350,16 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
           </div>
 
           <div className="lg:col-span-2 space-y-4">
-            <h2 className="text-2xl font-bold flex items-center gap-2">
-              <Calendar className="h-6 w-6 text-primary" /> Timeline Preview
-            </h2>
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                <Calendar className="h-6 w-6 text-primary" /> Memory Preview
+              </h2>
+              <Link href={`/view/${encodeURIComponent(page.accessCode)}`} target="_blank">
+                <Button variant="outline" size="sm" className="rounded-full">
+                  <ExternalLink className="h-3 w-3 mr-2" /> Live Preview
+                </Button>
+              </Link>
+            </div>
             
             {isEventsLoading ? (
               <div className="text-center py-10">Loading events...</div>

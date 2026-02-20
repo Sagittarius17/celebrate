@@ -35,6 +35,12 @@
           "type": "string",
           "description": "A final message or quote shown at the end of the timeline."
         },
+        "layout": {
+          "type": "string",
+          "description": "The visual layout style for the memories.",
+          "enum": ["Timeline", "Carousel", "Grid"],
+          "default": "Timeline"
+        },
         "font": {
           "type": "string",
           "description": "The font family selected for the celebration page.",

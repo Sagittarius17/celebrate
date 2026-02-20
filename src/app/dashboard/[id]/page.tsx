@@ -11,8 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ArrowLeft, Plus, Trash2, Calendar, Quote, Copy, Check, ExternalLink, Save, ImageIcon, Upload, Type, LayoutTemplate, Eye } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Calendar, Quote, Copy, Check, Save, Upload, LayoutTemplate, Eye, EyeOff, X } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
@@ -49,6 +48,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
   const [isSavingQuote, setIsSavingQuote] = useState(false);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [customQuote, setCustomQuote] = useState('');
+  const [showLivePreview, setShowLivePreview] = useState(false);
 
   const pageRef = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -174,7 +174,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
 
   return (
     <div className="min-h-screen bg-muted/30 p-8">
-      <div className="max-w-5xl mx-auto space-y-8">
+      <div className="max-w-7xl mx-auto space-y-8">
         <div className="flex justify-between items-center">
           <Link href="/dashboard">
             <Button variant="ghost">
@@ -188,20 +188,14 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
               Copy Share Link
             </Button>
             
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button size="sm" variant="secondary" className="rounded-full">
-                  <Eye className="h-4 w-4 mr-2" /> Live Preview
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-[95vw] sm:max-w-5xl h-[90vh] p-0 overflow-hidden rounded-[2rem]">
-                <iframe 
-                  src={livePreviewUrl} 
-                  className="w-full h-full border-none"
-                  title="Live Preview"
-                />
-              </DialogContent>
-            </Dialog>
+            <Button 
+              size="sm" 
+              variant={showLivePreview ? "default" : "secondary"} 
+              className="rounded-full"
+              onClick={() => setShowLivePreview(!showLivePreview)}
+            >
+              {showLivePreview ? <><EyeOff className="h-4 w-4 mr-2" /> Hide Preview</> : <><Eye className="h-4 w-4 mr-2" /> Live Preview</>}
+            </Button>
           </div>
         </div>
 
@@ -365,30 +359,40 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
           <div className="lg:col-span-2 space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold flex items-center gap-2">
-                <Calendar className="h-6 w-6 text-primary" /> Memory Preview
+                <Calendar className="h-6 w-6 text-primary" /> {showLivePreview ? "Live Preview" : "Memory Editor"}
               </h2>
               
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="rounded-full">
-                    <Eye className="h-3 w-3 mr-2" /> Live Preview
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-[95vw] sm:max-w-5xl h-[90vh] p-0 overflow-hidden rounded-[2rem]">
-                  <iframe 
-                    src={livePreviewUrl} 
-                    className="w-full h-full border-none"
-                    title="Live Preview"
-                  />
-                </DialogContent>
-              </Dialog>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="rounded-full"
+                onClick={() => setShowLivePreview(!showLivePreview)}
+              >
+                {showLivePreview ? <><EyeOff className="h-3 w-3 mr-2" /> Exit Preview</> : <><Eye className="h-3 w-3 mr-2" /> View Live</>}
+              </Button>
             </div>
             
-            {isEventsLoading ? (
+            {showLivePreview ? (
+              <div className="relative w-full h-[70vh] bg-white rounded-[2rem] overflow-hidden shadow-2xl border-4 border-primary/20">
+                <iframe 
+                  src={livePreviewUrl} 
+                  className="w-full h-full border-none"
+                  title="Live Preview"
+                />
+                <Button 
+                  size="icon" 
+                  variant="secondary" 
+                  className="absolute top-4 right-4 rounded-full shadow-lg"
+                  onClick={() => setShowLivePreview(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : isEventsLoading ? (
               <div className="text-center py-10">Loading events...</div>
             ) : events?.length === 0 ? (
               <div className="text-center py-20 bg-white/50 rounded-[3rem] border-2 border-dashed border-muted">
-                <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground/30 mb-2" />
+                <Calendar className="mx-auto h-12 w-12 text-muted-foreground/30 mb-2" />
                 <p className="text-muted-foreground">Your timeline is empty. Upload a photo from the left panel!</p>
               </div>
             ) : (

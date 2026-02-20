@@ -91,7 +91,7 @@ export default {
         },
         'heart-pulse': {
           '0%, 100%': { transform: 'scale(1)', boxShadow: '0 0 0 rgba(255, 182, 193, 0)' },
-          '50%': { transform: 'scale(1.15)', boxShadow: '0 0 40px 10px rgba(255, 182, 193, 0.6)' },
+          '50%': { transform: 'scale(1.15)', boxShadow: '0 0 40px 10px rgba(255, 182, 193, 0.4)' },
         },
       },
       animation: {
@@ -99,7 +99,7 @@ export default {
         'accordion-up': 'accordion-up 0.2s ease-out',
         'fade-in': 'fade-in 0.5s ease-out forwards',
         'float-up': 'float-up 4s ease-in-out infinite',
-        'heart-pulse': 'heart-pulse 2s ease-in-out infinite',
+        'heart-pulse': 'heart-pulse 3s ease-in-out infinite',
       },
     },
   },

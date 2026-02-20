@@ -267,14 +267,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
               <div className="hidden md:block md:w-[45%]" />
             </div>
           ))}
-          <div className="h-32 relative">
-             {layout === 'Timeline' && (
-              <div 
-                className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1.5 timeline-glow-line z-10" 
-                style={{ height: scrollProgress > 95 ? '100%' : '0' }}
-              />
-            )}
-          </div>
+          <div className="h-32" />
         </div>
       </div>
     );

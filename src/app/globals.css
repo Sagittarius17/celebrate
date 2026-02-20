@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -38,7 +39,7 @@
 }
 
 .timeline-line {
-  background: linear-gradient(to bottom, transparent, hsl(var(--primary)), transparent);
+  background: hsl(var(--primary) / 0.3);
 }
 
 .timeline-glow-line {

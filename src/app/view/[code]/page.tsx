@@ -1,22 +1,16 @@
-
 "use client";
 
 import React, { use, useEffect, useState, useRef } from 'react';
 import { useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, getDocs, doc } from 'firebase/firestore';
 import { Header } from '@/components/birthday/Header';
-import { EventCard } from '@/components/birthday/EventCard';
-import { Star, Camera, Gift, PartyPopper, Cake, Loader2, Heart, Sparkles, Quote } from 'lucide-react';
+import { TimelineLayout } from '@/components/birthday/TimelineLayout';
+import { GridLayout } from '@/components/birthday/GridLayout';
+import { CarouselLayout } from '@/components/birthday/CarouselLayout';
+import { FinalMessage } from '@/components/birthday/FinalMessage';
+import { Gift, Loader2, Heart } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
 
 const DEFAULT_QUOTES: Record<string, string> = {
   "Birthday": "To many more years of joy, laughter, and beautiful memories! Happy Birthday!",
@@ -160,17 +154,8 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
             <AlertDescription className="text-base sm:text-lg text-muted-foreground">
               {error || "Surprise not found."}
               <div className="mt-8 space-y-3">
-                <button 
-                  onClick={() => window.location.reload()}
-                  className="w-full bg-primary text-primary-foreground py-3 sm:py-4 rounded-full font-bold shadow-lg active:scale-95 transition-all"
-                >
-                  Refresh Page
-                </button>
-                <a href="/view" className="block">
-                  <button className="w-full border-2 border-primary text-primary py-3 sm:py-4 rounded-full font-bold active:scale-95 transition-all">
-                    Try Another Code
-                  </button>
-                </a>
+                <button onClick={() => window.location.reload()} className="w-full bg-primary text-primary-foreground py-3 sm:py-4 rounded-full font-bold shadow-lg active:scale-95 transition-all">Refresh Page</button>
+                <a href="/view" className="block"><button className="w-full border-2 border-primary text-primary py-3 sm:py-4 rounded-full font-bold active:scale-95 transition-all">Try Another Code</button></a>
               </div>
             </AlertDescription>
           </Alert>
@@ -179,56 +164,9 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
     );
   }
 
-  const icons = [<Star />, <Camera />, <Gift />, <PartyPopper />, <Cake />, <Heart />, <Sparkles />];
   const finalQuoteToDisplay = page?.finalQuote || DEFAULT_QUOTES[page?.occasion] || DEFAULT_QUOTES["Other"];
-  
-  const globalStyle = {
-    fontFamily: page?.font ? `${page.font}, sans-serif` : 'inherit'
-  };
-
+  const globalStyle = { fontFamily: page?.font ? `${page.font}, sans-serif` : 'inherit' };
   const layout = page?.layout || 'Timeline';
-
-  const renderMemoriesList = () => {
-    return (
-      <div className="space-y-16 sm:space-y-32 relative z-10 pt-10 sm:pt-20">
-        {events.map((event, index) => (
-          <div 
-            key={event.id} 
-            className={cn(
-              "flex flex-col md:flex-row items-center justify-between group gap-8 md:gap-0 relative",
-              index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
-            )}
-          >
-            <div className={cn(
-              "w-full md:w-[45%] reveal-on-scroll",
-              index % 2 === 0 ? "reveal-left" : "reveal-right"
-            )}>
-              <EventCard 
-                title={event.title}
-                date={new Date(event.eventDate).toLocaleDateString()}
-                message={event.message}
-                imageUrl={event.imageUrl}
-                icon={React.cloneElement(icons[index % icons.length] as React.ReactElement, { className: "w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" })}
-              />
-            </div>
-
-            {/* Timeline Dot */}
-            <div className={cn(
-              "hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center justify-center w-10 h-10 sm:w-14 sm:h-14 rounded-full border-[3px] transition-all duration-500 z-20 bg-background shadow-sm",
-              scrollProgress > (index / (events.length + 1)) * 100 ? "border-secondary scale-110 shadow-[0_0_15px_rgba(255,182,193,0.4)]" : "border-primary/40"
-            )}> 
-              <div className={cn(
-                "w-3 h-3 sm:w-5 sm:h-5 rounded-full transition-colors duration-500",
-                scrollProgress > (index / (events.length + 1)) * 100 ? "bg-secondary" : "bg-primary/20"
-              )} />
-            </div>
-
-            <div className="hidden md:block md:w-[45%]" />
-          </div>
-        ))}
-      </div>
-    );
-  };
 
   return (
     <main className="min-h-screen bg-background overflow-x-hidden pb-10" style={globalStyle}>
@@ -242,103 +180,36 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         
         <div className="max-w-7xl mx-auto px-4">
           {layout === 'Carousel' ? (
-            <div className="max-w-5xl mx-auto px-4 py-10">
-              <Carousel className="w-full">
-                <CarouselContent className="-ml-4">
-                  {events.map((event, index) => (
-                    <CarouselItem key={event.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
-                      <div className="p-1">
-                        <EventCard 
-                          title={event.title}
-                          date={new Date(event.eventDate).toLocaleDateString()}
-                          message={event.message}
-                          imageUrl={event.imageUrl}
-                          icon={React.cloneElement(icons[index % icons.length] as React.ReactElement, { className: "w-5 h-5 text-primary-foreground" })}
-                        />
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <div className="flex justify-center gap-4 mt-8">
-                  <CarouselPrevious className="static translate-y-0" />
-                  <CarouselNext className="static translate-y-0" />
-                </div>
-              </Carousel>
-            </div>
+            <CarouselLayout events={events} />
           ) : layout === 'Grid' ? (
-            <div className="max-w-7xl mx-auto px-4 py-10">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {events.map((event, index) => (
-                  <div key={event.id} className="reveal-on-scroll opacity-0 transition-all duration-700">
-                    <EventCard 
-                      title={event.title}
-                      date={new Date(event.eventDate).toLocaleDateString()}
-                      message={event.message}
-                      imageUrl={event.imageUrl}
-                      icon={React.cloneElement(icons[index % icons.length] as React.ReactElement, { className: "w-5 h-5 text-primary-foreground" })}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
+            <GridLayout events={events} />
           ) : (
-            /* Timeline Layout */
-            <div className="relative">
-              <div className="absolute left-1/2 transform -translate-x-1/2 w-1.5 timeline-line h-[calc(100%-140px)] z-0 opacity-10" />
-              <div 
-                className="absolute left-1/2 transform -translate-x-1/2 w-1.5 z-10 timeline-glow-line"
-                style={{ height: `${Math.min(scrollProgress, 99)}%`, maxHeight: 'calc(100% - 140px)' }}
-              />
-              
-              {renderMemoriesList()}
+            <TimelineLayout events={events} scrollProgress={scrollProgress} />
+          )}
 
-              <div ref={endTriggerRef} className="flex justify-center pt-24 pb-1 relative z-20">
-                <div className={cn(
-                  "transition-all duration-1000 transform",
-                  (layout !== 'Timeline' || isAtEnd) ? "opacity-100 scale-100" : "opacity-0 scale-50"
-                )}>
-                  <div className="bg-white p-3 sm:p-4 rounded-full shadow-2xl border-4 border-secondary transition-all duration-700">
-                    <Heart className={cn(
-                      "w-8 h-8 sm:w-10 sm:h-10 text-secondary fill-secondary",
-                      (layout !== 'Timeline' || isAtEnd) && "animate-heartbeat"
-                    )} />
-                  </div>
+          {/* Spine and Heart Trigger */}
+          {layout === 'Timeline' && (
+            <div ref={endTriggerRef} className="flex justify-center pt-24 pb-1 relative z-20">
+              <div className={cn(
+                "transition-all duration-1000 transform",
+                isAtEnd ? "opacity-100 scale-100" : "opacity-0 scale-50"
+              )}>
+                <div className="bg-white p-3 sm:p-4 rounded-full shadow-2xl border-4 border-secondary transition-all duration-700">
+                  <Heart className={cn(
+                    "w-8 h-8 sm:w-10 sm:h-10 text-secondary fill-secondary",
+                    isAtEnd && "animate-heartbeat"
+                  )} />
                 </div>
               </div>
             </div>
           )}
 
-          <div className="flex flex-col items-center justify-center pt-16 relative">
-            <div className={cn(
-              "relative transition-all duration-1000 transform w-full max-w-2xl flex flex-col items-center px-4",
-              (layout !== 'Timeline' || isAtEnd) ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20 pointer-events-none"
-            )}>
-              <Card className="border-none shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[2rem] sm:rounded-[3rem] overflow-hidden bg-white/95 backdrop-blur-md relative z-20 w-full mb-12">
-                <div className="h-1.5 sm:h-2 w-full bg-gradient-to-r from-primary via-secondary to-primary" />
-                
-                <CardContent className="p-8 sm:p-12 text-center space-y-4 sm:space-y-6 pt-12 sm:pt-16">
-                  <Quote className="w-10 h-10 sm:w-12 sm:h-12 text-secondary/30 mx-auto mb-2 sm:mb-4" />
-                  <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
-                    To Many More Years of Joy, {page?.recipientName}!
-                  </h3>
-                  <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground italic leading-relaxed">
-                    "{finalQuoteToDisplay}"
-                  </p>
-                  <div className="flex items-center justify-center gap-3 sm:gap-4 pt-2 sm:pt-4">
-                    <span className="text-secondary text-lg">❤️</span>
-                    <div className="h-px w-12 sm:w-20 bg-secondary/20" />
-                    <span className="text-secondary text-lg">❤️</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <div className="text-center pb-8">
-                <p className="text-sm font-medium text-muted-foreground/60 flex items-center gap-1.5">
-                  Created with love by <span className="text-foreground font-bold">{page?.creatorName}</span>
-                </p>
-              </div>
-            </div>
-          </div>
+          <FinalMessage 
+            isVisible={layout !== 'Timeline' || isAtEnd}
+            recipientName={page?.recipientName}
+            quote={finalQuoteToDisplay}
+            creatorName={page?.creatorName}
+          />
         </div>
       </section>
     </main>

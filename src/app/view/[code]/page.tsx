@@ -180,35 +180,36 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         </div>
         
         <div className="max-w-7xl mx-auto px-4">
-          {layout === 'Carousel' ? (
-            <CarouselLayout events={events} />
-          ) : layout === 'Grid' ? (
-            <GridLayout events={events} />
-          ) : (
-            <TimelineLayout events={events} scrollProgress={scrollProgress} />
-          )}
-
-          {/* Unified Spine and Heart Beat Moment */}
-          {layout === 'Timeline' && (
-            <div ref={endTriggerRef} className="flex justify-center pt-24 pb-1 relative z-20">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 h-24 timeline-line z-0 opacity-10" />
+          {layout === 'Timeline' ? (
+            <div className="relative">
+              {/* SINGLE UNIFIED SPINE */}
+              <div className="absolute left-1/2 transform -translate-x-1/2 w-1.5 timeline-line h-full z-0 opacity-10" />
               <div 
-                className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 timeline-glow-line z-10"
-                style={{ height: isAtEnd ? '100%' : '0%' }}
+                className="absolute left-1/2 transform -translate-x-1/2 w-1.5 z-10 timeline-glow-line"
+                style={{ height: `${Math.min(scrollProgress, 100)}%` }}
               />
               
-              <div className={cn(
-                "transition-all duration-1000 transform relative z-20",
-                isAtEnd ? "opacity-100 scale-100" : "opacity-0 scale-50"
-              )}>
-                <div className="bg-white p-3 sm:p-4 rounded-full shadow-2xl border-4 border-secondary">
-                  <Heart className={cn(
-                    "w-8 h-8 sm:w-10 sm:h-10 text-secondary fill-secondary",
-                    isAtEnd && "animate-heartbeat"
-                  )} />
+              <TimelineLayout events={events} scrollProgress={scrollProgress} />
+
+              {/* Heart Beat Moment - Perfectly connected to the single spine */}
+              <div ref={endTriggerRef} className="flex justify-center pt-24 pb-1 relative z-20">
+                <div className={cn(
+                  "transition-all duration-1000 transform relative z-20",
+                  isAtEnd ? "opacity-100 scale-100" : "opacity-0 scale-50"
+                )}>
+                  <div className="bg-white p-3 sm:p-4 rounded-full shadow-2xl border-4 border-secondary">
+                    <Heart className={cn(
+                      "w-8 h-8 sm:w-10 sm:h-10 text-secondary fill-secondary",
+                      isAtEnd && "animate-heartbeat"
+                    )} />
+                  </div>
                 </div>
               </div>
             </div>
+          ) : layout === 'Carousel' ? (
+            <CarouselLayout events={events} />
+          ) : (
+            <GridLayout events={events} />
           )}
 
           <FinalMessage 

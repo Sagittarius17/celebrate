@@ -4,14 +4,14 @@
 import React, { useState } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase, useAuth } from '@/firebase';
 import { collection, doc, query, where } from 'firebase/firestore';
-import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, User, Key, ArrowRight, Gift, LogOut, Copy, Check, Type } from 'lucide-react';
+import { Plus, User, Key, ArrowRight, Gift, LogOut, Copy, Check, Type, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -66,6 +66,18 @@ export default function Dashboard() {
     addDocumentNonBlocking(collection(db, 'celebrationPages'), payload);
     setIsCreateOpen(false);
     setNewSurprise({ recipientName: '', title: '', occasion: 'Birthday', accessCode: '' });
+  };
+
+  const handleDelete = (id: string) => {
+    if (!db) return;
+    if (window.confirm("Are you sure you want to delete this surprise? This will permanently remove the celebration page.")) {
+      const pageRef = doc(db, 'celebrationPages', id);
+      deleteDocumentNonBlocking(pageRef);
+      toast({
+        title: "Surprise Deleted",
+        description: "The celebration page has been removed.",
+      });
+    }
   };
 
   const handleLogout = () => {
@@ -201,7 +213,7 @@ export default function Dashboard() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {surprises?.map((surprise) => (
-              <Card key={surprise.id} className="group hover:shadow-xl transition-all duration-300 rounded-[2rem] overflow-hidden border-none shadow-md">
+              <Card key={surprise.id} className="group hover:shadow-xl transition-all duration-300 rounded-[2rem] overflow-hidden border-none shadow-md relative">
                 <CardHeader className="bg-primary/10">
                   <div className="flex justify-between items-start">
                     <CardTitle className="font-headline text-2xl truncate pr-4">{surprise.title}</CardTitle>
@@ -218,14 +230,24 @@ export default function Dashboard() {
                     <div className="flex items-center">
                       <Key className="h-4 w-4 mr-2" /> Code: <code className="bg-muted px-2 py-0.5 rounded ml-2 font-bold">{surprise.accessCode}</code>
                     </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-8 px-2"
-                      onClick={() => copyShareLink(surprise.accessCode, surprise.id)}
-                    >
-                      {copiedId === surprise.id ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 px-2"
+                        onClick={() => copyShareLink(surprise.accessCode, surprise.id)}
+                      >
+                        {copiedId === surprise.id ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 px-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => handleDelete(surprise.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                   <div className="flex items-center text-sm text-muted-foreground">
                     <Type className="h-4 w-4 mr-2" /> Style: <span style={{ fontFamily: surprise.font || 'inherit' }}>{surprise.font || 'Default'}</span>

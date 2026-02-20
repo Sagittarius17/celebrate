@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -15,10 +16,13 @@ const icons = [<Star />, <Camera />, <Gift />, <PartyPopper />, <Cake />, <Heart
 export function TimelineLayout({ events, scrollProgress }: TimelineLayoutProps) {
   return (
     <div className="relative">
-      <div className="absolute left-1/2 transform -translate-x-1/2 w-1.5 timeline-line h-[calc(100%-140px)] z-0 opacity-10" />
+      {/* Unified Spine Base */}
+      <div className="absolute left-1/2 transform -translate-x-1/2 w-1.5 timeline-line h-full z-0 opacity-10" />
+      
+      {/* Glowing Progress Line */}
       <div 
         className="absolute left-1/2 transform -translate-x-1/2 w-1.5 z-10 timeline-glow-line"
-        style={{ height: `${Math.min(scrollProgress, 99)}%`, maxHeight: 'calc(100% - 140px)' }}
+        style={{ height: `${Math.min(scrollProgress, 100)}%` }}
       />
       
       <div className="space-y-16 sm:space-y-32 relative z-10 pt-10 sm:pt-20">

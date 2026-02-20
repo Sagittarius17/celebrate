@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from 'react';
@@ -165,7 +166,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="dark min-h-screen bg-background text-foreground p-8">
+    <div className="p-8">
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="flex justify-between items-center">
           <div>

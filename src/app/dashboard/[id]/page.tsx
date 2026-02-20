@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, use, useRef, useEffect } from 'react';
@@ -144,7 +145,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
   const livePreviewUrl = `/view/${encodeURIComponent(`${nameSlug}-${page.accessCode}`)}`;
 
   return (
-    <div className="dark min-h-screen bg-background text-foreground p-8">
+    <div className="p-8">
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="flex justify-between items-center">
           <Link href="/dashboard">
@@ -153,16 +154,15 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
             </Button>
           </Link>
           
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-secondary/20 px-4 h-9 rounded-full border border-secondary/30">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 bg-secondary/10 px-3 h-9 rounded-full border border-secondary/20 mr-1">
               <Key className="h-3 w-3 text-secondary-foreground opacity-70" />
-              <span className="text-[10px] uppercase font-bold tracking-widest text-secondary-foreground opacity-50">Code:</span>
-              <span className="text-sm font-bold text-secondary-foreground">{page.accessCode}</span>
+              <span className="text-xs font-bold text-secondary-foreground">{page.accessCode}</span>
             </div>
 
             <Button variant="outline" size="sm" onClick={copyShareLink} className="rounded-full h-9">
               {isCopied ? <Check className="h-4 w-4 mr-2 text-green-500" /> : <Copy className="h-4 w-4 mr-2" />}
-              Copy Share Link
+              Share Link
             </Button>
             
             <Button 

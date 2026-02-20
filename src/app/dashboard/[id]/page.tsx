@@ -156,43 +156,38 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
             </Button>
           </Link>
           
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-secondary/10 px-3 h-9 rounded-full border border-secondary/20">
-              <Key className="h-3 w-3 text-secondary-foreground opacity-70" />
-              <span className="text-xs font-bold text-secondary-foreground">{page.accessCode}</span>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 bg-secondary/10 px-4 h-12 rounded-full border border-secondary/20 shadow-sm" title="Secret Access Code">
+              <Key className="h-4 w-4 text-secondary-foreground opacity-70" />
+              <span className="text-sm font-bold text-secondary-foreground">{page.accessCode}</span>
             </div>
 
             <Button 
               variant="outline" 
               size="icon" 
-              className="rounded-full h-9 w-9 border-none bg-secondary/10 hover:bg-secondary/20 shrink-0"
+              className="rounded-full h-12 w-12 p-0 flex items-center justify-center border-none bg-secondary/10 hover:bg-secondary/20 transition-all shadow-sm"
               onClick={toggleTheme}
+              title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
-              {isDark ? <Sun className="h-4 w-4 text-yellow-400" /> : <Moon className="h-4 w-4 text-slate-700" />}
+              {isDark ? <Sun className="h-5 w-5 text-yellow-400" /> : <Moon className="h-5 w-5 text-slate-700" />}
             </Button>
 
             <Button 
               variant="outline" 
-              size="sm" 
+              className="rounded-full h-12 w-12 p-0 flex items-center justify-center border-none bg-secondary/10 hover:bg-secondary/20 transition-all shadow-sm"
               onClick={copyShareLink} 
-              className="group rounded-full h-9 w-9 hover:w-32 px-0 hover:px-4 transition-all duration-300 overflow-hidden flex items-center justify-center whitespace-nowrap border-none bg-secondary/10 hover:bg-secondary/20"
+              title="Copy Share Link"
             >
-              {isCopied ? <Check className="h-4 w-4 shrink-0 text-green-500" /> : <Copy className="h-4 w-4 shrink-0" />}
-              <span className="max-w-0 group-hover:max-w-[100px] opacity-0 group-hover:opacity-100 transition-all duration-300 ml-0 group-hover:ml-2">
-                Share Link
-              </span>
+              {isCopied ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5" />}
             </Button>
             
             <Button 
-              size="sm" 
               variant={showLivePreview ? "default" : "secondary"} 
-              className="group rounded-full h-9 w-9 hover:w-36 px-0 hover:px-4 transition-all duration-300 overflow-hidden flex items-center justify-center whitespace-nowrap"
+              className="rounded-full h-12 w-12 p-0 flex items-center justify-center shadow-sm transition-all"
               onClick={() => setShowLivePreview(!showLivePreview)}
+              title={showLivePreview ? "Show Editor" : "Live Preview"}
             >
-              {showLivePreview ? <EyeOff className="h-4 w-4 shrink-0" /> : <Eye className="h-4 w-4 shrink-0" />}
-              <span className="max-w-0 group-hover:max-w-[120px] opacity-0 group-hover:opacity-100 transition-all duration-300 ml-0 group-hover:ml-2">
-                {showLivePreview ? "Show Editor" : "Live Preview"}
-              </span>
+              {showLivePreview ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             </Button>
           </div>
         </div>

@@ -177,34 +177,33 @@ export default function Dashboard() {
             <p className="text-muted-foreground">Manage and create interactive surprises</p>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <Button 
               variant="secondary" 
-              className="group rounded-full h-12 w-12 hover:w-36 px-0 hover:px-6 shadow-md transition-all duration-300 overflow-hidden flex items-center justify-center whitespace-nowrap" 
+              className="rounded-full h-12 w-12 p-0 flex items-center justify-center shadow-md bg-destructive/10 hover:bg-destructive/20 text-destructive border-none transition-all" 
               onClick={handleLogout}
+              title="Log Out"
             >
-              <LogOut className="h-5 w-5 shrink-0" />
-              <span className="max-w-0 group-hover:max-w-[100px] opacity-0 group-hover:opacity-100 transition-all duration-300 ml-0 group-hover:ml-2">
-                Log Out
-              </span>
+              <LogOut className="h-5 w-5" />
             </Button>
 
             <Button 
               variant="outline" 
               size="icon" 
-              className="rounded-full h-12 w-12 border-none bg-secondary/10 hover:bg-secondary/20 shrink-0"
+              className="rounded-full h-12 w-12 p-0 flex items-center justify-center border-none bg-secondary/10 hover:bg-secondary/20 transition-all"
               onClick={toggleTheme}
+              title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
               {isDark ? <Sun className="h-5 w-5 text-yellow-400" /> : <Moon className="h-5 w-5 text-slate-700" />}
             </Button>
 
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
               <DialogTrigger asChild>
-                <Button className="group rounded-full shadow-lg h-12 w-12 hover:w-44 px-0 hover:px-6 transition-all duration-300 overflow-hidden flex items-center justify-center whitespace-nowrap">
-                  <Plus className="h-5 w-5 shrink-0" />
-                  <span className="max-w-0 group-hover:max-w-[150px] opacity-0 group-hover:opacity-100 transition-all duration-300 ml-0 group-hover:ml-2">
-                    New Surprise
-                  </span>
+                <Button 
+                  className="rounded-full h-12 w-12 p-0 flex items-center justify-center shadow-lg transition-all"
+                  title="New Surprise"
+                >
+                  <Plus className="h-6 w-6" />
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
@@ -353,6 +352,7 @@ export default function Dashboard() {
                       size="sm" 
                       className="h-8 px-2"
                       onClick={() => copyShareLink(surprise)}
+                      title="Copy Share Link"
                     >
                       {copiedId === surprise.id ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                     </Button>
@@ -371,6 +371,7 @@ export default function Dashboard() {
                       size="icon" 
                       className="rounded-full shrink-0 h-10 w-10 border-muted hover:bg-muted"
                       onClick={() => handleOpenEdit(surprise)}
+                      title="Edit Details"
                     >
                       <Edit2 className="h-4 w-4 text-muted-foreground" />
                     </Button>
@@ -380,6 +381,7 @@ export default function Dashboard() {
                           variant="outline" 
                           size="icon" 
                           className="rounded-full shrink-0 h-10 w-10 border-muted hover:bg-destructive/10 hover:text-destructive hover:border-destructive"
+                          title="Delete Surprise"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

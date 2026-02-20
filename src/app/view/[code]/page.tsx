@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { use, useEffect, useState, useRef } from 'react';
@@ -30,7 +31,6 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
   const [isFindingPage, setIsFindingPage] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [isAtEnd, setIsAtEnd] = useState(false);
   const journeyRef = useRef<HTMLDivElement>(null);
   const endTriggerRef = useRef<HTMLDivElement>(null);
 
@@ -84,16 +84,23 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
 
   useEffect(() => {
     const handleScroll = () => {
-      if (!journeyRef.current) return;
-      const element = journeyRef.current;
-      const rect = element.getBoundingClientRect();
+      if (!journeyRef.current || !endTriggerRef.current) return;
+      
+      const journey = journeyRef.current;
+      const heart = endTriggerRef.current;
+      
+      const journeyRect = journey.getBoundingClientRect();
+      const heartRect = heart.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
       
-      const triggerPoint = viewportHeight * 0.85; // Slightly deeper trigger for better connection feel
-      const start = rect.top;
-      const height = rect.height;
+      const triggerPoint = viewportHeight * 0.85;
+      const journeyTop = journeyRect.top;
       
-      const progress = ((triggerPoint - start) / height) * 100;
+      // Calculate total distance from journey top to heart top
+      const totalDistance = heartRect.top - journeyTop + (triggerPoint - viewportHeight * 0.85);
+      const currentProgress = triggerPoint - journeyTop;
+      
+      const progress = (currentProgress / totalDistance) * 100;
       const clampedProgress = Math.min(Math.max(progress, 0), 100);
       
       setScrollProgress(prev => Math.max(prev, clampedProgress));
@@ -117,18 +124,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       const elements = document.querySelectorAll('.reveal-on-scroll');
       elements.forEach(el => observer.observe(el));
 
-      const endObserver = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting) {
-          setIsAtEnd(true);
-        }
-      }, { threshold: 0.1 });
-
-      if (endTriggerRef.current) endObserver.observe(endTriggerRef.current);
-
-      return () => {
-        observer.disconnect();
-        endObserver.disconnect();
-      };
+      return () => observer.disconnect();
     }
   }, [events, page?.layout]);
 
@@ -165,6 +161,9 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
   const finalQuoteToDisplay = page?.finalQuote || DEFAULT_QUOTES[page?.occasion] || DEFAULT_QUOTES["Other"];
   const globalStyle = { fontFamily: page?.font ? `${page.font}, sans-serif` : 'inherit' };
   const layout = page?.layout || 'Timeline';
+  
+  // Connect animation only when spine actually reaches the heart
+  const isFullyConnected = scrollProgress >= 100;
 
   return (
     <main className="min-h-screen bg-background overflow-x-hidden" style={globalStyle}>
@@ -178,9 +177,9 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         
         <div className="max-w-7xl mx-auto px-4">
           {layout === 'Timeline' ? (
-            <div className="relative flex flex-col">
+            <div className="relative flex flex-col items-center">
               {/* SINGLE UNIFIED SPINE CONTAINER */}
-              <div className="absolute left-1/2 transform -translate-x-1/2 w-1.5 h-full z-0">
+              <div className="absolute left-1/2 transform -translate-x-1/2 w-1.5 h-full z-0 pointer-events-none">
                 <div className="w-full h-full timeline-line opacity-10" />
                 <div 
                   className="absolute top-0 left-0 w-full z-10 timeline-glow-line"
@@ -188,22 +187,23 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
                 />
               </div>
               
-              <TimelineLayout events={events} scrollProgress={scrollProgress} />
+              <div className="w-full">
+                <TimelineLayout events={events} scrollProgress={scrollProgress} />
+              </div>
 
-              {/* Heart Beat Moment - Integrated into the spine flow */}
-              <div ref={endTriggerRef} className="flex flex-col items-center pt-24 pb-1 relative z-20">
-                {/* Connecting Line from Last Card to Heart */}
+              {/* Heart Beat Moment - Connects to the end of the spine */}
+              <div ref={endTriggerRef} className="flex flex-col items-center pt-24 pb-8 relative z-20">
                 <div className={cn(
                   "transition-all duration-1000 transform relative z-20",
-                  isAtEnd ? "opacity-100 scale-100" : "opacity-0 scale-50"
+                  scrollProgress > 80 ? "opacity-100 scale-100" : "opacity-0 scale-50"
                 )}>
                   <div className={cn(
-                    "bg-white p-3 sm:p-4 rounded-full shadow-2xl border-4 transition-all duration-500",
-                    isAtEnd ? "animate-rgb-border" : "border-secondary"
+                    "bg-white p-3 sm:p-4 rounded-full shadow-2xl border-4 transition-all duration-700",
+                    isFullyConnected ? "animate-rgb-border" : "border-secondary/40"
                   )}>
                     <Heart className={cn(
-                      "w-8 h-8 sm:w-10 sm:h-10 text-secondary fill-secondary",
-                      isAtEnd && "animate-heartbeat"
+                      "w-8 h-8 sm:w-10 sm:h-10 text-secondary fill-secondary transition-all",
+                      isFullyConnected ? "animate-heartbeat" : "opacity-40 scale-90"
                     )} />
                   </div>
                 </div>
@@ -220,7 +220,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
           )}
 
           <FinalMessage 
-            isVisible={layout !== 'Timeline' || isAtEnd}
+            isVisible={layout !== 'Timeline' || isFullyConnected}
             recipientName={page?.recipientName}
             quote={finalQuoteToDisplay}
             creatorName={page?.creatorName}

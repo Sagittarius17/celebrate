@@ -173,55 +173,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
 
   const layout = page?.layout || 'Timeline';
 
-  const renderMemories = () => {
-    if (layout === 'Carousel') {
-      return (
-        <div className="max-w-5xl mx-auto px-4 py-20">
-          <Carousel className="w-full">
-            <CarouselContent className="-ml-4">
-              {events.map((event, index) => (
-                <CarouselItem key={event.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
-                  <div className="p-1">
-                    <EventCard 
-                      title={event.title}
-                      date={new Date(event.eventDate).toLocaleDateString()}
-                      message={event.message}
-                      imageUrl={event.imageUrl}
-                      icon={React.cloneElement(icons[index % icons.length] as React.ReactElement, { className: "w-5 h-5 text-primary-foreground" })}
-                    />
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <div className="flex justify-center gap-4 mt-8">
-              <CarouselPrevious className="static translate-y-0" />
-              <CarouselNext className="static translate-y-0" />
-            </div>
-          </Carousel>
-        </div>
-      );
-    }
-
-    if (layout === 'Grid') {
-      return (
-        <div className="max-w-7xl mx-auto px-4 py-20">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {events.map((event, index) => (
-              <div key={event.id} className="reveal-on-scroll opacity-0 transition-all duration-700">
-                <EventCard 
-                  title={event.title}
-                  date={new Date(event.eventDate).toLocaleDateString()}
-                  message={event.message}
-                  imageUrl={event.imageUrl}
-                  icon={React.cloneElement(icons[index % icons.length] as React.ReactElement, { className: "w-5 h-5 text-primary-foreground" })}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      );
-    }
-
+  const renderMemoriesList = () => {
     return (
       <div className="space-y-16 sm:space-y-32 relative z-10 pt-10 sm:pt-20">
         {events.map((event, index) => (
@@ -245,13 +197,14 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
               />
             </div>
 
+            {/* Timeline Dot */}
             <div className={cn(
               "hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center justify-center w-10 h-10 sm:w-14 sm:h-14 rounded-full border-[3px] transition-all duration-500 z-20 bg-background shadow-sm",
-              scrollProgress > (index / events.length) * 100 ? "border-secondary scale-110 shadow-[0_0_15px_rgba(255,182,193,0.4)]" : "border-primary/40"
+              scrollProgress > (index / (events.length + 1)) * 100 ? "border-secondary scale-110 shadow-[0_0_15px_rgba(255,182,193,0.4)]" : "border-primary/40"
             )}> 
               <div className={cn(
                 "w-3 h-3 sm:w-5 sm:h-5 rounded-full transition-colors duration-500",
-                scrollProgress > (index / events.length) * 100 ? "bg-secondary" : "bg-primary/20"
+                scrollProgress > (index / (events.length + 1)) * 100 ? "bg-secondary" : "bg-primary/20"
               )} />
             </div>
 
@@ -263,7 +216,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
   };
 
   return (
-    <main className="min-h-screen bg-background overflow-x-hidden" style={globalStyle}>
+    <main className="min-h-screen bg-background overflow-x-hidden pb-20" style={globalStyle}>
       <Header title={page?.title} occasion={page?.occasion} />
        
       <section ref={journeyRef} className="py-12 sm:py-20 relative">
@@ -272,31 +225,81 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
           <div className="w-16 sm:w-24 h-1 bg-secondary mx-auto rounded-full" />
         </div>
         
-        <div className="relative max-w-6xl mx-auto px-4">
-          {layout === 'Timeline' && (
-            <>
+        <div className="max-w-7xl mx-auto px-4">
+          {layout === 'Carousel' ? (
+            <div className="max-w-5xl mx-auto px-4 py-10">
+              <Carousel className="w-full">
+                <CarouselContent className="-ml-4">
+                  {events.map((event, index) => (
+                    <CarouselItem key={event.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                      <div className="p-1">
+                        <EventCard 
+                          title={event.title}
+                          date={new Date(event.eventDate).toLocaleDateString()}
+                          message={event.message}
+                          imageUrl={event.imageUrl}
+                          icon={React.cloneElement(icons[index % icons.length] as React.ReactElement, { className: "w-5 h-5 text-primary-foreground" })}
+                        />
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <div className="flex justify-center gap-4 mt-8">
+                  <CarouselPrevious className="static translate-y-0" />
+                  <CarouselNext className="static translate-y-0" />
+                </div>
+              </Carousel>
+            </div>
+          ) : layout === 'Grid' ? (
+            <div className="max-w-7xl mx-auto px-4 py-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {events.map((event, index) => (
+                  <div key={event.id} className="reveal-on-scroll opacity-0 transition-all duration-700">
+                    <EventCard 
+                      title={event.title}
+                      date={new Date(event.eventDate).toLocaleDateString()}
+                      message={event.message}
+                      imageUrl={event.imageUrl}
+                      icon={React.cloneElement(icons[index % icons.length] as React.ReactElement, { className: "w-5 h-5 text-primary-foreground" })}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            /* Timeline Layout with Unified Spine Container */
+            <div className="relative">
               <div className="absolute left-1/2 transform -translate-x-1/2 w-1.5 timeline-line h-full z-0 opacity-10" />
               <div 
                 className="absolute left-1/2 transform -translate-x-1/2 w-1.5 z-10 timeline-glow-line"
                 style={{ height: `${scrollProgress}%` }}
               />
-            </>
+              
+              {renderMemoriesList()}
+
+              {/* Heart Anchor - The line ends exactly here at the bottom of its container */}
+              <div className="flex justify-center pt-24 pb-1 relative z-20">
+                <div className={cn(
+                  "transition-all duration-1000 transform",
+                  (layout !== 'Timeline' || scrollProgress > 95) ? "opacity-100 scale-100" : "opacity-0 scale-50"
+                )}>
+                  <div className="bg-white p-3 sm:p-4 rounded-full shadow-2xl border-4 border-secondary transition-all duration-700">
+                    <Heart className={cn(
+                      "w-8 h-8 sm:w-10 sm:h-10 text-secondary fill-secondary",
+                      (layout !== 'Timeline' || scrollProgress > 95) && "animate-heartbeat"
+                    )} />
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
 
-          {renderMemories()}
-
-          <div className="flex flex-col items-center justify-center pt-20 sm:pt-48 pb-20 relative min-h-[60vh]">
+          {/* Final Message Card - Outside the timeline lines container to prevent overlap */}
+          <div className="flex flex-col items-center justify-center pt-16 relative">
             <div className={cn(
               "relative transition-all duration-1000 transform w-full max-w-2xl flex flex-col items-center px-4",
               (layout !== 'Timeline' || scrollProgress > 95) ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20 pointer-events-none"
             )}>
-              <div className="z-30 mb-6 sm:mb-8 bg-white p-3 sm:p-4 rounded-full shadow-2xl border-4 border-secondary transition-all duration-700">
-                <Heart className={cn(
-                  "w-8 h-8 sm:w-10 sm:h-10 text-secondary fill-secondary",
-                  (layout !== 'Timeline' || scrollProgress > 95) && "animate-heartbeat"
-                )} />
-              </div>
-
               <Card className="border-none shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[2rem] sm:rounded-[3rem] overflow-hidden bg-white/95 backdrop-blur-md relative z-20 w-full mb-12">
                 <div className="h-1.5 sm:h-2 w-full bg-gradient-to-r from-primary via-secondary to-primary" />
                 
@@ -319,14 +322,6 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
           </div>
         </div>
       </section>
-      
-      <footer className="py-8 sm:py-10 text-center bg-primary/5 px-4">
-        <div className="max-w-2xl mx-auto space-y-3 sm:space-y-4">
-          <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-muted-foreground opacity-50">
-            Created with love by {page?.creatorName}
-          </p>
-        </div>
-      </footer>
     </main>
   );
 }

@@ -45,8 +45,6 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       if (!db) return;
       try {
         const decodedSlug = decodeURIComponent(slug);
-        // The slug is expected to be [name-slug]-[accessCode]
-        // We try the full slug first (backward compatibility) then extract the last part
         const parts = decodedSlug.split('-');
         const accessCode = parts[parts.length - 1];
 
@@ -228,10 +226,10 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
 
     return (
       <div ref={timelineRef} className="relative max-w-6xl mx-auto px-4 pt-10 sm:pt-20">
-        <div className="absolute left-1/2 transform -translate-x-1/2 w-1 timeline-line h-[calc(100%-300px)] z-0 opacity-20" />
+        <div className="absolute left-1/2 transform -translate-x-1/2 w-1 timeline-line h-full z-0 opacity-20" />
         <div 
           className="absolute left-1/2 transform -translate-x-1/2 w-1.5 z-10 timeline-glow-line"
-          style={{ height: `${Math.min(scrollProgress, 95)}%` }}
+          style={{ height: `${scrollProgress}%` }}
         />
 
         <div className="space-y-16 sm:space-y-32 relative z-10">

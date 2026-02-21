@@ -57,8 +57,8 @@ export function EditorSidebar({
   };
 
   return (
-    <ScrollArea className="h-[calc(100vh-320px)] pr-4">
-      <div className="space-y-6 pb-6">
+    <ScrollArea className="h-[calc(100vh-320px)] -mx-4 px-4">
+      <div className="space-y-8 py-8 px-4">
         <Card className="h-fit rounded-3xl shadow-lg border-none overflow-hidden bg-card">
           <CardHeader className="bg-accent/10">
             <CardTitle className="flex items-center gap-2 text-accent-foreground">

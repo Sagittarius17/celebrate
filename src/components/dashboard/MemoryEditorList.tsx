@@ -65,7 +65,7 @@ function MemoryItemEditor({ event, pageId, db }: { event: any, pageId: string, d
   const isPlaceholder = event.imageUrl?.includes('picsum.photos/seed/placeholder');
 
   return (
-    <Card className="rounded-[2rem] overflow-hidden border-none shadow-md hover:shadow-xl transition-shadow group bg-card">
+    <Card className="rounded-[2rem] overflow-hidden border-none shadow-md hover:shadow-xl transition-all duration-300 group bg-card">
       <div className="flex flex-col md:flex-row">
         <div 
           className="relative w-full md:w-56 h-56 md:h-auto group cursor-pointer overflow-hidden bg-muted"
@@ -160,8 +160,8 @@ export function MemoryEditorList({ events, isLoading, pageId, db }: MemoryEditor
   }
 
   return (
-    <ScrollArea className="h-[calc(100vh-320px)] pr-4">
-      <div className="space-y-6 pb-6">
+    <ScrollArea className="h-[calc(100vh-320px)] -mx-4 px-4">
+      <div className="space-y-8 py-8 px-4">
         {events.map((event) => (
           <MemoryItemEditor key={event.id} event={event} pageId={pageId} db={db} />
         ))}

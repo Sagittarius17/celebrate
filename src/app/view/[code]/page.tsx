@@ -35,6 +35,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
   const [scrollProgress, setScrollProgress] = useState(0);
   const [theme, setTheme] = useState<'light' | 'candle-light'>('light');
   const [showFireworks, setShowFireworks] = useState(false);
+  const [isMusicEnabled, setIsMusicEnabled] = useState(true);
   
   const journeyRef = useRef<HTMLDivElement>(null);
   const endTriggerRef = useRef<HTMLDivElement>(null);
@@ -210,6 +211,9 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         showFireworks={showFireworks}
         onToggleFireworks={() => setShowFireworks(prev => !prev)}
         voiceNoteUrl={page?.voiceNoteDataUri}
+        hasMusic={!!page?.spotifyTrackId}
+        isMusicEnabled={isMusicEnabled}
+        onToggleMusic={() => setIsMusicEnabled(!isMusicEnabled)}
       />
        
       <section id="journey" ref={journeyRef} className="pt-8 pb-0 sm:pt-16 relative z-10">
@@ -218,10 +222,10 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
             <h2 className="text-3xl sm:text-5xl font-bold mb-4" style={{ fontFamily: page?.font || 'inherit' }}>{page?.title || 'Our Journey'}</h2>
             <div className="w-16 sm:w-24 h-1 bg-secondary mx-auto rounded-full mb-8" />
             
-            {page?.spotifyTrackId && (
+            {page?.spotifyTrackId && isMusicEnabled && (
               <div className="max-w-md mx-auto mb-12 animate-fade-in">
                 <iframe 
-                  src={`https://open.spotify.com/embed/track/${page.spotifyTrackId}?utm_source=generator&theme=0`} 
+                  src={`https://open.spotify.com/embed/track/${page.spotifyTrackId}?utm_source=generator&theme=0&autoplay=1`} 
                   width="100%" 
                   height="80" 
                   frameBorder="0" 

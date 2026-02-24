@@ -3,7 +3,7 @@
 
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Sun, Flame, Sparkles, Volume2, VolumeX } from 'lucide-react';
+import { Sun, Flame, Sparkles, Volume2, VolumeX, Music, Music2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface HeaderProps {
@@ -14,6 +14,9 @@ interface HeaderProps {
   showFireworks?: boolean;
   onToggleFireworks?: () => void;
   voiceNoteUrl?: string | null;
+  hasMusic?: boolean;
+  isMusicEnabled?: boolean;
+  onToggleMusic?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({ 
@@ -23,7 +26,10 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleTheme,
   showFireworks,
   onToggleFireworks,
-  voiceNoteUrl
+  voiceNoteUrl,
+  hasMusic,
+  isMusicEnabled,
+  onToggleMusic
 }) => {
   const isCandle = theme === 'candle-light';
   const [isPlayingVoice, setIsPlayingVoice] = useState(false);
@@ -71,6 +77,22 @@ export const Header: React.FC<HeaderProps> = ({
             title={showFireworks ? "Disable Fireworks" : "Enable Fireworks"}
           >
             <Sparkles className={cn("h-6 w-6", showFireworks && "animate-pulse")} />
+          </Button>
+        )}
+
+        {hasMusic && onToggleMusic && (
+          <Button
+            onClick={onToggleMusic}
+            variant="ghost"
+            className={cn(
+              "rounded-full w-14 h-14 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-xl",
+              isMusicEnabled 
+                ? "bg-primary text-primary-foreground" 
+                : "bg-white/10 text-foreground hover:bg-white/20"
+            )}
+            title={isMusicEnabled ? "Stop Background Music" : "Play Background Music"}
+          >
+            {isMusicEnabled ? <Music className="h-6 w-6 animate-spin-slow" /> : <Music2 className="h-6 w-6" />}
           </Button>
         )}
 
@@ -155,6 +177,13 @@ export const Header: React.FC<HeaderProps> = ({
         }
         .animate-scroll {
           animation: scroll 2s infinite;
+        }
+        .animate-spin-slow {
+          animation: spin 3s linear infinite;
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
         }
       `}</style>
     </header>

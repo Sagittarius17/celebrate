@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect, useState } from 'react';
@@ -8,19 +7,28 @@ interface Candle {
   id: number;
   x: number;
   y: number;
+  size: number;
   speedX: number;
   speedY: number;
 }
 
 export const ButterflySwarm = ({ theme = 'light' }: { theme?: 'light' | 'candle-light' }) => {
   const [candles, setCandles] = useState<Candle[]>(() => {
-    const count = 10;
-    return Array.from({ length: count }).map((_, i) => ({
+    // 3 XL, 3 Large, 2 Medium, 2 Small = 10 total
+    const configs = [
+      { s: 220, speed: 0.02 }, { s: 220, speed: 0.02 }, { s: 220, speed: 0.02 }, // XL
+      { s: 150, speed: 0.035 }, { s: 150, speed: 0.035 }, { s: 150, speed: 0.035 }, // Large
+      { s: 90, speed: 0.05 }, { s: 90, speed: 0.05 },   // Medium
+      { s: 50, speed: 0.07 }, { s: 50, speed: 0.07 }    // Small
+    ];
+    
+    return configs.map((cfg, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
-      speedX: (Math.random() - 0.5) * 0.035,
-      speedY: (Math.random() - 0.5) * 0.035,
+      size: cfg.s,
+      speedX: (Math.random() - 0.5) * cfg.speed,
+      speedY: (Math.random() - 0.5) * cfg.speed,
     }));
   });
 
@@ -34,12 +42,15 @@ export const ButterflySwarm = ({ theme = 'light' }: { theme?: 'light' | 'candle-
         let newSpeedX = c.speedX;
         let newSpeedY = c.speedY;
 
-        if (newX < -10 || newX > 110) newSpeedX *= -1;
-        if (newY < -10 || newY > 110) newSpeedY *= -1;
+        // Bounce off edges
+        if (newX < -15 || newX > 115) newSpeedX *= -1;
+        if (newY < -15 || newY > 115) newSpeedY *= -1;
 
+        // Randomly change direction slightly
         if (Math.random() < 0.015) {
-          newSpeedX = (Math.random() - 0.5) * 0.035;
-          newSpeedY = (Math.random() - 0.5) * 0.035;
+          const baseSpeed = c.size > 150 ? 0.02 : c.size > 100 ? 0.035 : 0.06;
+          newSpeedX = (Math.random() - 0.5) * baseSpeed;
+          newSpeedY = (Math.random() - 0.5) * baseSpeed;
         }
 
         return { ...c, x: newX, y: newY, speedX: newSpeedX, speedY: newSpeedY };
@@ -56,10 +67,12 @@ export const ButterflySwarm = ({ theme = 'light' }: { theme?: 'light' | 'candle-
       {candles.map(c => (
         <div 
           key={c.id}
-          className="absolute w-20 h-20 transition-all duration-500 ease-linear"
+          className="absolute transition-all duration-500 ease-linear"
           style={{ 
             left: `${c.x}%`, 
             top: `${c.y}%`,
+            width: `${c.size}px`,
+            height: `${c.size}px`,
             opacity: 0.95
           }}
         >

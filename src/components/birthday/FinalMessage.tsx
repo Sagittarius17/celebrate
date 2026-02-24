@@ -26,10 +26,10 @@ export function FinalMessage({ isVisible, recipientName, quote, creatorName }: F
           
           <CardContent className="p-8 sm:p-12 text-center space-y-4 sm:space-y-6 pt-12 sm:pt-16">
             <QuoteIcon className="w-10 h-10 sm:w-12 sm:h-12 text-secondary/30 mx-auto mb-2 sm:mb-4" />
-            <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
+            <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-secondary-foreground">
               To Many More Years of Joy, {recipientName}!
             </h3>
-            <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground italic leading-relaxed">
+            <p className="text-lg sm:text-xl md:text-2xl text-secondary/80 italic leading-relaxed">
               "{quote}"
             </p>
             <div className="flex items-center justify-center gap-3 sm:gap-4 pt-2 sm:pt-4">

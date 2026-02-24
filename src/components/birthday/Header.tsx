@@ -27,7 +27,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden bg-gradient-to-b from-primary/10 via-background to-background transition-all duration-1000">
-      <div className="absolute top-8 right-8 z-50 flex flex-col gap-4">
+      <div className="fixed top-8 right-8 z-[100] flex flex-col gap-4">
         {onToggleTheme && (
           <Button
             onClick={onToggleTheme}

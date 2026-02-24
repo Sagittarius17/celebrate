@@ -15,18 +15,18 @@ export const FireworkEffect: React.FC<FireworkEffectProps> = ({ enabled }) => {
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Initialize fireworks with more vibrant and widespread settings
+    // Initialize fireworks with vibrant and widespread settings
     fireworksRef.current = new Fireworks(containerRef.current, {
       autoresize: true,
-      opacity: 0.8,
+      opacity: 0.9,
       acceleration: 1.05,
       friction: 0.97,
       gravity: 1.5,
-      particles: 100,
+      particles: 150, // More particles
       traceLength: 3,
       traceSpeed: 10,
-      explosion: 7,
-      intensity: 50,
+      explosion: 10, // Larger explosions
+      intensity: 60, // Higher intensity
       flicker: 50,
       lineStyle: 'round',
       hue: {
@@ -34,8 +34,8 @@ export const FireworkEffect: React.FC<FireworkEffectProps> = ({ enabled }) => {
         max: 360
       },
       delay: {
-        min: 15,
-        max: 30
+        min: 10,
+        max: 20
       },
       rocketsPoint: {
         min: 0,
@@ -53,7 +53,7 @@ export const FireworkEffect: React.FC<FireworkEffectProps> = ({ enabled }) => {
       },
       brightness: {
         min: 50,
-        max: 90
+        max: 95
       },
       decay: {
         min: 0.015,
@@ -68,25 +68,30 @@ export const FireworkEffect: React.FC<FireworkEffectProps> = ({ enabled }) => {
 
     return () => {
       fireworksRef.current?.stop();
+      fireworksRef.current = null;
     };
   }, []);
 
   useEffect(() => {
+    if (!fireworksRef.current) return;
+
     if (enabled) {
-      fireworksRef.current?.start();
+      fireworksRef.current.start();
     } else {
-      fireworksRef.current?.stop();
-      fireworksRef.current?.clear();
+      fireworksRef.current.stop();
+      fireworksRef.current.clear();
     }
   }, [enabled]);
 
   return (
     <div 
       ref={containerRef} 
-      className="fixed inset-0 pointer-events-none z-[60] transition-opacity duration-1000"
+      className="fixed inset-0 pointer-events-none z-[70] transition-opacity duration-1000"
       style={{ 
         opacity: enabled ? 1 : 0,
-        visibility: enabled ? 'visible' : 'hidden'
+        visibility: enabled ? 'visible' : 'hidden',
+        width: '100vw',
+        height: '100vh'
       }}
     />
   );

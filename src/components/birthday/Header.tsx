@@ -39,7 +39,8 @@ export const Header: React.FC<HeaderProps> = ({
           </Button>
         )}
 
-        {onToggleFireworks && (
+        {/* Fireworks button only visible in candle-light theme */}
+        {onToggleFireworks && isCandle && (
           <Button
             onClick={onToggleFireworks}
             variant="ghost"

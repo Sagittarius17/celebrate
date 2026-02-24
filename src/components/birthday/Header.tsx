@@ -263,11 +263,11 @@ export const Header: React.FC<HeaderProps> = ({
           Relive the beautiful moments that shaped an extraordinary life and journey through time together.
         </p>
 
-        {/* Visible Spotify Player for reliability */}
+        {/* Visible Spotify Player for reliability with autoplay enabled */}
         {hasMusic && isMusicEnabled && spotifyTrackId && (
           <div className="mt-8 w-full max-w-md mx-auto animate-fade-in relative z-50 px-4">
             <iframe 
-              src={`https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0`} 
+              src={`https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0&autoplay=1`} 
               width="100%" 
               height="80" 
               frameBorder="0" 

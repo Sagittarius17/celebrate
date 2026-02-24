@@ -15,6 +15,15 @@ import { MemoryEditorList } from '@/components/dashboard/MemoryEditorList';
 import { LivePreviewFrame } from '@/components/dashboard/LivePreviewFrame';
 import { useDashboardTheme } from '../layout';
 
+const slugify = (text: string) => {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+};
+
 export default function SurpriseEditor({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { user } = useUser();
@@ -86,15 +95,21 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
     }, 500);
   };
 
-  const copyShareLink = () => {
-    if (!page) return;
+  const getShareUrl = () => {
+    if (!page) return '';
     const baseUrl = window.location.origin;
-    const shareUrl = `${baseUrl}/view/${page.id}-${page.accessCode}`;
-    navigator.clipboard.writeText(shareUrl);
+    const nameSlug = slugify(page.recipientName);
+    return `${baseUrl}/surprise/${nameSlug}/${page.accessCode}`;
+  };
+
+  const copyShareLink = () => {
+    const url = getShareUrl();
+    if (!url) return;
+    navigator.clipboard.writeText(url);
     setIsCopied(true);
     toast({
       title: "Link Copied!",
-      description: `Share this unique link for ${page.recipientName}.`,
+      description: `Share this unique link for ${page?.recipientName}.`,
     });
     setTimeout(() => setIsCopied(false), 2000);
   };
@@ -103,7 +118,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
   if (!page) return <div className="p-20 text-center">Surprise not found.</div>;
   if (page.ownerId !== user?.uid) return <div className="p-20 text-center text-destructive">Unauthorized access.</div>;
 
-  const livePreviewUrl = `/view/${page.id}-${page.accessCode}`;
+  const livePreviewUrl = getShareUrl();
 
   const headerButtonStyle = "rounded-full h-12 w-12 p-0 flex items-center justify-center border-none bg-secondary hover:bg-secondary/80 text-secondary-foreground transition-all shadow-sm";
 

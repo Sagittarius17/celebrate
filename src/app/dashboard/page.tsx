@@ -39,6 +39,24 @@ const OCCASIONS = [
   "Other"
 ];
 
+const generateUniqueCode = () => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Avoid ambiguous chars
+  let result = '';
+  for (let i = 0; i < 10; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+};
+
+const slugify = (text: string) => {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+};
+
 export default function Dashboard() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
@@ -54,7 +72,6 @@ export default function Dashboard() {
     recipientName: '',
     title: '',
     occasion: 'Birthday',
-    accessCode: '',
   });
   const [editingSurprise, setEditingSurprise] = useState<any>(null);
 
@@ -69,9 +86,11 @@ export default function Dashboard() {
     if (!user || !db) return;
     
     const pageId = doc(collection(db, 'dummy')).id;
+    const accessCode = generateUniqueCode();
     const payload = {
       ...newSurprise,
       id: pageId,
+      accessCode: accessCode,
       font: 'Playfair Display',
       creatorName: user.displayName || 'Creator',
       ownerId: user.uid,
@@ -81,8 +100,8 @@ export default function Dashboard() {
 
     addDocumentNonBlocking(collection(db, 'celebrationPages'), payload);
     setIsCreateOpen(false);
-    setNewSurprise({ recipientName: '', title: '', occasion: 'Birthday', accessCode: '' });
-    toast({ title: "Surprise Created", description: "Start adding memories to your timeline!" });
+    setNewSurprise({ recipientName: '', title: '', occasion: 'Birthday' });
+    toast({ title: "Surprise Created", description: "Your unique access code is: " + accessCode });
   };
 
   const handleOpenEdit = (surprise: any) => {
@@ -124,7 +143,8 @@ export default function Dashboard() {
 
   const copyShareLink = (surprise: any) => {
     const baseUrl = window.location.origin;
-    const shareUrl = `${baseUrl}/view/${surprise.id}-${surprise.accessCode}`;
+    const nameSlug = slugify(surprise.recipientName);
+    const shareUrl = `${baseUrl}/surprise/${nameSlug}/${surprise.accessCode}`;
     navigator.clipboard.writeText(shareUrl);
     setCopiedId(surprise.id);
     toast({
@@ -233,18 +253,14 @@ export default function Dashboard() {
                       onChange={(e) => setNewSurprise({...newSurprise, title: e.target.value})}
                     />
                   </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="code">Secret Access Code</Label>
-                    <Input 
-                      id="code" 
-                      placeholder="e.g. CELEBRATE-2024" 
-                      value={newSurprise.accessCode}
-                      onChange={(e) => setNewSurprise({...newSurprise, accessCode: e.target.value})}
-                    />
+                  <div className="bg-muted/50 p-4 rounded-xl border border-dashed text-xs text-muted-foreground">
+                    <p className="flex items-center gap-2">
+                      <Key className="h-3 w-3" /> A unique 10-character secret code will be generated automatically.
+                    </p>
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button className="w-full rounded-full h-12" onClick={handleCreate} disabled={!newSurprise.recipientName || !newSurprise.accessCode}>Create Surprise</Button>
+                  <Button className="w-full rounded-full h-12" onClick={handleCreate} disabled={!newSurprise.recipientName || !newSurprise.title}>Create Surprise</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -291,11 +307,11 @@ export default function Dashboard() {
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-code">Secret Access Code</Label>
+                  <Label className="opacity-60">Secret Access Code (Read-only)</Label>
                   <Input 
-                    id="edit-code" 
+                    disabled
                     value={editingSurprise.accessCode}
-                    onChange={(e) => setEditingSurprise({...editingSurprise, accessCode: e.target.value})}
+                    className="bg-muted"
                   />
                 </div>
               </div>

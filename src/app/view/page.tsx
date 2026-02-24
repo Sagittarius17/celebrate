@@ -12,6 +12,15 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 
+const slugify = (text: string) => {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+};
+
 export default function SurpriseEntry() {
   const [code, setCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
@@ -38,8 +47,8 @@ export default function SurpriseEntry() {
       }
 
       const page = snap.docs[0].data();
-      // Use Surprise ID and Access Code in the URL for direct, reliable lookup
-      router.push(`/view/${encodeURIComponent(`${page.id}-${code.trim()}`)}`);
+      const nameSlug = slugify(page.recipientName);
+      router.push(`/surprise/${nameSlug}/${code.trim()}`);
     } catch (error: any) {
       toast({
         variant: "destructive",

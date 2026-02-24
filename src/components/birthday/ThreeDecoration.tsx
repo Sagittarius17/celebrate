@@ -29,61 +29,87 @@ export const ThreeDecoration: React.FC<ThreeDecorationProps> = ({ type, classNam
 
     let group = new THREE.Group();
 
-    if (type === 'butterfly') {
+    if (type === 'candle') {
+      // Candle Body
+      const cylinder = new THREE.CylinderGeometry(0.2, 0.2, 0.8, 32);
+      const bodyMaterial = new THREE.MeshPhongMaterial({ color: 0xFFFDD0 });
+      const candleBody = new THREE.Mesh(cylinder, bodyMaterial);
+      
+      // Intense Flame Core
+      const flameGeometry = new THREE.SphereGeometry(0.1, 16, 16);
+      const flameMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0xFF8C00,
+        emissive: 0xFF4500,
+        emissiveIntensity: 2
+      });
+      const flame = new THREE.Mesh(flameGeometry, flameMaterial);
+      flame.position.y = 0.5;
+      flame.scale.set(1, 1.8, 1);
+
+      // Blurry Glow Halo
+      const canvas = document.createElement('canvas');
+      canvas.width = 64;
+      canvas.height = 64;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+        gradient.addColorStop(0, 'rgba(255, 165, 0, 1)');
+        gradient.addColorStop(0.3, 'rgba(255, 69, 0, 0.4)');
+        gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 64, 64);
+      }
+      const glowTexture = new THREE.CanvasTexture(canvas);
+      const glowMaterial = new THREE.SpriteMaterial({ 
+        map: glowTexture, 
+        transparent: true, 
+        blending: THREE.AdditiveBlending,
+        opacity: 0.8
+      });
+      const glowSprite = new THREE.Sprite(glowMaterial);
+      glowSprite.position.y = 0.55;
+      glowSprite.scale.set(1.5, 2.5, 1);
+      
+      group.add(candleBody);
+      group.add(flame);
+      group.add(glowSprite);
+      scene.add(group);
+
+      const animateFlame = () => {
+        const time = Date.now() * 0.001;
+        // Sudden, jittery flickering
+        const jitter = Math.sin(time * 50) * 0.02 + (Math.random() - 0.5) * 0.05;
+        const scaleBase = 1.8 + jitter;
+        
+        flame.scale.y = scaleBase;
+        flame.position.x = Math.sin(time * 30) * 0.02;
+        
+        glowSprite.scale.y = scaleBase * 1.5;
+        glowSprite.material.opacity = 0.6 + Math.random() * 0.4;
+        glowSprite.position.x = flame.position.x;
+      };
+      (group as any).update = animateFlame;
+    } else if (type === 'butterfly') {
+      // Butterflies are removed from swarm, but keeping definition for robustness
       const wingShape = new THREE.Shape();
       wingShape.moveTo(0, 0);
       wingShape.bezierCurveTo(2, 2, 4, 1, 3, -2);
       wingShape.bezierCurveTo(2, -4, 0, -2, 0, 0);
-      
       const wingGeometry = new THREE.ShapeGeometry(wingShape);
-      const wingMaterial = new THREE.MeshPhongMaterial({ 
-        color: new THREE.Color(color), 
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: 0.8
-      });
-
+      const wingMaterial = new THREE.MeshPhongMaterial({ color: new THREE.Color(color), side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
       const leftWing = new THREE.Mesh(wingGeometry, wingMaterial);
       const rightWing = new THREE.Mesh(wingGeometry, wingMaterial);
       rightWing.scale.x = -1;
-      
       group.add(leftWing);
       group.add(rightWing);
       group.scale.set(0.1, 0.1, 0.1);
       scene.add(group);
-
       const animateWings = () => {
         const time = Date.now() * 0.01;
         leftWing.rotation.y = Math.sin(time) * 0.8;
         rightWing.rotation.y = -Math.sin(time) * 0.8;
       };
-      
       (group as any).update = animateWings;
-    } else if (type === 'candle') {
-      const cylinder = new THREE.CylinderGeometry(0.2, 0.2, 0.8, 32);
-      const bodyMaterial = new THREE.MeshPhongMaterial({ color: 0xFFFDD0 });
-      const candleBody = new THREE.Mesh(cylinder, bodyMaterial);
-      
-      const flameGeometry = new THREE.SphereGeometry(0.1, 16, 16);
-      const flameMaterial = new THREE.MeshPhongMaterial({ 
-        color: 0xFF4500,
-        emissive: 0xFF4500,
-        emissiveIntensity: 1
-      });
-      const flame = new THREE.Mesh(flameGeometry, flameMaterial);
-      flame.position.y = 0.5;
-      flame.scale.set(1, 1.8, 1);
-      
-      group.add(candleBody);
-      group.add(flame);
-      scene.add(group);
-
-      const animateFlame = () => {
-        const time = Date.now() * 0.01;
-        flame.scale.y = 1.8 + Math.sin(time * 5) * 0.2;
-        flame.position.x = Math.sin(time * 3) * 0.02;
-      };
-      (group as any).update = animateFlame;
     } else if (type === 'heart') {
       const heartShape = new THREE.Shape();
       heartShape.moveTo(0, 0);
@@ -93,7 +119,6 @@ export const ThreeDecoration: React.FC<ThreeDecorationProps> = ({ type, classNam
       heartShape.bezierCurveTo(5, -15, 10, -10, 10, -5);
       heartShape.bezierCurveTo(10, -5, 10, 2, 5, 2);
       heartShape.bezierCurveTo(2, 2, 0, 0, 0, 0);
-      
       const geometry = new THREE.ExtrudeGeometry(heartShape, { depth: 2, bevelEnabled: true });
       const material = new THREE.MeshPhongMaterial({ color: new THREE.Color(color) });
       const mesh = new THREE.Mesh(geometry, material);

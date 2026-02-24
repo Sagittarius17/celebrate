@@ -13,8 +13,6 @@ interface Candle {
 }
 
 export const ButterflySwarm = ({ theme = 'light' }: { theme?: 'light' | 'candle-light' }) => {
-  // Initialize exactly 10 candles once in the state initializer to prevent duplicates
-  // Reduced count to 10 as requested
   const [candles, setCandles] = useState<Candle[]>(() => {
     const count = 10;
     return Array.from({ length: count }).map((_, i) => ({
@@ -36,11 +34,9 @@ export const ButterflySwarm = ({ theme = 'light' }: { theme?: 'light' | 'candle-
         let newSpeedX = b.speedX;
         let newSpeedY = b.speedY;
 
-        // Bounce off edges with a margin
         if (newX < -10 || newX > 110) newSpeedX *= -1;
         if (newY < -10 || newY > 110) newSpeedY *= -1;
 
-        // Occasional random drift change
         if (Math.random() < 0.01) {
           newSpeedX = (Math.random() - 0.5) * 0.04;
           newSpeedY = (Math.random() - 0.5) * 0.04;
@@ -53,11 +49,10 @@ export const ButterflySwarm = ({ theme = 'light' }: { theme?: 'light' | 'candle-
     return () => clearInterval(interval);
   }, [theme]);
 
-  // Strictly hide 3D models in light theme
   if (theme !== 'candle-light') return null;
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+    <div className="fixed inset-0 pointer-events-none z-20">
       {candles.map(c => (
         <div 
           key={c.id}

@@ -15,7 +15,6 @@ export const FireworkEffect: React.FC<FireworkEffectProps> = ({ enabled }) => {
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Initialize fireworks following official documentation structure
     fireworksRef.current = new Fireworks(containerRef.current, {
       autoresize: true,
       opacity: 0.9,

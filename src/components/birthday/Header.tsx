@@ -26,7 +26,7 @@ export const Header: React.FC<HeaderProps> = ({
   const isCandle = theme === 'candle-light';
 
   return (
-    <header className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden bg-gradient-to-b from-primary/10 via-background to-background transition-all duration-1000">
+    <header className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden bg-gradient-to-b from-primary/10 via-background to-background transition-all duration-1000 z-10">
       <div className="fixed top-8 right-8 z-[100] flex flex-col gap-4">
         {onToggleTheme && (
           <Button
@@ -96,12 +96,10 @@ export const Header: React.FC<HeaderProps> = ({
 
       <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce cursor-pointer z-30">
         <div className={cn(
-          "w-8 h-12 border-2 rounded-full flex justify-center p-1 transition-colors",
-          isCandle ? "border-primary" : "border-primary"
+          "w-8 h-12 border-2 rounded-full flex justify-center p-1 transition-colors border-primary"
         )}>
           <div className={cn(
-            "w-1 h-3 rounded-full animate-scroll transition-colors",
-            isCandle ? "bg-primary" : "bg-primary"
+            "w-1 h-3 rounded-full animate-scroll transition-colors bg-primary"
           )} />
         </div>
       </div>

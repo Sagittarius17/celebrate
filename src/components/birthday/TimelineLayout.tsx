@@ -15,7 +15,7 @@ const icons = [<Star />, <Camera />, <Gift />, <PartyPopper />, <Cake />, <Heart
 
 export function TimelineLayout({ events, scrollProgress }: TimelineLayoutProps) {
   return (
-    <div className="relative">
+    <div className="relative z-10">
       <div className="space-y-16 sm:space-y-32 relative z-10 pt-10 sm:pt-20">
         {events.map((event, index) => (
           <div 

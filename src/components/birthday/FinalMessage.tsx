@@ -17,7 +17,7 @@ interface FinalMessageProps {
 
 export function FinalMessage({ isVisible, recipientName, quote, creatorName }: FinalMessageProps) {
   return (
-    <div className="flex flex-col items-center justify-center pt-16 relative">
+    <div className="flex flex-col items-center justify-center pt-16 relative z-10">
       <div className={cn(
         "relative transition-all duration-1000 transform w-full max-w-2xl flex flex-col items-center px-4",
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20 pointer-events-none"
@@ -30,7 +30,7 @@ export function FinalMessage({ isVisible, recipientName, quote, creatorName }: F
             <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900">
               To Many More Years of Joy, {recipientName}!
             </h3>
-            {/* Explicit dark text for readability on white card */}
+            {/* Dark slate text for guaranteed visibility on white card */}
             <p className="text-lg sm:text-xl md:text-2xl text-slate-700 italic leading-relaxed font-medium">
               "{quote}"
             </p>

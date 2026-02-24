@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useState } from 'react';
@@ -63,7 +64,8 @@ export const ButterflySwarm = ({ theme = 'light' }: { theme?: 'light' | 'candle-
   if (theme !== 'candle-light') return null;
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-20">
+    // Set z-index to 0 to stay behind all other content
+    <div className="fixed inset-0 pointer-events-none z-0">
       {candles.map(c => (
         <div 
           key={c.id}

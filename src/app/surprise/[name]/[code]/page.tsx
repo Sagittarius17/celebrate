@@ -179,6 +179,7 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
   const layout = page?.layout || 'Timeline';
   
   const isFullyConnected = scrollProgress >= 100;
+  const isCandle = theme === 'candle-light';
 
   return (
     <main className={cn("min-h-screen bg-background overflow-x-hidden transition-all duration-1000", theme)} style={globalStyle}>
@@ -194,7 +195,7 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
         onToggleFireworks={() => setShowFireworks(prev => !prev)}
       />
        
-      <section ref={journeyRef} className="pt-12 pb-0 sm:pt-20 relative">
+      <section ref={journeyRef} className="pt-12 pb-0 sm:pt-20 relative z-10">
         <div className="text-center mb-12 sm:mb-16 px-4">
           <h2 className="text-3xl sm:text-5xl font-bold mb-4" style={{ fontFamily: page?.font || 'inherit' }}>{page?.title || 'Our Journey'}</h2>
           <div className="w-16 sm:w-24 h-1 bg-secondary mx-auto rounded-full" />
@@ -217,7 +218,7 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
                 />
               </div>
               
-              <div className="w-full">
+              <div className="w-full relative z-10">
                 <TimelineLayout events={events} scrollProgress={scrollProgress} />
               </div>
 
@@ -228,7 +229,7 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
                 )}>
                   <div className={cn(
                     "bg-white p-3 sm:p-4 rounded-full shadow-2xl border-4 transition-all duration-700",
-                    isFullyConnected && theme === 'candle-light' 
+                    isFullyConnected && isCandle 
                       ? "animate-rgb-border" 
                       : (isFullyConnected ? "border-secondary" : "border-secondary/40")
                   )}>
@@ -241,7 +242,7 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
               </div>
             </div>
           ) : (
-            <div>
+            <div className="relative z-10">
               {layout === 'Carousel' ? (
                 <CarouselLayout events={events} />
               ) : (

@@ -11,8 +11,9 @@ import { CarouselLayout } from '@/components/birthday/CarouselLayout';
 import { FinalMessage } from '@/components/birthday/FinalMessage';
 import { ButterflySwarm } from '@/components/birthday/ButterflySwarm';
 import { FireworkEffect } from '@/components/birthday/FireworkEffect';
-import { Gift, Loader2, Heart } from 'lucide-react';
+import { Gift, Loader2, Heart, Sparkles } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const DEFAULT_QUOTES: Record<string, string> = {
@@ -35,7 +36,8 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
   const [scrollProgress, setScrollProgress] = useState(0);
   const [theme, setTheme] = useState<'light' | 'candle-light'>('light');
   const [showFireworks, setShowFireworks] = useState(false);
-  const [isMusicEnabled, setIsMusicEnabled] = useState(true);
+  const [isMusicEnabled, setIsMusicEnabled] = useState(false);
+  const [isRevealed, setIsRevealed] = useState(false);
   
   const journeyRef = useRef<HTMLDivElement>(null);
   const endTriggerRef = useRef<HTMLDivElement>(null);
@@ -191,6 +193,35 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
     );
   }
 
+  if (!isRevealed) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 px-4">
+        <div className="text-center space-y-8 animate-fade-in">
+          <div className="relative inline-block">
+            <div className="absolute -inset-4 bg-primary/20 blur-3xl rounded-full animate-pulse" />
+            <div className="relative bg-white p-10 rounded-[3rem] shadow-2xl border-b-8 border-primary/20">
+              <Gift className="h-20 w-20 text-primary animate-bounce mx-auto" />
+            </div>
+          </div>
+          <div className="space-y-4">
+            <h1 className="text-4xl sm:text-5xl font-headline font-bold">You Have a Surprise!</h1>
+            <p className="text-lg text-muted-foreground max-w-md mx-auto">Click below to reveal a special journey created just for you by <span className="text-primary font-bold">{page.creatorName}</span>.</p>
+          </div>
+          <Button 
+            size="lg" 
+            onClick={() => {
+              setIsRevealed(true);
+              setIsMusicEnabled(true);
+            }}
+            className="rounded-full px-12 py-8 text-xl font-bold shadow-xl hover:scale-105 transition-all bg-primary text-primary-foreground border-none"
+          >
+            <Sparkles className="mr-3 h-6 w-6" /> Reveal My Surprise
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   const finalQuoteToDisplay = page?.finalQuote || DEFAULT_QUOTES[page?.occasion] || DEFAULT_QUOTES["Other"];
   const globalStyle = { fontFamily: page?.font ? `${page.font}, sans-serif` : 'inherit' };
   const layout = page?.layout || 'Timeline';
@@ -212,6 +243,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         onToggleFireworks={() => setShowFireworks(prev => !prev)}
         voiceNoteUrl={page?.voiceNoteDataUri}
         hasMusic={!!page?.spotifyTrackId}
+        spotifyTrackId={page?.spotifyTrackId}
         isMusicEnabled={isMusicEnabled}
         onToggleMusic={() => setIsMusicEnabled(!isMusicEnabled)}
       />
@@ -221,20 +253,6 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
           <div className="text-center mb-12 sm:mb-20 px-4">
             <h2 className="text-3xl sm:text-5xl font-bold mb-4" style={{ fontFamily: page?.font || 'inherit' }}>{page?.title || 'Our Journey'}</h2>
             <div className="w-16 sm:w-24 h-1 bg-secondary mx-auto rounded-full mb-8" />
-            
-            {page?.spotifyTrackId && isMusicEnabled && (
-              <div className="max-w-md mx-auto mb-12 animate-fade-in">
-                <iframe 
-                  src={`https://open.spotify.com/embed/track/${page.spotifyTrackId}?utm_source=generator&theme=0&autoplay=1`} 
-                  width="100%" 
-                  height="80" 
-                  frameBorder="0" 
-                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-                  loading="lazy"
-                  className="rounded-2xl shadow-xl"
-                ></iframe>
-              </div>
-            )}
           </div>
           
           {layout === 'Timeline' ? (

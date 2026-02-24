@@ -5,6 +5,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Sun, Flame, Sparkles, Volume2, VolumeX, Music, Music2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 interface HeaderProps {
   title?: string;
@@ -15,6 +16,7 @@ interface HeaderProps {
   onToggleFireworks?: () => void;
   voiceNoteUrl?: string | null;
   hasMusic?: boolean;
+  spotifyTrackId?: string;
   isMusicEnabled?: boolean;
   onToggleMusic?: () => void;
 }
@@ -28,13 +30,17 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleFireworks,
   voiceNoteUrl,
   hasMusic,
+  spotifyTrackId,
   isMusicEnabled,
   onToggleMusic
 }) => {
   const isCandle = theme === 'candle-light';
   const [isPlayingVoice, setIsPlayingVoice] = useState(false);
   const [voiceProgress, setVoiceProgress] = useState(0);
+  const [spotifyMetadata, setSpotifyMetadata] = useState<{imageUrl: string, title: string} | null>(null);
+  const [simulatedMusicProgress, setSimulatedMusicProgress] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const musicProgressInterval = useRef<NodeJS.Timeout | null>(null);
 
   const scrollToJourney = () => {
     document.getElementById('journey')?.scrollIntoView({ behavior: 'smooth' });
@@ -46,10 +52,41 @@ export const Header: React.FC<HeaderProps> = ({
       audioRef.current.pause();
       setIsPlayingVoice(false);
     } else {
+      // If playing music, maybe pause it? Or let them overlap. 
+      // Most users prefer one audio at a time.
+      if (isMusicEnabled && onToggleMusic) onToggleMusic();
       audioRef.current.play();
       setIsPlayingVoice(true);
     }
   };
+
+  useEffect(() => {
+    if (hasMusic && spotifyTrackId) {
+      fetch(`https://open.spotify.com/oembed?url=spotify:track:${spotifyTrackId}`)
+        .then(res => res.json())
+        .then(data => {
+          setSpotifyMetadata({
+            imageUrl: data.thumbnail_url,
+            title: data.title
+          });
+        })
+        .catch(() => setSpotifyMetadata(null));
+    }
+  }, [hasMusic, spotifyTrackId]);
+
+  useEffect(() => {
+    if (isMusicEnabled) {
+      musicProgressInterval.current = setInterval(() => {
+        setSimulatedMusicProgress(prev => (prev + 0.5) % 100);
+      }, 200);
+    } else {
+      if (musicProgressInterval.current) clearInterval(musicProgressInterval.current);
+      setSimulatedMusicProgress(0);
+    }
+    return () => {
+      if (musicProgressInterval.current) clearInterval(musicProgressInterval.current);
+    };
+  }, [isMusicEnabled]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -75,11 +112,10 @@ export const Header: React.FC<HeaderProps> = ({
     };
   }, [voiceNoteUrl]);
 
-  // SVG Circle Progress properties
-  // The viewBox is 60x60. A radius of 28 puts the circle edge near the 60px boundary.
   const radius = 27;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (voiceProgress / 100) * circumference;
+  const voiceStrokeDashoffset = circumference - (voiceProgress / 100) * circumference;
+  const musicStrokeDashoffset = circumference - (simulatedMusicProgress / 100) * circumference;
 
   return (
     <header className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden bg-gradient-to-b from-primary/10 transition-all duration-1000 z-10">
@@ -112,50 +148,78 @@ export const Header: React.FC<HeaderProps> = ({
         )}
 
         {hasMusic && onToggleMusic && (
-          <Button
-            onClick={onToggleMusic}
-            variant="ghost"
-            className={cn(
-              "rounded-full w-14 h-14 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-xl",
-              isMusicEnabled 
-                ? "bg-primary text-primary-foreground" 
-                : "bg-white/10 text-foreground hover:bg-white/20"
+          <div className="relative w-14 h-14 flex items-center justify-center">
+            <svg className="absolute inset-0 w-full h-full -rotate-90 transform pointer-events-none" viewBox="0 0 60 60">
+              <circle cx="30" cy="30" r={radius} stroke="currentColor" strokeWidth="2.5" fill="transparent" className="text-primary/10" />
+              <circle
+                cx="30"
+                cy="30"
+                r={radius}
+                stroke="currentColor"
+                strokeWidth="2.5"
+                fill="transparent"
+                strokeDasharray={circumference}
+                style={{ strokeDashoffset: musicStrokeDashoffset, transition: 'stroke-dashoffset 0.2s linear' }}
+                strokeLinecap="round"
+                className="text-primary"
+              />
+            </svg>
+            <Button
+              onClick={onToggleMusic}
+              variant="ghost"
+              className={cn(
+                "rounded-full w-11 h-11 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-md overflow-hidden relative group",
+                !isMusicEnabled && "opacity-60 grayscale"
+              )}
+              title={isMusicEnabled ? "Pause Music" : "Play Music"}
+            >
+              {spotifyMetadata?.imageUrl ? (
+                <Image 
+                  src={spotifyMetadata.imageUrl} 
+                  alt="Track" 
+                  fill 
+                  className={cn("object-cover", isMusicEnabled && "animate-spin-slow")} 
+                />
+              ) : (
+                <Music className={cn("h-5 w-5", isMusicEnabled && "animate-spin-slow")} />
+              )}
+              {!isMusicEnabled && (
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                  <Music2 className="h-4 w-4 text-white" />
+                </div>
+              )}
+            </Button>
+            {/* Hidden Spotify Iframe for Audio */}
+            {isMusicEnabled && spotifyTrackId && (
+              <iframe 
+                src={`https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0&autoplay=1`} 
+                width="0" 
+                height="0" 
+                frameBorder="0" 
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                className="hidden"
+              ></iframe>
             )}
-            title={isMusicEnabled ? "Stop Background Music" : "Play Background Music"}
-          >
-            {isMusicEnabled ? <Music className="h-6 w-6 animate-spin-slow" /> : <Music2 className="h-6 w-6" />}
-          </Button>
+          </div>
         )}
 
         {voiceNoteUrl && (
           <div className="relative w-14 h-14 flex items-center justify-center">
-            {/* Background SVG Circle */}
             <svg className="absolute inset-0 w-full h-full -rotate-90 transform pointer-events-none" viewBox="0 0 60 60">
-              {/* Static Background Ring */}
+              <circle cx="30" cy="30" r={radius} stroke="currentColor" strokeWidth="2.5" fill="transparent" className="text-orange-500/10" />
               <circle
                 cx="30"
                 cy="30"
                 r={radius}
                 stroke="currentColor"
-                strokeWidth="3"
-                fill="transparent"
-                className="text-orange-500/10"
-              />
-              {/* Dynamic Progress Ring */}
-              <circle
-                cx="30"
-                cy="30"
-                r={radius}
-                stroke="currentColor"
-                strokeWidth="3"
+                strokeWidth="2.5"
                 fill="transparent"
                 strokeDasharray={circumference}
-                style={{ strokeDashoffset, transition: 'stroke-dashoffset 0.1s linear' }}
+                style={{ strokeDashoffset: voiceStrokeDashoffset, transition: 'stroke-dashoffset 0.1s linear' }}
                 strokeLinecap="round"
                 className="text-orange-500"
               />
             </svg>
-            
             <Button
               onClick={toggleVoiceNote}
               variant="ghost"
@@ -238,7 +302,7 @@ export const Header: React.FC<HeaderProps> = ({
           animation: scroll 2s infinite;
         }
         .animate-spin-slow {
-          animation: spin 3s linear infinite;
+          animation: spin 8s linear infinite;
         }
         @keyframes spin {
           from { transform: rotate(0deg); }

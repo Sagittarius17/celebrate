@@ -14,6 +14,7 @@ import { FireworkEffect } from '@/components/birthday/FireworkEffect';
 import { Gift, PackageOpen, Loader2, Heart, Sparkles } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 
 const DEFAULT_QUOTES: Record<string, string> = {
@@ -39,6 +40,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
   const [isMusicEnabled, setIsMusicEnabled] = useState(false);
   const [isRevealed, setIsRevealed] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
   
   const journeyRef = useRef<HTMLDivElement>(null);
   const endTriggerRef = useRef<HTMLDivElement>(null);
@@ -80,6 +82,17 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
     };
     findPage();
   }, [db, slug]);
+
+  useEffect(() => {
+    if (isFindingPage || !pageId) {
+      const interval = setInterval(() => {
+        setLoadingProgress(prev => (prev >= 90 ? 90 : prev + 10));
+      }, 150);
+      return () => clearInterval(interval);
+    } else {
+      setLoadingProgress(100);
+    }
+  }, [isFindingPage, pageId]);
 
   useEffect(() => {
     if (theme === 'candle-light') {
@@ -174,9 +187,11 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
 
   if (isFindingPage || isPageLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center space-y-4 px-4">
-        <Loader2 className="h-10 w-10 sm:h-12 sm:w-12 animate-spin text-primary" />
-        <p className="font-headline text-xl sm:text-2xl font-bold text-center">Unwrapping your surprise ...</p>
+      <div className="min-h-screen flex flex-col items-center justify-center space-y-8 px-4 max-w-sm mx-auto">
+        <div className="w-full space-y-4 text-center">
+          <p className="font-headline text-2xl font-bold">Unwrapping your surprise ...</p>
+          <Progress value={loadingProgress} className="h-2 w-full rounded-full" />
+        </div>
       </div>
     );
   }

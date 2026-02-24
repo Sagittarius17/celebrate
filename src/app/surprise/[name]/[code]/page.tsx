@@ -11,7 +11,7 @@ import { CarouselLayout } from '@/components/birthday/CarouselLayout';
 import { FinalMessage } from '@/components/birthday/FinalMessage';
 import { ButterflySwarm } from '@/components/birthday/ButterflySwarm';
 import { FireworkEffect } from '@/components/birthday/FireworkEffect';
-import { Gift, Loader2, Heart, Sparkles } from 'lucide-react';
+import { Gift, PackageOpen, Loader2, Heart, Sparkles } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -38,6 +38,7 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
   const [showFireworks, setShowFireworks] = useState(false);
   const [isMusicEnabled, setIsMusicEnabled] = useState(false);
   const [isRevealed, setIsRevealed] = useState(false);
+  const [isOpening, setIsOpening] = useState(false);
   
   const journeyRef = useRef<HTMLDivElement>(null);
   const endTriggerRef = useRef<HTMLDivElement>(null);
@@ -147,6 +148,14 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
     }
   }, [events, page?.layout]);
 
+  const handleRevealClick = () => {
+    setIsOpening(true);
+    setTimeout(() => {
+      setIsRevealed(true);
+      setIsMusicEnabled(true);
+    }, 800);
+  };
+
   if (isFindingPage || isPageLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center space-y-4 px-4">
@@ -180,26 +189,26 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
   if (!isRevealed) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 px-4">
-        <div className="text-center space-y-8 animate-fade-in">
+        <div className="text-center space-y-12 animate-fade-in">
           <div className="relative inline-block">
             <div className="absolute -inset-4 bg-primary/20 blur-3xl rounded-full animate-pulse" />
-            <div className="relative bg-white p-10 rounded-[3rem] shadow-2xl border-b-8 border-primary/20">
-              <Gift className="h-20 w-20 text-primary animate-bounce mx-auto" />
+            <div className="relative bg-white p-10 rounded-[3rem] shadow-2xl border-b-8 border-primary/20 transition-all duration-500">
+              {isOpening ? (
+                <PackageOpen className="h-20 w-20 text-primary animate-in zoom-in-50 duration-300 mx-auto" />
+              ) : (
+                <Gift className="h-20 w-20 text-primary animate-bounce mx-auto" />
+              )}
             </div>
           </div>
-          <div className="space-y-4">
-            <h1 className="text-4xl sm:text-5xl font-headline font-bold">You Have a Surprise!</h1>
-            <p className="text-lg text-muted-foreground max-w-md mx-auto">Click below to reveal a special journey created just for you by <span className="text-primary font-bold">{page.creatorName}</span>.</p>
-          </div>
+          
           <Button 
             size="lg" 
-            onClick={() => {
-              setIsRevealed(true);
-              setIsMusicEnabled(true);
-            }}
+            onClick={handleRevealClick}
+            disabled={isOpening}
             className="rounded-full px-12 py-8 text-xl font-bold shadow-xl hover:scale-105 transition-all bg-primary text-primary-foreground border-none"
           >
-            <Sparkles className="mr-3 h-6 w-6" /> Reveal My Surprise
+            {isOpening ? <Loader2 className="mr-3 h-6 w-6 animate-spin" /> : <Sparkles className="mr-3 h-6 w-6" />}
+            {isOpening ? "Opening Surprise..." : "Reveal My Surprise"}
           </Button>
         </div>
       </div>

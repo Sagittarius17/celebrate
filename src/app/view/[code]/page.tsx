@@ -189,7 +189,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
     <main className="min-h-screen bg-background overflow-x-hidden" style={globalStyle}>
       <Header title={page?.title} occasion={page?.occasion} />
        
-      <section ref={journeyRef} className="pt-12 pb-0 sm:pt-20 relative">
+      <section id="journey" ref={journeyRef} className="pt-12 pb-0 sm:pt-20 relative">
         <div className="text-center mb-12 sm:mb-16 px-4">
           <h2 className="text-3xl sm:text-5xl font-bold mb-4" style={{ fontFamily: page?.font || 'inherit' }}>{page?.title || 'Our Journey'}</h2>
           <div className="w-16 sm:w-24 h-1 bg-secondary mx-auto rounded-full" />

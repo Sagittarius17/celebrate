@@ -25,6 +25,10 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const isCandle = theme === 'candle-light';
 
+  const scrollToJourney = () => {
+    document.getElementById('journey')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <header className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden bg-gradient-to-b from-primary/10 transition-all duration-1000 z-10">
       <div className="fixed top-8 right-8 z-[100] flex flex-col gap-4">
@@ -93,7 +97,10 @@ export const Header: React.FC<HeaderProps> = ({
         </p>
       </div>
 
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce cursor-pointer z-30">
+      <div 
+        className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce cursor-pointer z-30"
+        onClick={scrollToJourney}
+      >
         <div className={cn(
           "w-8 h-12 border-2 rounded-full flex justify-center p-1 transition-colors",
           isCandle ? "border-primary" : "border-muted-foreground/30"

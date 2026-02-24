@@ -195,7 +195,7 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
         onToggleFireworks={() => setShowFireworks(prev => !prev)}
       />
        
-      <section ref={journeyRef} className="pt-8 pb-0 sm:pt-16 relative z-10">
+      <section id="journey" ref={journeyRef} className="pt-8 pb-0 sm:pt-16 relative z-10">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-12 sm:mb-20 px-4">
             <h2 className="text-3xl sm:text-5xl font-bold mb-4" style={{ fontFamily: page?.font || 'inherit' }}>{page?.title || 'Our Journey'}</h2>

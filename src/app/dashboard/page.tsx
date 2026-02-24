@@ -177,7 +177,7 @@ export default function Dashboard() {
     );
   }
 
-  const headerButtonStyle = "rounded-full h-12 w-12 p-0 flex items-center justify-center border-none bg-secondary hover:bg-secondary/80 text-secondary-foreground transition-all shadow-sm";
+  const headerButtonStyle = "rounded-full h-12 w-12 p-0 flex items-center justify-center border-none transition-all shadow-sm";
 
   return (
     <div className="p-8">
@@ -190,7 +190,8 @@ export default function Dashboard() {
           
           <div className="flex items-center gap-4">
             <Button 
-              className={`${headerButtonStyle} bg-destructive/10 hover:bg-destructive/20 text-destructive`}
+              variant="destructive"
+              className={`${headerButtonStyle} bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-lg shadow-destructive/20`}
               onClick={handleLogout}
               title="Log Out"
             >
@@ -198,7 +199,7 @@ export default function Dashboard() {
             </Button>
 
             <Button 
-              className={headerButtonStyle}
+              className={`${headerButtonStyle} bg-secondary hover:bg-secondary/80 text-secondary-foreground`}
               onClick={toggleTheme}
               title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
@@ -208,7 +209,7 @@ export default function Dashboard() {
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
               <DialogTrigger asChild>
                 <Button 
-                  className={headerButtonStyle}
+                  className={`${headerButtonStyle} bg-secondary hover:bg-secondary/80 text-secondary-foreground`}
                   title="New Surprise"
                 >
                   <Plus className="h-6 w-6" />

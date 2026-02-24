@@ -189,14 +189,14 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
   if (!isRevealed) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 px-4">
-        <div className="text-center space-y-12 animate-fade-in">
-          <div className="relative inline-block">
+        <div className="flex flex-col items-center gap-12 animate-fade-in w-full max-w-sm">
+          <div className="relative">
             <div className="absolute -inset-4 bg-primary/20 blur-3xl rounded-full animate-pulse" />
-            <div className="relative bg-white p-10 rounded-[3rem] shadow-2xl border-b-8 border-primary/20 transition-all duration-500">
+            <div className="relative bg-white p-10 rounded-[3rem] shadow-2xl border-b-8 border-primary/20 transition-all duration-500 flex items-center justify-center">
               {isOpening ? (
-                <PackageOpen className="h-20 w-20 text-primary animate-in zoom-in-50 duration-300 mx-auto" />
+                <PackageOpen className="h-20 w-20 text-primary animate-in zoom-in-50 duration-300" />
               ) : (
-                <Gift className="h-20 w-20 text-primary animate-bounce mx-auto" />
+                <Gift className="h-20 w-20 text-primary animate-bounce" />
               )}
             </div>
           </div>
@@ -205,7 +205,7 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
             size="lg" 
             onClick={handleRevealClick}
             disabled={isOpening}
-            className="rounded-full px-12 py-8 text-xl font-bold shadow-xl hover:scale-105 transition-all bg-primary text-primary-foreground border-none"
+            className="rounded-full px-12 py-8 text-xl font-bold shadow-xl hover:scale-105 transition-all bg-primary text-primary-foreground border-none w-full"
           >
             {isOpening ? <Loader2 className="mr-3 h-6 w-6 animate-spin" /> : <Sparkles className="mr-3 h-6 w-6" />}
             {isOpening ? "Opening Surprise..." : "Reveal My Surprise"}

@@ -15,18 +15,18 @@ export const FireworkEffect: React.FC<FireworkEffectProps> = ({ enabled }) => {
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Initialize fireworks with vibrant and widespread settings
+    // Initialize fireworks following official documentation structure
     fireworksRef.current = new Fireworks(containerRef.current, {
       autoresize: true,
       opacity: 0.9,
       acceleration: 1.05,
       friction: 0.97,
       gravity: 1.5,
-      particles: 150, // More particles
+      particles: 150,
       traceLength: 3,
       traceSpeed: 10,
-      explosion: 10, // Larger explosions
-      intensity: 60, // Higher intensity
+      explosion: 10,
+      intensity: 60,
       flicker: 50,
       lineStyle: 'round',
       hue: {
@@ -34,8 +34,8 @@ export const FireworkEffect: React.FC<FireworkEffectProps> = ({ enabled }) => {
         max: 360
       },
       delay: {
-        min: 10,
-        max: 20
+        min: 15,
+        max: 30
       },
       rocketsPoint: {
         min: 0,
@@ -67,8 +67,10 @@ export const FireworkEffect: React.FC<FireworkEffectProps> = ({ enabled }) => {
     });
 
     return () => {
-      fireworksRef.current?.stop();
-      fireworksRef.current = null;
+      if (fireworksRef.current) {
+        fireworksRef.current.stop();
+        fireworksRef.current = null;
+      }
     };
   }, []);
 
@@ -91,7 +93,8 @@ export const FireworkEffect: React.FC<FireworkEffectProps> = ({ enabled }) => {
         opacity: enabled ? 1 : 0,
         visibility: enabled ? 'visible' : 'hidden',
         width: '100vw',
-        height: '100vh'
+        height: '100vh',
+        background: 'transparent'
       }}
     />
   );

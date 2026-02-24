@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Sun, Flame, Sparkles, Volume2, VolumeX, Music, Music2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -33,6 +33,7 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const isCandle = theme === 'candle-light';
   const [isPlayingVoice, setIsPlayingVoice] = useState(false);
+  const [voiceProgress, setVoiceProgress] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const scrollToJourney = () => {
@@ -49,6 +50,32 @@ export const Header: React.FC<HeaderProps> = ({
       setIsPlayingVoice(true);
     }
   };
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const updateProgress = () => {
+      if (audio.duration) {
+        setVoiceProgress((audio.currentTime / audio.duration) * 100);
+      }
+    };
+
+    audio.addEventListener('timeupdate', updateProgress);
+    audio.addEventListener('ended', () => {
+      setIsPlayingVoice(false);
+      setVoiceProgress(0);
+    });
+
+    return () => {
+      audio.removeEventListener('timeupdate', updateProgress);
+    };
+  }, [voiceNoteUrl]);
+
+  // SVG Circle Progress properties
+  const radius = 26;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (voiceProgress / 100) * circumference;
 
   return (
     <header className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden bg-gradient-to-b from-primary/10 transition-all duration-1000 z-10">
@@ -97,17 +124,42 @@ export const Header: React.FC<HeaderProps> = ({
         )}
 
         {voiceNoteUrl && (
-          <Button
-            onClick={toggleVoiceNote}
-            variant="ghost"
-            className={cn(
-              "rounded-full w-14 h-14 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-xl bg-orange-500/10 text-orange-500",
-              isPlayingVoice && "bg-orange-500 text-white"
-            )}
-            title={isPlayingVoice ? "Pause Message" : "Play Creator Message"}
-          >
-            {isPlayingVoice ? <VolumeX className="h-6 w-6" /> : <Volume2 className="h-6 w-6" />}
-          </Button>
+          <div className="relative w-14 h-14 group">
+            <svg className="absolute inset-0 w-full h-full -rotate-90 transform" viewBox="0 0 60 60">
+              <circle
+                cx="30"
+                cy="30"
+                r={radius}
+                stroke="currentColor"
+                strokeWidth="2.5"
+                fill="transparent"
+                className="text-orange-500/10"
+              />
+              <circle
+                cx="30"
+                cy="30"
+                r={radius}
+                stroke="currentColor"
+                strokeWidth="2.5"
+                fill="transparent"
+                strokeDasharray={circumference}
+                style={{ strokeDashoffset }}
+                strokeLinecap="round"
+                className="text-orange-500 transition-all duration-300"
+              />
+            </svg>
+            <Button
+              onClick={toggleVoiceNote}
+              variant="ghost"
+              className={cn(
+                "rounded-full w-14 h-14 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-xl bg-orange-500/10 text-orange-500 relative z-10",
+                isPlayingVoice && "bg-orange-500 text-white"
+              )}
+              title={isPlayingVoice ? "Pause Message" : "Play Creator Message"}
+            >
+              {isPlayingVoice ? <VolumeX className="h-6 w-6" /> : <Volume2 className="h-6 w-6" />}
+            </Button>
+          </div>
         )}
       </div>
 

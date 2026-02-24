@@ -29,6 +29,7 @@ export const ThreeDecoration: React.FC<ThreeDecorationProps> = ({ type, classNam
     if (width === 0 || height === 0) return;
 
     const scene = new THREE.Scene();
+    // Use a slightly narrower FOV or move camera back to prevent clipping large sprites
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
 
@@ -39,10 +40,11 @@ export const ThreeDecoration: React.FC<ThreeDecorationProps> = ({ type, classNam
     const group = new THREE.Group();
 
     if (type === 'candle') {
-      // Candle Body
+      // Candle Body - Shifted down slightly to give more room for the flame aura
       const cylinder = new THREE.CylinderGeometry(0.22, 0.22, 0.85, 32);
       const bodyMaterial = new THREE.MeshPhongMaterial({ color: 0xFFFDD0 });
       const candleBody = new THREE.Mesh(cylinder, bodyMaterial);
+      candleBody.position.y = -0.2;
       
       // Intense Flame Core
       const flameGeometry = new THREE.SphereGeometry(0.09, 16, 16);
@@ -52,10 +54,10 @@ export const ThreeDecoration: React.FC<ThreeDecorationProps> = ({ type, classNam
         emissiveIntensity: 3.5
       });
       const flame = new THREE.Mesh(flameGeometry, flameMaterial);
-      flame.position.y = 0.53;
+      flame.position.y = 0.33;
       flame.scale.set(1, 2.2, 1);
 
-      // Blurry Glow Halo
+      // Blurry Glow Halo - Refined scale and position to avoid clipping at the top
       const canvas = document.createElement('canvas');
       canvas.width = 128;
       canvas.height = 128;
@@ -77,8 +79,9 @@ export const ThreeDecoration: React.FC<ThreeDecorationProps> = ({ type, classNam
         opacity: 0.85
       });
       const glowSprite = new THREE.Sprite(glowMaterial);
-      glowSprite.position.y = 0.53;
-      glowSprite.scale.set(2.5, 4.5, 1);
+      glowSprite.position.y = 0.33;
+      // Adjusted scale (smaller Y) to prevent sharp clipping edges
+      glowSprite.scale.set(2.8, 3.8, 1);
       
       group.add(candleBody);
       group.add(flame);
@@ -94,7 +97,7 @@ export const ThreeDecoration: React.FC<ThreeDecorationProps> = ({ type, classNam
         flame.scale.y = scaleBase;
         flame.position.x = Math.sin(time * 40) * 0.03;
         
-        glowSprite.scale.y = scaleBase * 1.8;
+        glowSprite.scale.y = scaleBase * 1.6;
         glowSprite.material.opacity = 0.7 + Math.random() * 0.3;
         glowSprite.position.x = flame.position.x;
       };
@@ -122,7 +125,8 @@ export const ThreeDecoration: React.FC<ThreeDecorationProps> = ({ type, classNam
     scene.add(light);
     scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
-    camera.position.z = 2.5;
+    // Move camera back slightly to accommodate the large aura without clipping
+    camera.position.z = 3.5;
 
     let requestRef: number;
     const animate = () => {

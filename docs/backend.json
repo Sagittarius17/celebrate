@@ -46,6 +46,14 @@
           "description": "The font family selected for the celebration page.",
           "enum": ["Playfair Display", "PT Sans", "Montserrat", "Lora", "Quicksand", "Merriweather", "Oswald", "Dancing Script", "Caveat", "Pacifico", "Lobster", "Cinzel", "Comfortaa", "Great Vibes", "Sacramento"]
         },
+        "spotifyTrackId": {
+          "type": "string",
+          "description": "The Spotify Track ID to play on the page."
+        },
+        "voiceNoteDataUri": {
+          "type": "string",
+          "description": "A Base64 data URI of a recorded voice message."
+        },
         "ownerId": {
           "type": "string",
           "description": "UID of the creator."

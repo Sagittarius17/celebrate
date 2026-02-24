@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, User, Key, ArrowRight, Gift, LogOut, Copy, Check, Type, Trash2, Edit2, Sun, Moon } from 'lucide-react';
+import { Plus, User, Key, ArrowRight, Gift, LogOut, Copy, Check, Type, Trash2, Edit2, Sun, Moon, Music } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -72,6 +72,7 @@ export default function Dashboard() {
     recipientName: '',
     title: '',
     occasion: 'Birthday',
+    spotifyTrackId: '',
   });
   const [editingSurprise, setEditingSurprise] = useState<any>(null);
 
@@ -100,7 +101,7 @@ export default function Dashboard() {
 
     addDocumentNonBlocking(collection(db, 'celebrationPages'), payload);
     setIsCreateOpen(false);
-    setNewSurprise({ recipientName: '', title: '', occasion: 'Birthday' });
+    setNewSurprise({ recipientName: '', title: '', occasion: 'Birthday', spotifyTrackId: '' });
     toast({ title: "Surprise Created", description: "Your unique access code is: " + accessCode });
   };
 
@@ -254,6 +255,17 @@ export default function Dashboard() {
                       onChange={(e) => setNewSurprise({...newSurprise, title: e.target.value})}
                     />
                   </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="spotify-id" className="flex items-center gap-2">
+                      <Music className="h-4 w-4 text-primary" /> Spotify Track ID
+                    </Label>
+                    <Input 
+                      id="spotify-id" 
+                      placeholder="e.g. 4PTG3C64LUButARq9I9Uf8" 
+                      value={newSurprise.spotifyTrackId}
+                      onChange={(e) => setNewSurprise({...newSurprise, spotifyTrackId: e.target.value})}
+                    />
+                  </div>
                   <div className="bg-muted/50 p-4 rounded-xl border border-dashed text-xs text-muted-foreground">
                     <p className="flex items-center gap-2">
                       <Key className="h-3 w-3" /> A unique 10-character secret code will be generated automatically.
@@ -305,6 +317,16 @@ export default function Dashboard() {
                     id="edit-title" 
                     value={editingSurprise.title}
                     onChange={(e) => setEditingSurprise({...editingSurprise, title: e.target.value})}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-spotify" className="flex items-center gap-2">
+                    <Music className="h-4 w-4 text-primary" /> Spotify Track ID
+                  </Label>
+                  <Input 
+                    id="edit-spotify" 
+                    value={editingSurprise.spotifyTrackId || ''}
+                    onChange={(e) => setEditingSurprise({...editingSurprise, spotifyTrackId: e.target.value})}
                   />
                 </div>
                 <div className="grid gap-2">

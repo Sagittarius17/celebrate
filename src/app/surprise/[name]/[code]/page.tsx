@@ -193,13 +193,28 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
         onToggleTheme={() => setTheme(prev => prev === 'light' ? 'candle-light' : 'light')} 
         showFireworks={showFireworks}
         onToggleFireworks={() => setShowFireworks(prev => !prev)}
+        voiceNoteUrl={page?.voiceNoteDataUri}
       />
        
       <section id="journey" ref={journeyRef} className="pt-8 pb-0 sm:pt-16 relative z-10">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-12 sm:mb-20 px-4">
             <h2 className="text-3xl sm:text-5xl font-bold mb-4" style={{ fontFamily: page?.font || 'inherit' }}>{page?.title || 'Our Journey'}</h2>
-            <div className="w-16 sm:w-24 h-1 bg-secondary mx-auto rounded-full" />
+            <div className="w-16 sm:w-24 h-1 bg-secondary mx-auto rounded-full mb-8" />
+            
+            {page?.spotifyTrackId && (
+              <div className="max-w-md mx-auto mb-12 animate-fade-in">
+                <iframe 
+                  src={`https://open.spotify.com/embed/track/${page.spotifyTrackId}?utm_source=generator&theme=0`} 
+                  width="100%" 
+                  height="80" 
+                  frameBorder="0" 
+                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                  loading="lazy"
+                  className="rounded-2xl shadow-xl"
+                ></iframe>
+              </div>
+            )}
           </div>
           
           {layout === 'Timeline' ? (

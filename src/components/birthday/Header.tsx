@@ -1,9 +1,9 @@
 
 "use client";
 
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Sun, Flame, Sparkles } from 'lucide-react';
+import { Sun, Flame, Sparkles, Volume2, VolumeX } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface HeaderProps {
@@ -13,6 +13,7 @@ interface HeaderProps {
   onToggleTheme?: () => void;
   showFireworks?: boolean;
   onToggleFireworks?: () => void;
+  voiceNoteUrl?: string | null;
 }
 
 export const Header: React.FC<HeaderProps> = ({ 
@@ -21,12 +22,26 @@ export const Header: React.FC<HeaderProps> = ({
   theme, 
   onToggleTheme,
   showFireworks,
-  onToggleFireworks
+  onToggleFireworks,
+  voiceNoteUrl
 }) => {
   const isCandle = theme === 'candle-light';
+  const [isPlayingVoice, setIsPlayingVoice] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const scrollToJourney = () => {
     document.getElementById('journey')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const toggleVoiceNote = () => {
+    if (!audioRef.current) return;
+    if (isPlayingVoice) {
+      audioRef.current.pause();
+      setIsPlayingVoice(false);
+    } else {
+      audioRef.current.play();
+      setIsPlayingVoice(true);
+    }
   };
 
   return (
@@ -58,7 +73,28 @@ export const Header: React.FC<HeaderProps> = ({
             <Sparkles className={cn("h-6 w-6", showFireworks && "animate-pulse")} />
           </Button>
         )}
+
+        {voiceNoteUrl && (
+          <Button
+            onClick={toggleVoiceNote}
+            variant="ghost"
+            className={cn(
+              "rounded-full w-14 h-14 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-xl bg-orange-500/10 text-orange-500",
+              isPlayingVoice && "bg-orange-500 text-white"
+            )}
+            title={isPlayingVoice ? "Pause Message" : "Play Creator Message"}
+          >
+            {isPlayingVoice ? <VolumeX className="h-6 w-6" /> : <Volume2 className="h-6 w-6" />}
+          </Button>
+        )}
       </div>
+
+      <audio 
+        ref={audioRef} 
+        src={voiceNoteUrl || undefined} 
+        onEnded={() => setIsPlayingVoice(false)}
+        className="hidden"
+      />
 
       <div className="relative z-30 animate-fade-in space-y-6">
         <div className={cn(

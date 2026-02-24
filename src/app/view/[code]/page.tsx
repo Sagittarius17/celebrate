@@ -9,6 +9,8 @@ import { TimelineLayout } from '@/components/birthday/TimelineLayout';
 import { GridLayout } from '@/components/birthday/GridLayout';
 import { CarouselLayout } from '@/components/birthday/CarouselLayout';
 import { FinalMessage } from '@/components/birthday/FinalMessage';
+import { ButterflySwarm } from '@/components/birthday/ButterflySwarm';
+import { FireworkEffect } from '@/components/birthday/FireworkEffect';
 import { Gift, Loader2, Heart } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
@@ -31,6 +33,9 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
   const [isFindingPage, setIsFindingPage] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [theme, setTheme] = useState<'light' | 'candle-light'>('light');
+  const [showFireworks, setShowFireworks] = useState(false);
+  
   const journeyRef = useRef<HTMLDivElement>(null);
   const endTriggerRef = useRef<HTMLDivElement>(null);
 
@@ -40,12 +45,9 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       try {
         const decodedSlug = decodeURIComponent(slug);
         const parts = decodedSlug.split('-');
-        
-        // Use ID-CODE format: ID is the first part, CODE is the last part
         const pageIdFromUrl = parts[0];
         const accessCodeFromUrl = parts[parts.length - 1];
 
-        // 1. Direct fetch by ID (Efficient)
         const docRef = doc(db, 'celebrationPages', pageIdFromUrl);
         const docSnap = await getDoc(docRef);
 
@@ -58,7 +60,6 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
           }
         }
 
-        // 2. Fallback search (For legacy links or direct code entry)
         const q = query(collection(db, 'celebrationPages'), where('accessCode', '==', accessCodeFromUrl));
         const snap = await getDocs(q);
         
@@ -75,6 +76,17 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
     };
     findPage();
   }, [db, slug]);
+
+  useEffect(() => {
+    if (theme === 'candle-light') {
+      document.body.classList.add('candle-light');
+    } else {
+      document.body.classList.remove('candle-light');
+    }
+    return () => {
+      document.body.classList.remove('candle-light');
+    };
+  }, [theme]);
 
   const pageDocRef = useMemoFirebase(() => {
     if (!db || !pageId) return null;
@@ -111,7 +123,6 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       const viewportHeight = window.innerHeight;
       
       const triggerPoint = viewportHeight * 0.7; 
-      
       const journeyTop = journeyRect.top;
       const heartTop = heartRect.top + 24; 
       
@@ -184,25 +195,51 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
   const layout = page?.layout || 'Timeline';
   
   const isFullyConnected = scrollProgress >= 100;
+  const isCandle = theme === 'candle-light';
 
   return (
-    <main className="min-h-screen bg-background overflow-x-hidden" style={globalStyle}>
-      <Header title={page?.title} occasion={page?.occasion} />
+    <main className={cn("min-h-screen bg-background overflow-x-hidden transition-all duration-1000", theme)} style={globalStyle}>
+      <ButterflySwarm theme={theme} />
+      <FireworkEffect enabled={showFireworks} />
+      
+      <Header 
+        title={page?.title} 
+        occasion={page?.occasion} 
+        theme={theme} 
+        onToggleTheme={() => setTheme(prev => prev === 'light' ? 'candle-light' : 'light')} 
+        showFireworks={showFireworks}
+        onToggleFireworks={() => setShowFireworks(prev => !prev)}
+        voiceNoteUrl={page?.voiceNoteDataUri}
+      />
        
-      <section id="journey" ref={journeyRef} className="pt-12 pb-0 sm:pt-20 relative">
-        <div className="text-center mb-12 sm:mb-16 px-4">
-          <h2 className="text-3xl sm:text-5xl font-bold mb-4" style={{ fontFamily: page?.font || 'inherit' }}>{page?.title || 'Our Journey'}</h2>
-          <div className="w-16 sm:w-24 h-1 bg-secondary mx-auto rounded-full" />
-        </div>
-        
+      <section id="journey" ref={journeyRef} className="pt-8 pb-0 sm:pt-16 relative z-10">
         <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12 sm:mb-20 px-4">
+            <h2 className="text-3xl sm:text-5xl font-bold mb-4" style={{ fontFamily: page?.font || 'inherit' }}>{page?.title || 'Our Journey'}</h2>
+            <div className="w-16 sm:w-24 h-1 bg-secondary mx-auto rounded-full mb-8" />
+            
+            {page?.spotifyTrackId && (
+              <div className="max-w-md mx-auto mb-12 animate-fade-in">
+                <iframe 
+                  src={`https://open.spotify.com/embed/track/${page.spotifyTrackId}?utm_source=generator&theme=0`} 
+                  width="100%" 
+                  height="80" 
+                  frameBorder="0" 
+                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                  loading="lazy"
+                  className="rounded-2xl shadow-xl"
+                ></iframe>
+              </div>
+            )}
+          </div>
+          
           {layout === 'Timeline' ? (
             <div className="relative flex flex-col items-center">
               <div 
-                className="absolute left-1/2 transform -translate-x-1/2 w-1.5 z-0 pointer-events-none" 
+                className="absolute left-1/2 -translate-x-1/2 w-2 z-0 pointer-events-none" 
                 style={{ 
                   height: 'calc(100% - 110px)', 
-                  top: '10px' 
+                  top: '-40px' 
                 }}
               >
                 <div className="w-full h-full timeline-line opacity-10" />
@@ -212,7 +249,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
                 />
               </div>
               
-              <div className="w-full">
+              <div className="w-full relative z-10">
                 <TimelineLayout events={events} scrollProgress={scrollProgress} />
               </div>
 
@@ -223,7 +260,9 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
                 )}>
                   <div className={cn(
                     "bg-white p-3 sm:p-4 rounded-full shadow-2xl border-4 transition-all duration-700",
-                    isFullyConnected ? "animate-rgb-border" : "border-secondary/40"
+                    isFullyConnected && isCandle 
+                      ? "animate-rgb-border" 
+                      : (isFullyConnected ? "border-secondary" : "border-secondary/40")
                   )}>
                     <Heart className={cn(
                       "w-8 h-8 sm:w-10 sm:h-10 text-secondary fill-secondary transition-all",
@@ -234,7 +273,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
               </div>
             </div>
           ) : (
-            <div>
+            <div className="relative z-10">
               {layout === 'Carousel' ? (
                 <CarouselLayout events={events} />
               ) : (

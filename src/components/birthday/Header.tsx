@@ -28,16 +28,6 @@ export const Header: React.FC<HeaderProps> = ({ title, occasion = "Celebration",
         </div>
       )}
 
-      {theme === 'candle-light' && (
-        <div className="absolute top-0 left-0 w-full h-24 z-20 pointer-events-none overflow-hidden opacity-60">
-          <div className="flex justify-around w-[200%] animate-twinkle">
-            {Array.from({ length: 40 }).map((_, i) => (
-              <div key={i} className="w-1 h-1 bg-primary rounded-full blur-[1px] mx-2" />
-            ))}
-          </div>
-        </div>
-      )}
-
       <div className="relative z-10 animate-fade-in space-y-6">
         <div className="inline-block px-6 py-2 rounded-full bg-secondary/20 text-secondary-foreground font-bold tracking-widest uppercase text-xs sm:text-sm mb-4">
           A special {occasion.toLowerCase()} surprise

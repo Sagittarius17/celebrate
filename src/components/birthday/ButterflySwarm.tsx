@@ -13,9 +13,10 @@ interface Candle {
 }
 
 export const ButterflySwarm = ({ theme = 'light' }: { theme?: 'light' | 'candle-light' }) => {
-  // Initialize exactly 12 candles once in the state initializer to prevent duplicates
+  // Initialize exactly 10 candles once in the state initializer to prevent duplicates
+  // Reduced count to 10 as requested
   const [candles, setCandles] = useState<Candle[]>(() => {
-    const count = 12;
+    const count = 10;
     return Array.from({ length: count }).map((_, i) => ({
       id: i,
       x: Math.random() * 100,
@@ -52,7 +53,7 @@ export const ButterflySwarm = ({ theme = 'light' }: { theme?: 'light' | 'candle-
     return () => clearInterval(interval);
   }, [theme]);
 
-  // Strictly hide 3D models in light theme per request
+  // Strictly hide 3D models in light theme
   if (theme !== 'candle-light') return null;
 
   return (

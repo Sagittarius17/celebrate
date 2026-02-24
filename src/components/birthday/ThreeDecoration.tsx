@@ -52,7 +52,8 @@ export const ThreeDecoration: React.FC<ThreeDecorationProps> = ({ type, classNam
         emissiveIntensity: 3
       });
       const flame = new THREE.Mesh(flameGeometry, flameMaterial);
-      flame.position.y = 0.5;
+      // Centered more precisely with the glow
+      flame.position.y = 0.52;
       flame.scale.set(1, 2, 1);
 
       // Blurry Glow Halo (Canvas-based sprite for realistic "fade blurry" look)
@@ -76,7 +77,7 @@ export const ThreeDecoration: React.FC<ThreeDecorationProps> = ({ type, classNam
         opacity: 0.8
       });
       const glowSprite = new THREE.Sprite(glowMaterial);
-      glowSprite.position.y = 0.55;
+      glowSprite.position.y = 0.52;
       glowSprite.scale.set(1.8, 3, 1);
       
       group.add(candleBody);

@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { use, useEffect, useState, useRef } from 'react';
@@ -56,6 +55,20 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
     };
     findPage();
   }, [db, code]);
+
+  useEffect(() => {
+    // Apply theme class to body for better CSS variable inheritance across the entire viewport
+    if (theme === 'candle-light') {
+      document.body.classList.add('candle-light');
+    } else {
+      document.body.classList.remove('candle-light');
+    }
+    
+    // Cleanup on unmount or theme change
+    return () => {
+      document.body.classList.remove('candle-light');
+    };
+  }, [theme]);
 
   const pageDocRef = useMemoFirebase(() => {
     if (!db || !pageId) return null;

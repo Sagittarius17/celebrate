@@ -1,9 +1,9 @@
-
 "use client";
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Sun, Moon, Flame } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface HeaderProps {
   title?: string;
@@ -32,7 +32,10 @@ export const Header: React.FC<HeaderProps> = ({ title, occasion = "Celebration",
         <div className="inline-block px-6 py-2 rounded-full bg-secondary/20 text-secondary-foreground font-bold tracking-widest uppercase text-xs sm:text-sm mb-4">
           A special {occasion.toLowerCase()} surprise
         </div>
-        <h1 className="text-5xl sm:text-7xl md:text-9xl font-extrabold text-foreground leading-tight drop-shadow-sm px-2">
+        <h1 className={cn(
+          "text-5xl sm:text-7xl md:text-9xl font-extrabold leading-tight drop-shadow-sm px-2 transition-all duration-1000",
+          theme === 'candle-light' ? "text-primary drop-shadow-[0_0_30px_rgba(255,215,0,0.5)]" : "text-foreground"
+        )}>
           {title ? (
             <>
               {title.includes(',') ? (

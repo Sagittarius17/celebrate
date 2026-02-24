@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -51,24 +50,24 @@
 
   .candle-light {
     --background: 20 40% 4%;
-    --foreground: 45 100% 85%;
+    --foreground: 45 100% 92%;
     --card: 20 30% 8%;
-    --card-foreground: 45 100% 90%;
+    --card-foreground: 45 100% 95%;
     --popover: 20 30% 8%;
-    --popover-foreground: 45 100% 90%;
-    --primary: 40 100% 50%;
-    --primary-foreground: 20 40% 5%;
+    --popover-foreground: 45 100% 95%;
+    --primary: 40 100% 60%;
+    --primary-foreground: 20 40% 10%;
     --secondary: 25 100% 50%;
-    --secondary-foreground: 20 40% 5%;
+    --secondary-foreground: 20 40% 10%;
     --muted: 20 20% 12%;
-    --muted-foreground: 40 50% 60%;
-    --accent: 40 100% 50%;
-    --accent-foreground: 20 40% 5%;
+    --muted-foreground: 40 40% 75%;
+    --accent: 40 100% 60%;
+    --accent-foreground: 20 40% 10%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 20 20% 15%;
     --input: 20 20% 15%;
-    --ring: 40 100% 50%;
+    --ring: 40 100% 60%;
   }
 }
 

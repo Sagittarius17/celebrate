@@ -15,18 +15,18 @@ export const FireworkEffect: React.FC<FireworkEffectProps> = ({ enabled }) => {
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Initialize fireworks
+    // Initialize fireworks with more vibrant and widespread settings
     fireworksRef.current = new Fireworks(containerRef.current, {
       autoresize: true,
-      opacity: 0.5,
+      opacity: 0.8,
       acceleration: 1.05,
       friction: 0.97,
       gravity: 1.5,
-      particles: 50,
+      particles: 100,
       traceLength: 3,
       traceSpeed: 10,
-      explosion: 5,
-      intensity: 30,
+      explosion: 7,
+      intensity: 50,
       flicker: 50,
       lineStyle: 'round',
       hue: {
@@ -34,17 +34,17 @@ export const FireworkEffect: React.FC<FireworkEffectProps> = ({ enabled }) => {
         max: 360
       },
       delay: {
-        min: 30,
-        max: 60
+        min: 15,
+        max: 30
       },
       rocketsPoint: {
-        min: 50,
-        max: 50
+        min: 0,
+        max: 100
       },
       lineWidth: {
         explosion: {
           min: 1,
-          max: 3
+          max: 4
         },
         trace: {
           min: 1,
@@ -53,7 +53,7 @@ export const FireworkEffect: React.FC<FireworkEffectProps> = ({ enabled }) => {
       },
       brightness: {
         min: 50,
-        max: 80
+        max: 90
       },
       decay: {
         min: 0.015,
@@ -76,14 +76,18 @@ export const FireworkEffect: React.FC<FireworkEffectProps> = ({ enabled }) => {
       fireworksRef.current?.start();
     } else {
       fireworksRef.current?.stop();
+      fireworksRef.current?.clear();
     }
   }, [enabled]);
 
   return (
     <div 
       ref={containerRef} 
-      className="fixed inset-0 pointer-events-none z-10 transition-opacity duration-1000"
-      style={{ opacity: enabled ? 1 : 0 }}
+      className="fixed inset-0 pointer-events-none z-[60] transition-opacity duration-1000"
+      style={{ 
+        opacity: enabled ? 1 : 0,
+        visibility: enabled ? 'visible' : 'hidden'
+      }}
     />
   );
 };

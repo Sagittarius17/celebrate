@@ -38,9 +38,9 @@ export function TimelineLayout({ events, scrollProgress }: TimelineLayoutProps) 
               />
             </div>
 
-            {/* Timeline Dot */}
+            {/* Timeline Dot - Perfectly centered on the same axis */}
             <div className={cn(
-              "hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center justify-center w-10 h-10 sm:w-14 sm:h-14 rounded-full border-[3px] transition-all duration-500 z-20 bg-background shadow-sm",
+              "hidden md:flex absolute left-1/2 -translate-x-1/2 items-center justify-center w-10 h-10 sm:w-14 sm:h-14 rounded-full border-[3px] transition-all duration-500 z-20 bg-background shadow-sm",
               scrollProgress > (index / (events.length + 1)) * 100 ? "border-secondary scale-110 shadow-[0_0_15px_rgba(255,182,193,0.4)]" : "border-primary/40"
             )}> 
               <div className={cn(

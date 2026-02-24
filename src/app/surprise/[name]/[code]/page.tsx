@@ -195,20 +195,20 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
         onToggleFireworks={() => setShowFireworks(prev => !prev)}
       />
        
-      <section ref={journeyRef} className="pt-12 pb-0 sm:pt-20 relative z-10">
-        <div className="text-center mb-12 sm:mb-16 px-4">
-          <h2 className="text-3xl sm:text-5xl font-bold mb-4" style={{ fontFamily: page?.font || 'inherit' }}>{page?.title || 'Our Journey'}</h2>
-          <div className="w-16 sm:w-24 h-1 bg-secondary mx-auto rounded-full" />
-        </div>
-        
+      <section ref={journeyRef} className="pt-8 pb-0 sm:pt-16 relative z-10">
         <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12 sm:mb-20 px-4">
+            <h2 className="text-3xl sm:text-5xl font-bold mb-4" style={{ fontFamily: page?.font || 'inherit' }}>{page?.title || 'Our Journey'}</h2>
+            <div className="w-16 sm:w-24 h-1 bg-secondary mx-auto rounded-full" />
+          </div>
+          
           {layout === 'Timeline' ? (
             <div className="relative flex flex-col items-center">
               <div 
-                className="absolute left-1/2 transform -translate-x-1/2 w-1.5 z-0 pointer-events-none" 
+                className="absolute left-1/2 -translate-x-1/2 w-2 z-0 pointer-events-none" 
                 style={{ 
                   height: 'calc(100% - 110px)', 
-                  top: '10px' 
+                  top: '-40px' 
                 }}
               >
                 <div className="w-full h-full timeline-line opacity-10" />

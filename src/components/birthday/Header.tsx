@@ -39,7 +39,6 @@ export const Header: React.FC<HeaderProps> = ({
           </Button>
         )}
 
-        {/* Fireworks button only visible in candle-light theme */}
         {onToggleFireworks && isCandle && (
           <Button
             onClick={onToggleFireworks}
@@ -94,12 +93,14 @@ export const Header: React.FC<HeaderProps> = ({
         </p>
       </div>
 
-      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce cursor-pointer z-30">
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce cursor-pointer z-30">
         <div className={cn(
-          "w-8 h-12 border-2 rounded-full flex justify-center p-1 transition-colors border-primary"
+          "w-8 h-12 border-2 rounded-full flex justify-center p-1 transition-colors",
+          isCandle ? "border-primary" : "border-muted-foreground/30"
         )}>
           <div className={cn(
-            "w-1 h-3 rounded-full animate-scroll transition-colors bg-primary"
+            "w-1 h-3 rounded-full animate-scroll transition-colors",
+            isCandle ? "bg-primary" : "bg-muted-foreground/40"
           )} />
         </div>
       </div>

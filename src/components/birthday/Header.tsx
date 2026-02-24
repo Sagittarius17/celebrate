@@ -34,13 +34,13 @@ export const Header: React.FC<HeaderProps> = ({ title, occasion = "Celebration",
       <div className="relative z-30 animate-fade-in space-y-6">
         <div className={cn(
           "inline-block px-6 py-2 rounded-full font-bold tracking-widest uppercase text-xs sm:text-sm mb-4 transition-colors",
-          isCandle ? "bg-primary/20 text-primary" : "bg-secondary/20 text-secondary-foreground"
+          isCandle ? "bg-primary/20 text-foreground border border-primary/30" : "bg-secondary/20 text-secondary-foreground"
         )}>
           A special {occasion.toLowerCase()} surprise
         </div>
         <h1 className={cn(
           "text-5xl sm:text-7xl md:text-9xl font-extrabold leading-tight drop-shadow-sm px-2 transition-all duration-1000",
-          isCandle ? "text-primary drop-shadow-[0_0_40px_rgba(255,215,0,0.6)]" : "text-foreground"
+          isCandle ? "text-foreground drop-shadow-[0_0_40px_rgba(255,215,0,0.6)]" : "text-foreground"
         )}>
           {title ? (
             <>
@@ -62,7 +62,7 @@ export const Header: React.FC<HeaderProps> = ({ title, occasion = "Celebration",
         </h1>
         <p className={cn(
           "text-lg sm:text-xl md:text-2xl max-w-2xl mx-auto leading-relaxed px-4 transition-colors",
-          isCandle ? "text-primary/80" : "text-muted-foreground"
+          isCandle ? "text-foreground/80" : "text-muted-foreground"
         )}>
           Relive the beautiful moments that shaped an extraordinary life and journey through time together.
         </p>

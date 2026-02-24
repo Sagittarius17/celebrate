@@ -19,8 +19,8 @@ export const ButterflySwarm = ({ theme = 'light' }: { theme?: 'light' | 'candle-
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
-      speedX: (Math.random() - 0.5) * 0.04,
-      speedY: (Math.random() - 0.5) * 0.04,
+      speedX: (Math.random() - 0.5) * 0.035,
+      speedY: (Math.random() - 0.5) * 0.035,
     }));
   });
 
@@ -28,21 +28,21 @@ export const ButterflySwarm = ({ theme = 'light' }: { theme?: 'light' | 'candle-
     if (theme !== 'candle-light') return;
 
     const interval = setInterval(() => {
-      setCandles(prev => prev.map(b => {
-        let newX = b.x + b.speedX;
-        let newY = b.y + b.speedY;
-        let newSpeedX = b.speedX;
-        let newSpeedY = b.speedY;
+      setCandles(prev => prev.map(c => {
+        let newX = c.x + c.speedX;
+        let newY = c.y + c.speedY;
+        let newSpeedX = c.speedX;
+        let newSpeedY = c.speedY;
 
         if (newX < -10 || newX > 110) newSpeedX *= -1;
         if (newY < -10 || newY > 110) newSpeedY *= -1;
 
-        if (Math.random() < 0.01) {
-          newSpeedX = (Math.random() - 0.5) * 0.04;
-          newSpeedY = (Math.random() - 0.5) * 0.04;
+        if (Math.random() < 0.015) {
+          newSpeedX = (Math.random() - 0.5) * 0.035;
+          newSpeedY = (Math.random() - 0.5) * 0.035;
         }
 
-        return { ...b, x: newX, y: newY, speedX: newSpeedX, speedY: newSpeedY };
+        return { ...c, x: newX, y: newY, speedX: newSpeedX, speedY: newSpeedY };
       }));
     }, 50);
 
@@ -60,7 +60,7 @@ export const ButterflySwarm = ({ theme = 'light' }: { theme?: 'light' | 'candle-
           style={{ 
             left: `${c.x}%`, 
             top: `${c.y}%`,
-            opacity: 0.9
+            opacity: 0.95
           }}
         >
           <ThreeDecoration 

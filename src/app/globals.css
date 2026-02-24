@@ -50,25 +50,25 @@
   }
 
   .candle-light {
-    --background: 20 40% 4%;
-    --foreground: 40 100% 90%;
-    --card: 20 30% 8%;
-    --card-foreground: 45 100% 95%;
-    --popover: 20 30% 8%;
-    --popover-foreground: 45 100% 95%;
-    --primary: 40 100% 60%;
-    --primary-foreground: 40 100% 10%;
-    --secondary: 25 100% 50%;
-    --secondary-foreground: 20 40% 10%;
-    --muted: 20 20% 12%;
-    --muted-foreground: 40 100% 80%;
-    --accent: 40 100% 60%;
-    --accent-foreground: 20 40% 10%;
+    --background: 20 45% 3%;
+    --foreground: 45 100% 95%;
+    --card: 20 40% 6%;
+    --card-foreground: 45 100% 98%;
+    --popover: 20 40% 6%;
+    --popover-foreground: 45 100% 98%;
+    --primary: 45 100% 50%;
+    --primary-foreground: 20 45% 5%;
+    --secondary: 30 100% 50%;
+    --secondary-foreground: 20 45% 5%;
+    --muted: 20 30% 10%;
+    --muted-foreground: 45 100% 85%;
+    --accent: 45 100% 50%;
+    --accent-foreground: 20 45% 5%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 20 20% 15%;
-    --input: 20 20% 15%;
-    --ring: 40 100% 60%;
+    --border: 20 30% 15%;
+    --input: 20 30% 15%;
+    --ring: 45 100% 50%;
   }
 }
 

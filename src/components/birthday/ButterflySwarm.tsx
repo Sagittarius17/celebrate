@@ -16,14 +16,14 @@ export const ButterflySwarm = ({ theme = 'light' }: { theme?: 'light' | 'candle-
   const [candles, setCandles] = useState<Candle[]>([]);
 
   useEffect(() => {
-    // Only initialize exactly 12 candles once
+    // Strictly initialize exactly 12 candles once
     const count = 12;
     const initial = Array.from({ length: count }).map((_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
-      speedX: (Math.random() - 0.5) * 0.05,
-      speedY: (Math.random() - 0.5) * 0.05,
+      speedX: (Math.random() - 0.5) * 0.04,
+      speedY: (Math.random() - 0.5) * 0.04,
     }));
     setCandles(initial);
 
@@ -34,14 +34,14 @@ export const ButterflySwarm = ({ theme = 'light' }: { theme?: 'light' | 'candle-
         let newSpeedX = b.speedX;
         let newSpeedY = b.speedY;
 
-        // Bounce off edges
-        if (newX < -5 || newX > 105) newSpeedX *= -1;
-        if (newY < -5 || newY > 105) newSpeedY *= -1;
+        // Bounce off edges with a margin
+        if (newX < -10 || newX > 110) newSpeedX *= -1;
+        if (newY < -10 || newY > 110) newSpeedY *= -1;
 
-        // Occasional random turn
+        // Occasional random drift change
         if (Math.random() < 0.01) {
-          newSpeedX = (Math.random() - 0.5) * 0.05;
-          newSpeedY = (Math.random() - 0.5) * 0.05;
+          newSpeedX = (Math.random() - 0.5) * 0.04;
+          newSpeedY = (Math.random() - 0.5) * 0.04;
         }
 
         return { ...b, x: newX, y: newY, speedX: newSpeedX, speedY: newSpeedY };
@@ -51,19 +51,19 @@ export const ButterflySwarm = ({ theme = 'light' }: { theme?: 'light' | 'candle-
     return () => clearInterval(interval);
   }, []);
 
-  // Hide 3D models in light theme per user request
+  // Strictly hide 3D models in light theme per request
   if (theme !== 'candle-light') return null;
 
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-      {candles.map(b => (
+      {candles.map(c => (
         <div 
-          key={b.id}
-          className="absolute w-24 h-24 transition-all duration-500 ease-linear"
+          key={c.id}
+          className="absolute w-20 h-20 transition-all duration-500 ease-linear"
           style={{ 
-            left: `${b.x}%`, 
-            top: `${b.y}%`,
-            opacity: 0.8
+            left: `${c.x}%`, 
+            top: `${c.y}%`,
+            opacity: 0.9
           }}
         >
           <ThreeDecoration 

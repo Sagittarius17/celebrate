@@ -52,8 +52,6 @@ export const Header: React.FC<HeaderProps> = ({
       audioRef.current.pause();
       setIsPlayingVoice(false);
     } else {
-      // If playing music, we don't necessarily stop it, but we can if desired.
-      // For now, let's just ensure the voice note plays.
       audioRef.current.play();
       setIsPlayingVoice(true);
     }
@@ -170,7 +168,7 @@ export const Header: React.FC<HeaderProps> = ({
                 "rounded-full w-11 h-11 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-md overflow-hidden relative group",
                 !isMusicEnabled && "opacity-60 grayscale"
               )}
-              title={isMusicEnabled ? "Pause Music" : "Play Music"}
+              title={isMusicEnabled ? "Hide Music Controls" : "Show Music Controls"}
             >
               {spotifyMetadata?.imageUrl ? (
                 <Image 
@@ -188,17 +186,6 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
               )}
             </Button>
-            {/* Spotify Player - Small, visually hidden but present to ensure playback */}
-            {isMusicEnabled && spotifyTrackId && (
-              <iframe 
-                src={`https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0&autoplay=1`} 
-                width="1" 
-                height="1" 
-                frameBorder="0" 
-                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-                style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
-              />
-            )}
           </div>
         )}
 
@@ -275,6 +262,21 @@ export const Header: React.FC<HeaderProps> = ({
         )}>
           Relive the beautiful moments that shaped an extraordinary life and journey through time together.
         </p>
+
+        {/* Visible Spotify Player for reliability */}
+        {hasMusic && isMusicEnabled && spotifyTrackId && (
+          <div className="mt-8 w-full max-w-md mx-auto animate-fade-in relative z-50 px-4">
+            <iframe 
+              src={`https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0`} 
+              width="100%" 
+              height="80" 
+              frameBorder="0" 
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+              loading="lazy"
+              className="rounded-xl shadow-2xl bg-white/10 backdrop-blur-md"
+            />
+          </div>
+        )}
       </div>
 
       <div 

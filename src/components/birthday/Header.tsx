@@ -52,9 +52,8 @@ export const Header: React.FC<HeaderProps> = ({
       audioRef.current.pause();
       setIsPlayingVoice(false);
     } else {
-      // If playing music, maybe pause it? Or let them overlap. 
-      // Most users prefer one audio at a time.
-      if (isMusicEnabled && onToggleMusic) onToggleMusic();
+      // If playing music, we don't necessarily stop it, but we can if desired.
+      // For now, let's just ensure the voice note plays.
       audioRef.current.play();
       setIsPlayingVoice(true);
     }
@@ -118,7 +117,7 @@ export const Header: React.FC<HeaderProps> = ({
   const musicStrokeDashoffset = circumference - (simulatedMusicProgress / 100) * circumference;
 
   return (
-    <header className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden bg-gradient-to-b from-primary/10 transition-all duration-1000 z-10">
+    <header className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden z-10">
       <div className="fixed top-8 right-8 z-[100] flex flex-col gap-4 items-center">
         {onToggleTheme && (
           <Button
@@ -189,16 +188,16 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
               )}
             </Button>
-            {/* Hidden Spotify Iframe for Audio */}
+            {/* Spotify Player - Small, visually hidden but present to ensure playback */}
             {isMusicEnabled && spotifyTrackId && (
               <iframe 
                 src={`https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0&autoplay=1`} 
-                width="0" 
-                height="0" 
+                width="1" 
+                height="1" 
                 frameBorder="0" 
                 allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-                className="hidden"
-              ></iframe>
+                style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
+              />
             )}
           </div>
         )}

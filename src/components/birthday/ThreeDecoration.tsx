@@ -2,11 +2,7 @@
 "use client";
 
 import React, { useEffect, useRef } from 'react';
-import * as THREE from 'theme'; // Note: Ensure 'three' is imported correctly based on environment
-
-// Workaround for potential import issues in some environments, ensuring THREE is available
-import * as THREE_LIB from 'three';
-const THREE_NS = (window as any).THREE || THREE_LIB;
+import * as THREE from 'three';
 
 interface ThreeDecorationProps {
   type: 'heart' | 'star' | 'cube' | 'butterfly' | 'candle';
@@ -18,9 +14,10 @@ export const ThreeDecoration: React.FC<ThreeDecorationProps> = ({ type, classNam
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    // Ensure we are on the client and the container exists
+    if (!containerRef.current || typeof window === 'undefined') return;
 
-    // Safety: Clear any existing canvas to prevent duplication
+    // Safety: Clear any existing canvas to prevent duplication (fixes "one above, one below" issue)
     while (containerRef.current.firstChild) {
       containerRef.current.removeChild(containerRef.current.firstChild);
     }
@@ -28,34 +25,37 @@ export const ThreeDecoration: React.FC<ThreeDecorationProps> = ({ type, classNam
     const width = containerRef.current.clientWidth;
     const height = containerRef.current.clientHeight;
 
-    const scene = new THREE_NS.Scene();
-    const camera = new THREE_NS.PerspectiveCamera(75, width / height, 0.1, 1000);
-    const renderer = new THREE_NS.WebGLRenderer({ alpha: true, antialias: true });
+    // Don't initialize if the container has no size yet
+    if (width === 0 || height === 0) return;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
 
     renderer.setSize(width, height);
     renderer.setPixelRatio(window.devicePixelRatio);
     containerRef.current.appendChild(renderer.domElement);
 
-    let group = new THREE_NS.Group();
+    const group = new THREE.Group();
 
     if (type === 'candle') {
-      // Candle Body (Creamy ivory color)
-      const cylinder = new THREE_NS.CylinderGeometry(0.2, 0.2, 0.8, 32);
-      const bodyMaterial = new THREE_NS.MeshPhongMaterial({ color: 0xFFFDD0 });
-      const candleBody = new THREE_NS.Mesh(cylinder, bodyMaterial);
+      // Candle Body (Ivory)
+      const cylinder = new THREE.CylinderGeometry(0.2, 0.2, 0.8, 32);
+      const bodyMaterial = new THREE.MeshPhongMaterial({ color: 0xFFFDD0 });
+      const candleBody = new THREE.Mesh(cylinder, bodyMaterial);
       
-      // Intense Flame Core (Bright orange-gold)
-      const flameGeometry = new THREE_NS.SphereGeometry(0.08, 16, 16);
-      const flameMaterial = new THREE_NS.MeshPhongMaterial({ 
+      // Intense Flame Core
+      const flameGeometry = new THREE.SphereGeometry(0.08, 16, 16);
+      const flameMaterial = new THREE.MeshPhongMaterial({ 
         color: 0xFFD700,
         emissive: 0xFF8C00,
         emissiveIntensity: 3
       });
-      const flame = new THREE_NS.Mesh(flameGeometry, flameMaterial);
+      const flame = new THREE.Mesh(flameGeometry, flameMaterial);
       flame.position.y = 0.5;
       flame.scale.set(1, 2, 1);
 
-      // Blurry Glow Halo
+      // Blurry Glow Halo (Canvas-based sprite for realistic "fade blurry" look)
       const canvas = document.createElement('canvas');
       canvas.width = 64;
       canvas.height = 64;
@@ -68,14 +68,14 @@ export const ThreeDecoration: React.FC<ThreeDecorationProps> = ({ type, classNam
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, 64, 64);
       }
-      const glowTexture = new THREE_NS.CanvasTexture(canvas);
-      const glowMaterial = new THREE_NS.SpriteMaterial({ 
+      const glowTexture = new THREE.CanvasTexture(canvas);
+      const glowMaterial = new THREE.SpriteMaterial({ 
         map: glowTexture, 
         transparent: true, 
-        blending: THREE_NS.AdditiveBlending,
+        blending: THREE.AdditiveBlending,
         opacity: 0.8
       });
-      const glowSprite = new THREE_NS.Sprite(glowMaterial);
+      const glowSprite = new THREE.Sprite(glowMaterial);
       glowSprite.position.y = 0.55;
       glowSprite.scale.set(1.8, 3, 1);
       
@@ -99,7 +99,7 @@ export const ThreeDecoration: React.FC<ThreeDecorationProps> = ({ type, classNam
       };
       (group as any).update = animateFlame;
     } else if (type === 'heart') {
-      const heartShape = new THREE_NS.Shape();
+      const heartShape = new THREE.Shape();
       heartShape.moveTo(0, 0);
       heartShape.bezierCurveTo(0, 0, -2, 2, -5, 2);
       heartShape.bezierCurveTo(-10, 2, -10, -5, -10, -5);
@@ -107,19 +107,19 @@ export const ThreeDecoration: React.FC<ThreeDecorationProps> = ({ type, classNam
       heartShape.bezierCurveTo(5, -15, 10, -10, 10, -5);
       heartShape.bezierCurveTo(10, -5, 10, 2, 5, 2);
       heartShape.bezierCurveTo(2, 2, 0, 0, 0, 0);
-      const geometry = new THREE_NS.ExtrudeGeometry(heartShape, { depth: 2, bevelEnabled: true });
-      const material = new THREE_NS.MeshPhongMaterial({ color: new THREE_NS.Color(color) });
-      const mesh = new THREE_NS.Mesh(geometry, material);
+      const geometry = new THREE.ExtrudeGeometry(heartShape, { depth: 2, bevelEnabled: true });
+      const material = new THREE.MeshPhongMaterial({ color: new THREE.Color(color) });
+      const mesh = new THREE.Mesh(geometry, material);
       mesh.scale.set(0.03, 0.03, 0.03);
       mesh.rotation.x = Math.PI;
       group.add(mesh);
       scene.add(group);
     }
 
-    const light = new THREE_NS.DirectionalLight(0xffffff, 1);
+    const light = new THREE.DirectionalLight(0xffffff, 1);
     light.position.set(1, 1, 2);
     scene.add(light);
-    scene.add(new THREE_NS.AmbientLight(0xffffff, 0.4));
+    scene.add(new THREE.AmbientLight(0xffffff, 0.4));
 
     camera.position.z = 2.5;
 
@@ -148,7 +148,7 @@ export const ThreeDecoration: React.FC<ThreeDecorationProps> = ({ type, classNam
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(requestRef);
       renderer.dispose();
-      if (containerRef.current && renderer.domElement.parentNode === containerRef.current) {
+      if (containerRef.current && renderer.domElement && renderer.domElement.parentNode === containerRef.current) {
         containerRef.current.removeChild(renderer.domElement);
       }
     };

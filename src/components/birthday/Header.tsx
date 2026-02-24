@@ -56,30 +56,34 @@ export const Header: React.FC<HeaderProps> = ({
     if (!audio) return;
 
     const updateProgress = () => {
-      if (audio.duration) {
+      if (audio.duration && !isNaN(audio.duration)) {
         setVoiceProgress((audio.currentTime / audio.duration) * 100);
       }
     };
 
-    audio.addEventListener('timeupdate', updateProgress);
-    audio.addEventListener('ended', () => {
+    const handleEnded = () => {
       setIsPlayingVoice(false);
       setVoiceProgress(0);
-    });
+    };
+
+    audio.addEventListener('timeupdate', updateProgress);
+    audio.addEventListener('ended', handleEnded);
 
     return () => {
       audio.removeEventListener('timeupdate', updateProgress);
+      audio.removeEventListener('ended', handleEnded);
     };
   }, [voiceNoteUrl]);
 
   // SVG Circle Progress properties
-  const radius = 26;
+  // The viewBox is 60x60. A radius of 28 puts the circle edge near the 60px boundary.
+  const radius = 27;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (voiceProgress / 100) * circumference;
 
   return (
     <header className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden bg-gradient-to-b from-primary/10 transition-all duration-1000 z-10">
-      <div className="fixed top-8 right-8 z-[100] flex flex-col gap-4">
+      <div className="fixed top-8 right-8 z-[100] flex flex-col gap-4 items-center">
         {onToggleTheme && (
           <Button
             onClick={onToggleTheme}
@@ -124,40 +128,44 @@ export const Header: React.FC<HeaderProps> = ({
         )}
 
         {voiceNoteUrl && (
-          <div className="relative w-14 h-14 group">
-            <svg className="absolute inset-0 w-full h-full -rotate-90 transform" viewBox="0 0 60 60">
+          <div className="relative w-14 h-14 flex items-center justify-center">
+            {/* Background SVG Circle */}
+            <svg className="absolute inset-0 w-full h-full -rotate-90 transform pointer-events-none" viewBox="0 0 60 60">
+              {/* Static Background Ring */}
               <circle
                 cx="30"
                 cy="30"
                 r={radius}
                 stroke="currentColor"
-                strokeWidth="2.5"
+                strokeWidth="3"
                 fill="transparent"
                 className="text-orange-500/10"
               />
+              {/* Dynamic Progress Ring */}
               <circle
                 cx="30"
                 cy="30"
                 r={radius}
                 stroke="currentColor"
-                strokeWidth="2.5"
+                strokeWidth="3"
                 fill="transparent"
                 strokeDasharray={circumference}
-                style={{ strokeDashoffset }}
+                style={{ strokeDashoffset, transition: 'stroke-dashoffset 0.1s linear' }}
                 strokeLinecap="round"
-                className="text-orange-500 transition-all duration-300"
+                className="text-orange-500"
               />
             </svg>
+            
             <Button
               onClick={toggleVoiceNote}
               variant="ghost"
               className={cn(
-                "rounded-full w-14 h-14 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-xl bg-orange-500/10 text-orange-500 relative z-10",
+                "rounded-full w-11 h-11 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-sm bg-orange-500/10 text-orange-500 relative z-10",
                 isPlayingVoice && "bg-orange-500 text-white"
               )}
               title={isPlayingVoice ? "Pause Message" : "Play Creator Message"}
             >
-              {isPlayingVoice ? <VolumeX className="h-6 w-6" /> : <Volume2 className="h-6 w-6" />}
+              {isPlayingVoice ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
             </Button>
           </div>
         )}
@@ -166,7 +174,6 @@ export const Header: React.FC<HeaderProps> = ({
       <audio 
         ref={audioRef} 
         src={voiceNoteUrl || undefined} 
-        onEnded={() => setIsPlayingVoice(false)}
         className="hidden"
       />
 

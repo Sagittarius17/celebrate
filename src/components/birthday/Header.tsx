@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Sun, Flame } from 'lucide-react';
+import { Sun, Flame, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface HeaderProps {
@@ -11,15 +11,24 @@ interface HeaderProps {
   occasion?: string;
   theme?: 'light' | 'candle-light';
   onToggleTheme?: () => void;
+  showFireworks?: boolean;
+  onToggleFireworks?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ title, occasion = "Celebration", theme, onToggleTheme }) => {
+export const Header: React.FC<HeaderProps> = ({ 
+  title, 
+  occasion = "Celebration", 
+  theme, 
+  onToggleTheme,
+  showFireworks,
+  onToggleFireworks
+}) => {
   const isCandle = theme === 'candle-light';
 
   return (
     <header className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden bg-gradient-to-b from-primary/10 via-background to-background transition-all duration-1000">
-      {onToggleTheme && (
-        <div className="absolute top-8 right-8 z-50">
+      <div className="absolute top-8 right-8 z-50 flex flex-col gap-4">
+        {onToggleTheme && (
           <Button
             onClick={onToggleTheme}
             variant="ghost"
@@ -28,8 +37,24 @@ export const Header: React.FC<HeaderProps> = ({ title, occasion = "Celebration",
           >
             {isCandle ? <Sun className="h-6 w-6 text-yellow-400" /> : <Flame className="h-6 w-6 text-orange-500 fill-orange-500" />}
           </Button>
-        </div>
-      )}
+        )}
+
+        {onToggleFireworks && (
+          <Button
+            onClick={onToggleFireworks}
+            variant="ghost"
+            className={cn(
+              "rounded-full w-14 h-14 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-xl",
+              showFireworks 
+                ? "bg-primary text-primary-foreground" 
+                : "bg-white/10 text-foreground hover:bg-white/20"
+            )}
+            title={showFireworks ? "Disable Fireworks" : "Enable Fireworks"}
+          >
+            <Sparkles className={cn("h-6 w-6", showFireworks && "animate-pulse")} />
+          </Button>
+        )}
+      </div>
 
       <div className="relative z-30 animate-fade-in space-y-6">
         <div className={cn(

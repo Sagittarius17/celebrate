@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { use, useEffect, useState, useRef } from 'react';
@@ -9,6 +10,7 @@ import { GridLayout } from '@/components/birthday/GridLayout';
 import { CarouselLayout } from '@/components/birthday/CarouselLayout';
 import { FinalMessage } from '@/components/birthday/FinalMessage';
 import { ButterflySwarm } from '@/components/birthday/ButterflySwarm';
+import { FireworkEffect } from '@/components/birthday/FireworkEffect';
 import { Gift, Loader2, Heart } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
@@ -32,6 +34,8 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
   const [error, setError] = useState<string | null>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [theme, setTheme] = useState<'light' | 'candle-light'>('light');
+  const [showFireworks, setShowFireworks] = useState(false);
+  
   const journeyRef = useRef<HTMLDivElement>(null);
   const endTriggerRef = useRef<HTMLDivElement>(null);
 
@@ -57,14 +61,12 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
   }, [db, code]);
 
   useEffect(() => {
-    // Apply theme class to body for better CSS variable inheritance across the entire viewport
     if (theme === 'candle-light') {
       document.body.classList.add('candle-light');
     } else {
       document.body.classList.remove('candle-light');
     }
     
-    // Cleanup on unmount or theme change
     return () => {
       document.body.classList.remove('candle-light');
     };
@@ -181,11 +183,15 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
   return (
     <main className={cn("min-h-screen bg-background overflow-x-hidden transition-all duration-1000", theme)} style={globalStyle}>
       <ButterflySwarm theme={theme} />
+      <FireworkEffect enabled={showFireworks} />
+      
       <Header 
         title={page?.title} 
         occasion={page?.occasion} 
         theme={theme} 
         onToggleTheme={() => setTheme(prev => prev === 'light' ? 'candle-light' : 'light')} 
+        showFireworks={showFireworks}
+        onToggleFireworks={() => setShowFireworks(prev => !prev)}
       />
        
       <section ref={journeyRef} className="pt-12 pb-0 sm:pt-20 relative">
@@ -222,7 +228,7 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
                 )}>
                   <div className={cn(
                     "bg-white p-3 sm:p-4 rounded-full shadow-2xl border-4 transition-all duration-700",
-                    isFullyConnected ? "animate-rgb-border" : "border-secondary/40"
+                    isFullyConnected ? "animate-heartbeat" : "border-secondary/40"
                   )}>
                     <Heart className={cn(
                       "w-8 h-8 sm:w-10 sm:h-10 text-secondary fill-secondary transition-all",

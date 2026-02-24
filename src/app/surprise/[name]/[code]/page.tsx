@@ -228,7 +228,9 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
                 )}>
                   <div className={cn(
                     "bg-white p-3 sm:p-4 rounded-full shadow-2xl border-4 transition-all duration-700",
-                    isFullyConnected ? "animate-rgb-border" : "border-secondary/40"
+                    isFullyConnected && theme === 'candle-light' 
+                      ? "animate-rgb-border" 
+                      : (isFullyConnected ? "border-secondary" : "border-secondary/40")
                   )}>
                     <Heart className={cn(
                       "w-8 h-8 sm:w-10 sm:h-10 text-secondary fill-secondary transition-all",

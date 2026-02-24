@@ -9,6 +9,7 @@ import { TimelineLayout } from '@/components/birthday/TimelineLayout';
 import { GridLayout } from '@/components/birthday/GridLayout';
 import { CarouselLayout } from '@/components/birthday/CarouselLayout';
 import { FinalMessage } from '@/components/birthday/FinalMessage';
+import { ButterflySwarm } from '@/components/birthday/ButterflySwarm';
 import { Gift, Loader2, Heart } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
@@ -31,6 +32,7 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
   const [isFindingPage, setIsFindingPage] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [theme, setTheme] = useState<'light' | 'candle-light'>('light');
   const journeyRef = useRef<HTMLDivElement>(null);
   const endTriggerRef = useRef<HTMLDivElement>(null);
 
@@ -90,7 +92,6 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
       const viewportHeight = window.innerHeight;
       
       const triggerPoint = viewportHeight * 0.7; 
-      
       const journeyTop = journeyRect.top;
       const heartTop = heartRect.top + 24; 
       
@@ -165,8 +166,14 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
   const isFullyConnected = scrollProgress >= 100;
 
   return (
-    <main className="min-h-screen bg-background overflow-x-hidden" style={globalStyle}>
-      <Header title={page?.title} occasion={page?.occasion} />
+    <main className={cn("min-h-screen bg-background overflow-x-hidden transition-all duration-1000", theme)} style={globalStyle}>
+      <ButterflySwarm theme={theme} />
+      <Header 
+        title={page?.title} 
+        occasion={page?.occasion} 
+        theme={theme} 
+        onToggleTheme={() => setTheme(prev => prev === 'light' ? 'candle-light' : 'light')} 
+      />
        
       <section ref={journeyRef} className="pt-12 pb-0 sm:pt-20 relative">
         <div className="text-center mb-12 sm:mb-16 px-4">

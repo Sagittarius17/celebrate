@@ -16,7 +16,7 @@ interface EventCardProps {
 
 export const EventCard: React.FC<EventCardProps> = ({ title, date, message, imageUrl, icon }) => {
   return (
-    <Card className="overflow-hidden border-none shadow-2xl transition-all duration-500 hover:scale-[1.02] hover:shadow-primary/20 bg-white/80 backdrop-blur-sm rounded-[1.5rem] sm:rounded-[2rem]">
+    <Card className="overflow-hidden border-none shadow-2xl transition-all duration-1000 hover:scale-[1.02] bg-white/80 dark:bg-card/80 candle-light:bg-card/40 candle-light:shadow-[0_0_30px_rgba(255,69,0,0.2)] backdrop-blur-sm rounded-[1.5rem] sm:rounded-[2rem]">
       <div className="relative h-48 sm:h-64 w-full">
         <Image 
           src={imageUrl} 
@@ -26,7 +26,7 @@ export const EventCard: React.FC<EventCardProps> = ({ title, date, message, imag
           data-ai-hint="celebration photo"
         />
         <div className="absolute top-4 left-4">
-          <Badge variant="secondary" className="px-3 sm:px-4 py-1 text-xs sm:text-sm font-semibold backdrop-blur-md bg-white/40 border-none">
+          <Badge variant="secondary" className="px-3 sm:px-4 py-1 text-xs sm:text-sm font-semibold backdrop-blur-md bg-white/40 dark:bg-black/40 border-none">
             {date}
           </Badge>
         </div>

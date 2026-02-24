@@ -2,15 +2,42 @@
 "use client";
 
 import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Sun, Moon, Flame } from 'lucide-react';
 
 interface HeaderProps {
   title?: string;
   occasion?: string;
+  theme?: 'light' | 'candle-light';
+  onToggleTheme?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ title, occasion = "Celebration" }) => {
+export const Header: React.FC<HeaderProps> = ({ title, occasion = "Celebration", theme, onToggleTheme }) => {
   return (
-    <header className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden bg-gradient-to-b from-primary/10 via-background to-background">
+    <header className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden bg-gradient-to-b from-primary/10 via-background to-background transition-all duration-1000">
+      {onToggleTheme && (
+        <div className="absolute top-8 right-8 z-50">
+          <Button
+            onClick={onToggleTheme}
+            variant="ghost"
+            className="rounded-full w-14 h-14 p-0 bg-white/10 hover:bg-white/20 backdrop-blur-md border-none text-foreground shadow-xl transition-all hover:scale-110 active:scale-90"
+            title={theme === 'light' ? "Enter Candle-Light Mode" : "Return to Light Mode"}
+          >
+            {theme === 'light' ? <Flame className="h-6 w-6 text-orange-500 fill-orange-500" /> : <Sun className="h-6 w-6 text-yellow-400" />}
+          </Button>
+        </div>
+      )}
+
+      {theme === 'candle-light' && (
+        <div className="absolute top-0 left-0 w-full h-24 z-20 pointer-events-none overflow-hidden opacity-60">
+          <div className="flex justify-around w-[200%] animate-twinkle">
+            {Array.from({ length: 40 }).map((_, i) => (
+              <div key={i} className="w-1 h-1 bg-primary rounded-full blur-[1px] mx-2" />
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="relative z-10 animate-fade-in space-y-6">
         <div className="inline-block px-6 py-2 rounded-full bg-secondary/20 text-secondary-foreground font-bold tracking-widest uppercase text-xs sm:text-sm mb-4">
           A special {occasion.toLowerCase()} surprise

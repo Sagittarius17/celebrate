@@ -72,6 +72,12 @@
   }
 }
 
+/* Custom golden gradient for the candle-light theme */
+.candle-light, 
+main.candle-light {
+  background: linear-gradient(to bottom, #1a1401 0%, #0a0800 50%, #000000 100%) fixed !important;
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;

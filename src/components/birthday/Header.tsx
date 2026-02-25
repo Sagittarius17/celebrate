@@ -78,8 +78,8 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="relative min-h-screen flex flex-col z-10">
       {/* Fixed Controls Bar (Top Right) */}
-      <div className="fixed top-4 right-4 sm:right-8 z-[150] flex flex-row items-start gap-3 pointer-events-none">
-        {/* Spotify Box */}
+      <div className="fixed top-4 right-4 sm:right-8 z-[150] flex flex-row items-start gap-4 pointer-events-none">
+        {/* Spotify Box - Positioned beside (to the left of) the buttons group */}
         {spotifyTrackId && (
           <div className="hidden sm:block w-[300px] md:w-[350px] bg-white/10 dark:bg-black/10 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md border border-white/10 transition-all duration-500 animate-in fade-in slide-in-from-top-4 pointer-events-auto">
             <iframe 
@@ -94,7 +94,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         )}
 
-        {/* Buttons Group */}
+        {/* Buttons Group - Stacked vertically */}
         <div className="flex flex-col gap-3 pointer-events-auto pt-1">
           {onToggleTheme && (
             <Button

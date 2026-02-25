@@ -162,7 +162,7 @@ export const Header: React.FC<HeaderProps> = ({
         {hasMusic && onToggleMusic && (
           <div className="relative w-14 h-14 flex items-center justify-center">
             <svg className="absolute inset-0 w-full h-full -rotate-90 transform pointer-events-none" viewBox="0 0 60 60">
-              <circle cx="30" cy="30" r={radius} stroke="currentColor" strokeWidth="3" fill="transparent" className="text-secondary/20" />
+              <circle cx="30" cy="30" r={radius} stroke="currentColor" strokeWidth="3" fill="transparent" className="text-orange-500/20" />
               <circle
                 cx="30"
                 cy="30"
@@ -173,7 +173,7 @@ export const Header: React.FC<HeaderProps> = ({
                 strokeDasharray={circumference}
                 style={{ strokeDashoffset: musicStrokeDashoffset, transition: 'stroke-dashoffset 0.2s linear' }}
                 strokeLinecap="round"
-                className="text-secondary"
+                className="text-orange-500"
               />
             </svg>
             <Button

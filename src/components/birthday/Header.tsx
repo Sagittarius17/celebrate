@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -120,9 +119,9 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="relative min-h-screen flex flex-col z-10">
-      {/* Fixed Controls Hub (Top Right) */}
+      {/* Fixed Controls Hub (Top Right) with extremely high z-index for accessibility */}
       <div 
-        className="fixed top-4 right-4 sm:right-8 z-[150] flex flex-col items-end gap-3"
+        className="fixed top-4 right-4 sm:right-8 z-[999] flex flex-col items-end gap-3"
         onMouseEnter={handleHubMouseEnter}
         onMouseLeave={handleHubMouseLeave}
       >
@@ -150,7 +149,7 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Spotify Toggle Button */}
             <button 
               className={cn(
-                "relative w-12 h-12 rounded-full overflow-hidden shadow-xl border-2 transition-all duration-300 bg-muted shrink-0 flex items-center justify-center",
+                "relative w-12 h-12 rounded-full overflow-hidden shadow-xl border-2 transition-all duration-300 bg-muted shrink-0 flex items-center justify-center cursor-pointer",
                 isMusicExpanded ? "border-primary scale-110" : "border-white/20 hover:scale-110"
               )}
               onClick={() => setIsMusicExpanded(!isMusicExpanded)}

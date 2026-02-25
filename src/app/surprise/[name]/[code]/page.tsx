@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { use, useEffect, useState, useRef } from 'react';
@@ -122,10 +121,9 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
       const heartRect = heartTrigger.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
       
-      // Trigger point refined to center of viewport
       const triggerPoint = viewportHeight * 0.7; 
       const journeyTop = journeyRect.top;
-      // Calculate exactly to the heart's vertical center
+      // Calculate exactly to the heart's vertical center for better connection
       const heartCenter = heartRect.top + (heartRect.height / 2); 
       
       const totalHeight = heartCenter - journeyTop;
@@ -135,7 +133,6 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
       const clampedProgress = Math.min(Math.max(progress, 0), 100);
       
       setScrollProgress(prev => {
-        // Prevent backward progress if they've already "connected" the heart
         if (prev >= 100 && clampedProgress < 100) return 100;
         return clampedProgress;
       });
@@ -236,11 +233,11 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
             
             {layout === 'Timeline' ? (
               <div className="relative flex flex-col items-center">
-                {/* Visual Line Container - Set to 100% to ensure it reaches the heart */}
+                {/* Visual Line Container - Connects the spine line to the center of the heart */}
                 <div 
                   className="absolute left-1/2 -translate-x-1/2 w-2 z-0 pointer-events-none" 
                   style={{ 
-                    height: 'calc(100% - 60px)', 
+                    height: 'calc(100% - 40px)', 
                     top: '-40px' 
                   }}
                 >

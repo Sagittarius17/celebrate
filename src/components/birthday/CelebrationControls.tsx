@@ -67,6 +67,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
     if (!el) return;
 
     const handleWheel = (e: WheelEvent) => {
+      if (!isHoveringVoice) return;
       e.preventDefault(); 
       const delta = e.deltaY > 0 ? -0.05 : 0.05;
       setVoiceVolume(v => {
@@ -119,11 +120,11 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
   const circumference = 2 * Math.PI * radius;
   const voiceStrokeDashoffset = circumference - (voiceProgress / 100) * circumference;
 
-  const standardButtonStyle = "rounded-full w-16 h-16 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-2xl flex items-center justify-center";
+  const standardButtonStyle = "rounded-full w-16 h-16 p-0 backdrop-blur-md border-none transition-all hover:scale-105 active:scale-95 shadow-2xl flex items-center justify-center shrink-0";
 
   return (
     <div 
-      className="fixed top-10 right-10 z-[10000] flex flex-col items-center gap-6 pointer-events-auto"
+      className="fixed top-10 right-10 z-[10000] flex flex-col items-center gap-3 pointer-events-auto"
       onMouseEnter={clearMinimizeTimer}
       onMouseLeave={startMinimizeTimer}
     >
@@ -139,7 +140,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
           <button 
             className={cn(
               "relative w-16 h-16 rounded-full overflow-hidden shadow-2xl border-2 transition-all duration-300 bg-black shrink-0 flex items-center justify-center cursor-pointer",
-              isMusicExpanded ? "border-primary scale-110" : "border-white/20 hover:scale-110"
+              isMusicExpanded ? "border-primary scale-105" : "border-white/20 hover:scale-105"
             )}
             onClick={() => setIsMusicExpanded(!isMusicExpanded)}
           >
@@ -221,8 +222,8 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
             </span>
           </div>
 
-          <div className="relative w-16 h-16 flex items-center justify-center">
-            <svg className="absolute inset-0 w-full h-full -rotate-90 transform pointer-events-none" viewBox="0 0 64 64">
+          <div className="relative w-16 h-16 flex items-center justify-center shrink-0">
+            <svg className="absolute inset-0 w-full h-full -rotate-90 transform pointer-events-none z-20" viewBox="0 0 64 64">
               <circle cx="32" cy="32" r={radius} stroke="currentColor" strokeWidth="4" fill="transparent" className="text-orange-500/10" />
               <circle
                 cx="32"
@@ -242,18 +243,18 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
               variant="ghost"
               className={cn(
                 standardButtonStyle,
-                "w-14 h-14 bg-orange-500 text-black border-none hover:bg-orange-600 z-10",
+                "bg-orange-500 text-black border-none hover:bg-orange-600 z-10",
                 !isPlayingVoice && "bg-orange-500"
               )}
               title={isPlayingVoice ? "Pause Message" : "Play Creator Message"}
             >
               {isPlayingVoice ? (
-                <div className="flex gap-1 items-center justify-center">
-                  <div className="w-2 h-5 bg-black rounded-full" />
-                  <div className="w-2 h-5 bg-black rounded-full" />
+                <div className="flex gap-1.5 items-center justify-center">
+                  <div className="w-2 h-6 bg-black rounded-full" />
+                  <div className="w-2 h-6 bg-black rounded-full" />
                 </div>
               ) : (
-                <Play className="h-7 w-7 fill-black ml-1" />
+                <Play className="h-8 w-8 fill-black ml-1" />
               )}
             </Button>
           </div>

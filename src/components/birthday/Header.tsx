@@ -77,10 +77,11 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="relative min-h-screen flex flex-col z-10">
-      {/* Fixed Top Bar for Spotify */}
-      <div className="fixed top-0 left-0 right-0 z-[150] flex justify-center p-4 pointer-events-none">
+      {/* Fixed Controls Bar (Top Right) */}
+      <div className="fixed top-4 right-4 sm:right-8 z-[150] flex flex-row items-start gap-3 pointer-events-none">
+        {/* Spotify Box */}
         {spotifyTrackId && (
-          <div className="w-full max-w-md bg-white/10 dark:bg-black/10 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md border border-white/10 transition-all duration-500 animate-in fade-in slide-in-from-top-4 pointer-events-auto">
+          <div className="hidden sm:block w-[300px] md:w-[350px] bg-white/10 dark:bg-black/10 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md border border-white/10 transition-all duration-500 animate-in fade-in slide-in-from-top-4 pointer-events-auto">
             <iframe 
               src={`https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0`} 
               width="100%" 
@@ -92,67 +93,67 @@ export const Header: React.FC<HeaderProps> = ({
             />
           </div>
         )}
-      </div>
 
-      {/* Fixed Controls (Right side) */}
-      <div className="fixed top-28 right-8 z-[100] flex flex-col gap-4 items-center">
-        {onToggleTheme && (
-          <Button
-            onClick={onToggleTheme}
-            variant="ghost"
-            className="rounded-full w-14 h-14 p-0 bg-white/10 hover:bg-white/20 backdrop-blur-md border-none text-foreground shadow-xl transition-all hover:scale-110 active:scale-90"
-            title={isCandle ? "Return to Light Mode" : "Enter Candle-Light Mode"}
-          >
-            {isCandle ? <Sun className="h-6 w-6 text-yellow-400" /> : <Flame className="h-6 w-6 text-orange-500 fill-orange-500" />}
-          </Button>
-        )}
-
-        {onToggleFireworks && isCandle && (
-          <Button
-            onClick={onToggleFireworks}
-            variant="ghost"
-            className={cn(
-              "rounded-full w-14 h-14 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-xl",
-              showFireworks 
-                ? "bg-primary text-primary-foreground" 
-                : "bg-white/10 text-foreground hover:bg-white/20"
-            )}
-            title={showFireworks ? "Disable Fireworks" : "Enable Fireworks"}
-          >
-            <Sparkles className={cn("h-6 w-6", showFireworks && "animate-pulse")} />
-          </Button>
-        )}
-
-        {voiceNoteUrl && (
-          <div className="relative w-14 h-14 flex items-center justify-center">
-            <svg className="absolute inset-0 w-full h-full -rotate-90 transform pointer-events-none" viewBox="0 0 60 60">
-              <circle cx="30" cy="30" r={radius} stroke="currentColor" strokeWidth="3" fill="transparent" className="text-orange-500/20" />
-              <circle
-                cx="30"
-                cy="30"
-                r={radius}
-                stroke="currentColor"
-                strokeWidth="3"
-                fill="transparent"
-                strokeDasharray={circumference}
-                style={{ strokeDashoffset: voiceStrokeDashoffset, transition: 'stroke-dashoffset 0.1s linear' }}
-                strokeLinecap="round"
-                className="text-orange-500"
-              />
-            </svg>
+        {/* Buttons Group */}
+        <div className="flex flex-col gap-3 pointer-events-auto pt-1">
+          {onToggleTheme && (
             <Button
-              onClick={toggleVoiceNote}
+              onClick={onToggleTheme}
+              variant="ghost"
+              className="rounded-full w-12 h-12 p-0 bg-white/10 hover:bg-white/20 backdrop-blur-md border-none text-foreground shadow-xl transition-all hover:scale-110 active:scale-90"
+              title={isCandle ? "Return to Light Mode" : "Enter Candle-Light Mode"}
+            >
+              {isCandle ? <Sun className="h-5 w-5 text-yellow-400" /> : <Flame className="h-5 w-5 text-orange-500 fill-orange-500" />}
+            </Button>
+          )}
+
+          {onToggleFireworks && isCandle && (
+            <Button
+              onClick={onToggleFireworks}
               variant="ghost"
               className={cn(
-                "rounded-full w-11 h-11 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-sm bg-orange-500/10 text-orange-500 relative z-10",
-                isPlayingVoice && "bg-orange-500 text-white"
+                "rounded-full w-12 h-12 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-xl",
+                showFireworks 
+                  ? "bg-primary text-primary-foreground" 
+                  : "bg-white/10 text-foreground hover:bg-white/20"
               )}
-              title={isPlayingVoice ? "Pause Message" : "Play Creator Message"}
+              title={showFireworks ? "Disable Fireworks" : "Enable Fireworks"}
             >
-              {isPlayingVoice ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+              <Sparkles className={cn("h-5 w-5", showFireworks && "animate-pulse")} />
             </Button>
-          </div>
-        )}
+          )}
+
+          {voiceNoteUrl && (
+            <div className="relative w-12 h-12 flex items-center justify-center">
+              <svg className="absolute inset-0 w-full h-full -rotate-90 transform pointer-events-none" viewBox="0 0 60 60">
+                <circle cx="30" cy="30" r={radius} stroke="currentColor" strokeWidth="3" fill="transparent" className="text-orange-500/20" />
+                <circle
+                  cx="30"
+                  cy="30"
+                  r={radius}
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  fill="transparent"
+                  strokeDasharray={circumference}
+                  style={{ strokeDashoffset: voiceStrokeDashoffset, transition: 'stroke-dashoffset 0.1s linear' }}
+                  strokeLinecap="round"
+                  className="text-orange-500"
+                />
+              </svg>
+              <Button
+                onClick={toggleVoiceNote}
+                variant="ghost"
+                className={cn(
+                  "rounded-full w-9 h-9 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-sm bg-orange-500/10 text-orange-500 relative z-10",
+                  isPlayingVoice && "bg-orange-500 text-white"
+                )}
+                title={isPlayingVoice ? "Pause Message" : "Play Creator Message"}
+              >
+                {isPlayingVoice ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
       <audio 

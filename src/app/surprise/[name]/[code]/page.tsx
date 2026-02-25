@@ -163,9 +163,10 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
 
   const handleRevealClick = () => {
     setIsOpening(true);
+    // Setting music to true immediately ensures the user gesture is captured
+    setIsMusicEnabled(true);
     setTimeout(() => {
       setIsRevealed(true);
-      setIsMusicEnabled(true);
     }, 800);
   };
 
@@ -201,35 +202,6 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
     );
   }
 
-  if (!isRevealed) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 px-4">
-        <div className="flex flex-col items-center gap-12 animate-fade-in w-full max-w-sm">
-          <div className="relative">
-            <div className="absolute -inset-4 bg-primary/20 blur-3xl rounded-full animate-pulse" />
-            <div className="relative bg-white p-10 rounded-[3rem] shadow-2xl border-b-8 border-primary/20 transition-all duration-500 flex items-center justify-center">
-              {isOpening ? (
-                <PackageOpen className="h-20 w-20 text-primary animate-in zoom-in-50 duration-300" />
-              ) : (
-                <Gift className="h-20 w-20 text-primary animate-bounce" />
-              )}
-            </div>
-          </div>
-          
-          <Button 
-            size="lg" 
-            onClick={handleRevealClick}
-            disabled={isOpening}
-            className="rounded-full px-12 py-8 text-xl font-bold shadow-xl hover:scale-105 transition-all bg-primary text-primary-foreground border-none w-full"
-          >
-            {isOpening ? <Loader2 className="mr-3 h-6 w-6 animate-spin" /> : <Sparkles className="mr-3 h-6 w-6" />}
-            {isOpening ? "Opening Surprise..." : "Reveal My Surprise"}
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   const finalQuoteToDisplay = page?.finalQuote || DEFAULT_QUOTES[page?.occasion] || DEFAULT_QUOTES["Other"];
   const globalStyle = { fontFamily: page?.font ? `${page.font}, sans-serif` : 'inherit' };
   const layout = page?.layout || 'Timeline';
@@ -241,85 +213,116 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
     <main className={cn("min-h-screen bg-background overflow-x-hidden transition-all duration-1000", theme)} style={globalStyle}>
       <ButterflySwarm theme={theme} />
       <FireworkEffect enabled={showFireworks} />
-      
-      <Header 
-        title={page?.title} 
-        occasion={page?.occasion} 
-        theme={theme} 
-        onToggleTheme={() => setTheme(prev => prev === 'light' ? 'candle-light' : 'light')} 
-        showFireworks={showFireworks}
-        onToggleFireworks={() => setShowFireworks(prev => !prev)}
-        voiceNoteUrl={page?.voiceNoteDataUri}
-        hasMusic={!!page?.spotifyTrackId}
-        spotifyTrackId={page?.spotifyTrackId}
-        isMusicEnabled={isMusicEnabled}
-        onToggleMusic={() => setIsMusicEnabled(!isMusicEnabled)}
-      />
-       
-      <section id="journey" ref={journeyRef} className="pt-8 pb-0 sm:pt-16 relative z-10">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12 sm:mb-20 px-4">
-            <h2 className="text-3xl sm:text-5xl font-bold mb-4" style={{ fontFamily: page?.font || 'inherit' }}>{page?.title || 'Our Journey'}</h2>
-            <div className="w-16 sm:w-24 h-1 bg-secondary mx-auto rounded-full mb-8" />
-          </div>
-          
-          {layout === 'Timeline' ? (
-            <div className="relative flex flex-col items-center">
-              <div 
-                className="absolute left-1/2 -translate-x-1/2 w-2 z-0 pointer-events-none" 
-                style={{ 
-                  height: 'calc(100% - 110px)', 
-                  top: '-40px' 
-                }}
-              >
-                <div className="w-full h-full timeline-line opacity-10" />
-                <div 
-                  className="absolute top-0 left-0 w-full z-10 timeline-glow-line"
-                  style={{ height: `${scrollProgress}%` }}
-                />
-              </div>
-              
-              <div className="w-full relative z-10">
-                <TimelineLayout events={events} scrollProgress={scrollProgress} />
-              </div>
 
-              <div ref={endTriggerRef} className="flex flex-col items-center pt-24 pb-8 relative z-20">
-                <div className={cn(
-                  "transition-all duration-1000 transform relative z-20",
-                  scrollProgress > 95 ? "opacity-100 scale-100" : "opacity-0 scale-50"
-                )}>
+      {/* Main Content - Always rendered, opacity controlled for smooth autoplay on reveal */}
+      <div className={cn("transition-opacity duration-1000", isRevealed ? "opacity-100" : "opacity-0 pointer-events-none")}>
+        <Header 
+          title={page?.title} 
+          occasion={page?.occasion} 
+          theme={theme} 
+          onToggleTheme={() => setTheme(prev => prev === 'light' ? 'candle-light' : 'light')} 
+          showFireworks={showFireworks}
+          onToggleFireworks={() => setShowFireworks(prev => !prev)}
+          voiceNoteUrl={page?.voiceNoteDataUri}
+          hasMusic={!!page?.spotifyTrackId}
+          spotifyTrackId={page?.spotifyTrackId}
+          isMusicEnabled={isMusicEnabled}
+          onToggleMusic={() => setIsMusicEnabled(!isMusicEnabled)}
+        />
+        
+        <section id="journey" ref={journeyRef} className="pt-8 pb-0 sm:pt-16 relative z-10">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center mb-12 sm:mb-20 px-4">
+              <h2 className="text-3xl sm:text-5xl font-bold mb-4" style={{ fontFamily: page?.font || 'inherit' }}>{page?.title || 'Our Journey'}</h2>
+              <div className="w-16 sm:w-24 h-1 bg-secondary mx-auto rounded-full mb-8" />
+            </div>
+            
+            {layout === 'Timeline' ? (
+              <div className="relative flex flex-col items-center">
+                <div 
+                  className="absolute left-1/2 -translate-x-1/2 w-2 z-0 pointer-events-none" 
+                  style={{ 
+                    height: 'calc(100% - 110px)', 
+                    top: '-40px' 
+                  }}
+                >
+                  <div className="w-full h-full timeline-line opacity-10" />
+                  <div 
+                    className="absolute top-0 left-0 w-full z-10 timeline-glow-line"
+                    style={{ height: `${scrollProgress}%` }}
+                  />
+                </div>
+                
+                <div className="w-full relative z-10">
+                  <TimelineLayout events={events} scrollProgress={scrollProgress} />
+                </div>
+
+                <div ref={endTriggerRef} className="flex flex-col items-center pt-24 pb-8 relative z-20">
                   <div className={cn(
-                    "bg-white p-3 sm:p-4 rounded-full shadow-2xl border-4 transition-all duration-700",
-                    isFullyConnected && isCandle 
-                      ? "animate-rgb-border" 
-                      : (isFullyConnected ? "border-secondary" : "border-secondary/40")
+                    "transition-all duration-1000 transform relative z-20",
+                    scrollProgress > 95 ? "opacity-100 scale-100" : "opacity-0 scale-50"
                   )}>
-                    <Heart className={cn(
-                      "w-8 h-8 sm:w-10 sm:h-10 text-secondary fill-secondary transition-all",
-                      isFullyConnected ? "animate-heartbeat" : "opacity-40 scale-90"
-                    )} />
+                    <div className={cn(
+                      "bg-white p-3 sm:p-4 rounded-full shadow-2xl border-4 transition-all duration-700",
+                      isFullyConnected && isCandle 
+                        ? "animate-rgb-border" 
+                        : (isFullyConnected ? "border-secondary" : "border-secondary/40")
+                    )}>
+                      <Heart className={cn(
+                        "w-8 h-8 sm:w-10 sm:h-10 text-secondary fill-secondary transition-all",
+                        isFullyConnected ? "animate-heartbeat" : "opacity-40 scale-90"
+                      )} />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ) : (
-            <div className="relative z-10">
-              {layout === 'Carousel' ? (
-                <CarouselLayout events={events} />
-              ) : (
-                <GridLayout events={events} />
-              )}
-            </div>
-          )}
+            ) : (
+              <div className="relative z-10">
+                {layout === 'Carousel' ? (
+                  <CarouselLayout events={events} />
+                ) : (
+                  <GridLayout events={events} />
+                )}
+              </div>
+            )}
 
-          <FinalMessage 
-            isVisible={layout !== 'Timeline' || isFullyConnected}
-            recipientName={page?.recipientName}
-            quote={finalQuoteToDisplay}
-            creatorName={page?.creatorName}
-          />
+            <FinalMessage 
+              isVisible={layout !== 'Timeline' || isFullyConnected}
+              recipientName={page?.recipientName}
+              quote={finalQuoteToDisplay}
+              creatorName={page?.creatorName}
+            />
+          </div>
+        </section>
+      </div>
+
+      {/* Reveal Overlay - Covers the content until the user clicks */}
+      {!isRevealed && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 px-4">
+          <div className="flex flex-col items-center gap-12 animate-fade-in w-full max-w-sm">
+            <div className="relative">
+              <div className="absolute -inset-4 bg-primary/20 blur-3xl rounded-full animate-pulse" />
+              <div className="relative bg-white p-10 rounded-[3rem] shadow-2xl border-b-8 border-primary/20 transition-all duration-500 flex items-center justify-center">
+                {isOpening ? (
+                  <PackageOpen className="h-20 w-20 text-primary animate-in zoom-in-50 duration-300" />
+                ) : (
+                  <Gift className="h-20 w-20 text-primary animate-bounce" />
+                )}
+              </div>
+            </div>
+            
+            <Button 
+              size="lg" 
+              onClick={handleRevealClick}
+              disabled={isOpening}
+              className="rounded-full px-12 py-8 text-xl font-bold shadow-xl hover:scale-105 transition-all bg-primary text-primary-foreground border-none w-full"
+            >
+              {isOpening ? <Loader2 className="mr-3 h-6 w-6 animate-spin" /> : <Sparkles className="mr-3 h-6 w-6" />}
+              {isOpening ? "Opening Surprise..." : "Reveal My Surprise"}
+            </Button>
+          </div>
         </div>
-      </section>
+      )}
     </main>
   );
 }

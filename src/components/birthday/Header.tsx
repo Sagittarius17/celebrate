@@ -162,7 +162,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {hasMusic && onToggleMusic && (
           <div className="relative group/spotify-hub flex items-center justify-end">
-            {/* Animated Spotify Box Hub */}
+            {/* Animated Spotify Box Hub - Slides out from behind the button */}
             <div className="absolute right-[calc(100%+12px)] top-1/2 -translate-y-1/2 w-0 overflow-hidden transition-all duration-500 group-hover/spotify-hub:w-[320px] pointer-events-none group-hover/spotify-hub:pointer-events-auto">
               <div className="w-[320px] h-[80px] bg-[#191414] rounded-2xl shadow-2xl border border-white/10 overflow-hidden transition-all duration-500">
                 {isMusicEnabled && spotifyTrackId && (

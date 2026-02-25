@@ -18,7 +18,10 @@ export const Header: React.FC<HeaderProps> = ({
   const isCandle = theme === 'candle-light';
 
   const scrollToJourney = () => {
-    document.getElementById('journey')?.scrollIntoView({ behavior: 'smooth' });
+    const element = document.getElementById('journey');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   return (
@@ -66,7 +69,7 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       <div 
-        className="absolute left-[-16] bottom-10 left-1/2 -translate-x-1/2 animate-bounce cursor-pointer z-30"
+        className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce cursor-pointer z-30"
         onClick={scrollToJourney}
       >
         <div className={cn(

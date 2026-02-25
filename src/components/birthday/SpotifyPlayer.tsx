@@ -57,29 +57,43 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
 
   return (
     <div className="relative group/spotify-hub flex items-center justify-end p-2 -m-2">
-      {/* Animated Spotify Box Hub - Slides out from behind the button */}
-      <div className="absolute right-[calc(100%-8px)] top-1/2 -translate-y-1/2 w-0 overflow-hidden transition-all duration-500 delay-75 group-hover/spotify-hub:w-[320px] group-hover/spotify-hub:delay-0 pointer-events-none group-hover/spotify-hub:pointer-events-auto z-50">
-        <div className="w-[320px] h-[80px] bg-[#191414] rounded-2xl shadow-2xl border border-white/10 overflow-hidden ml-auto">
-          {isEnabled && trackId && (
-            <iframe 
-              src={`https://open.spotify.com/embed/track/${trackId}?utm_source=generator&theme=0&autoplay=1`} 
-              width="100%" 
-              height="80" 
-              frameBorder="0" 
-              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-              loading="lazy"
-              className="opacity-100"
+      {/* Invisible bridge to maintain hover between button and hub */}
+      <div className="absolute right-0 top-0 bottom-0 w-[400px] h-full pointer-events-none group-hover/spotify-hub:pointer-events-auto z-40" />
+
+      {/* Animated Spotify Box Hub */}
+      <div className="absolute right-[calc(100%-12px)] top-1/2 -translate-y-1/2 w-0 overflow-hidden transition-all duration-500 ease-in-out group-hover/spotify-hub:w-[320px] z-50 pointer-events-none group-hover/spotify-hub:pointer-events-auto">
+        <div className="w-[320px] bg-[#191414] rounded-2xl shadow-2xl border border-white/10 overflow-hidden ml-auto relative">
+          <div className="h-[80px]">
+            {isEnabled && trackId && (
+              <iframe 
+                src={`https://open.spotify.com/embed/track/${trackId}?utm_source=generator&theme=0&autoplay=1`} 
+                width="100%" 
+                height="80" 
+                frameBorder="0" 
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                loading="lazy"
+                className="opacity-100"
+              />
+            )}
+            {!isEnabled && (
+              <div className="w-full h-full flex items-center justify-center text-white/40 gap-3 px-4">
+                <Music2 className="h-6 w-6" />
+                <span className="text-sm font-bold truncate">Click the button to play soundtrack</span>
+              </div>
+            )}
+          </div>
+          
+          {/* Synced Horizontal Progress Bar inside the box */}
+          <div className="absolute bottom-0 left-0 w-full h-1 bg-white/10 overflow-hidden">
+            <div 
+              className="h-full bg-orange-500 transition-all duration-200 linear"
+              style={{ width: `${progress}%` }}
             />
-          )}
-          {!isEnabled && (
-            <div className="w-full h-full flex items-center justify-center text-white/40 gap-3 px-4">
-              <Music2 className="h-6 w-6" />
-              <span className="text-sm font-bold truncate">Click the button to play soundtrack</span>
-            </div>
-          )}
+          </div>
         </div>
       </div>
 
+      {/* Control Button with Progress Ring */}
       <div className="relative w-14 h-14 flex items-center justify-center z-[60]">
         <svg className="absolute inset-0 w-full h-full -rotate-90 transform pointer-events-none" viewBox="0 0 60 60">
           <circle cx="30" cy="30" r={radius} stroke="currentColor" strokeWidth="3" fill="transparent" className="text-orange-500/10" />
@@ -103,7 +117,7 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
           }}
           variant="ghost"
           className={cn(
-            "rounded-full w-11 h-11 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-md overflow-hidden relative group",
+            "rounded-full w-11 h-11 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-md overflow-hidden relative",
             !isEnabled && "opacity-80 grayscale-[0.5]"
           )}
           title={isEnabled ? "Mute Soundtrack" : "Play Soundtrack"}

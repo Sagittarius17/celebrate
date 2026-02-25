@@ -17,37 +17,37 @@ export const FireworkEffect: React.FC<FireworkEffectProps> = ({ enabled }) => {
 
     fireworksRef.current = new Fireworks(containerRef.current, {
       autoresize: true,
-      opacity: 0.9,
-      acceleration: 1.05,
+      opacity: 0.5,
+      acceleration: 1.00,
       friction: 0.97,
       gravity: 1.5,
-      particles: 150,
-      traceLength: 3,
-      traceSpeed: 10,
-      explosion: 10,
-      intensity: 60,
-      flicker: 50,
+      particles: 50,
+      traceLength: 7,
+      traceSpeed: 6,
+      explosion: 7,
+      intensity: 15,
+      flickering: 50,
       lineStyle: 'round',
       hue: {
         min: 0,
         max: 360
       },
       delay: {
-        min: 15,
+        min: 25,
         max: 30
       },
       rocketsPoint: {
-        min: 0,
-        max: 100
+        min: 50,
+        max: 50
       },
       lineWidth: {
         explosion: {
-          min: 1,
+          min: 2,
           max: 4
         },
         trace: {
           min: 1,
-          max: 2
+          max: 4
         }
       },
       brightness: {
@@ -59,9 +59,16 @@ export const FireworkEffect: React.FC<FireworkEffectProps> = ({ enabled }) => {
         max: 0.03
       },
       mouse: {
-        click: false,
+        click: true,
         move: false,
         max: 1
+      },
+      sound: {
+        enabled: true,
+        volume: {
+          min: 10,
+          max: 20
+        }
       }
     });
 

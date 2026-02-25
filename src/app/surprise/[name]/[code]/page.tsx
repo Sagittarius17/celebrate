@@ -163,7 +163,7 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
 
   const handleRevealClick = () => {
     setIsOpening(true);
-    // Setting music to true immediately ensures the user gesture is captured
+    // Setting music to true immediately ensures the track autoplays upon reveal
     setIsMusicEnabled(true);
     setTimeout(() => {
       setIsRevealed(true);
@@ -224,9 +224,7 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
           showFireworks={showFireworks}
           onToggleFireworks={() => setShowFireworks(prev => !prev)}
           voiceNoteUrl={page?.voiceNoteDataUri}
-          hasMusic={!!page?.spotifyTrackId}
           spotifyTrackId={page?.spotifyTrackId}
-          spotifyTrackDurationMs={page?.spotifyTrackDurationMs}
           isMusicEnabled={isMusicEnabled}
           onToggleMusic={() => setIsMusicEnabled(!isMusicEnabled)}
         />

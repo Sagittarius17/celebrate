@@ -5,7 +5,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Sun, Flame, Sparkles, Volume2, VolumeX } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { SpotifyPlayer } from './SpotifyPlayer';
 
 interface HeaderProps {
   title?: string;
@@ -15,9 +14,7 @@ interface HeaderProps {
   showFireworks?: boolean;
   onToggleFireworks?: () => void;
   voiceNoteUrl?: string | null;
-  hasMusic?: boolean;
   spotifyTrackId?: string;
-  spotifyTrackDurationMs?: number;
   isMusicEnabled?: boolean;
   onToggleMusic?: () => void;
 }
@@ -30,9 +27,7 @@ export const Header: React.FC<HeaderProps> = ({
   showFireworks,
   onToggleFireworks,
   voiceNoteUrl,
-  hasMusic,
   spotifyTrackId,
-  spotifyTrackDurationMs,
   isMusicEnabled,
   onToggleMusic
 }) => {
@@ -60,17 +55,6 @@ export const Header: React.FC<HeaderProps> = ({
     }
   };
 
-  const handleSpotifyToggle = () => {
-    // If turning on music while voice is playing, pause the voice
-    if (!isMusicEnabled && isPlayingVoice) {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        setIsPlayingVoice(false);
-      }
-    }
-    if (onToggleMusic) onToggleMusic();
-  };
-
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -84,6 +68,10 @@ export const Header: React.FC<HeaderProps> = ({
     const handleEnded = () => {
       setIsPlayingVoice(false);
       setVoiceProgress(0);
+      // Resume music after voice note ends if it was playing before
+      if (!isMusicEnabled && onToggleMusic) {
+        onToggleMusic();
+      }
     };
 
     audio.addEventListener('timeupdate', updateProgress);
@@ -93,7 +81,7 @@ export const Header: React.FC<HeaderProps> = ({
       audio.removeEventListener('timeupdate', updateProgress);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, [voiceNoteUrl]);
+  }, [voiceNoteUrl, isMusicEnabled, onToggleMusic]);
 
   const radius = 27;
   const circumference = 2 * Math.PI * radius;
@@ -101,6 +89,20 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden z-10">
+      {/* Hidden Spotify Autoplay Iframe */}
+      {isMusicEnabled && spotifyTrackId && (
+        <div className="fixed -top-[1000px] -left-[1000px] pointer-events-none opacity-0 invisible">
+          <iframe 
+            src={`https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0&autoplay=1`} 
+            width="0" 
+            height="0" 
+            frameBorder="0" 
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+            loading="lazy"
+          />
+        </div>
+      )}
+
       <div className="fixed top-8 right-8 z-[100] flex flex-col gap-4 items-center">
         {onToggleTheme && (
           <Button
@@ -127,15 +129,6 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Sparkles className={cn("h-6 w-6", showFireworks && "animate-pulse")} />
           </Button>
-        )}
-
-        {hasMusic && spotifyTrackId && onToggleMusic && (
-          <SpotifyPlayer 
-            trackId={spotifyTrackId}
-            durationMs={spotifyTrackDurationMs}
-            isEnabled={isMusicEnabled || false}
-            onToggle={handleSpotifyToggle}
-          />
         )}
 
         {voiceNoteUrl && (

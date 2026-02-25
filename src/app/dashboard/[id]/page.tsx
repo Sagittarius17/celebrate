@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, use, useRef, useEffect } from 'react';
@@ -7,7 +6,7 @@ import { collection, doc, query, orderBy } from 'firebase/firestore';
 import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Copy, Check, Eye, EyeOff, Settings2, Key, Calendar, Sun, Moon, Plus } from 'lucide-react';
+import { ArrowLeft, Copy, Check, Eye, EyeOff, Settings2, Key, Calendar, Sun, Moon, Plus, Share2 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { EditorSidebar } from '@/components/dashboard/EditorSidebar';
@@ -32,6 +31,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
   const { isDark, toggleTheme } = useDashboardTheme();
   
   const [isCopied, setIsCopied] = useState(false);
+  const [isCodeCopied, setIsCodeCopied] = useState(false);
   const [isSavingQuote, setIsSavingQuote] = useState(false);
   const [customQuote, setCustomQuote] = useState('');
   const [showLivePreview, setShowLivePreview] = useState(false);
@@ -114,6 +114,17 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
     setTimeout(() => setIsCopied(false), 2000);
   };
 
+  const copyAccessCode = () => {
+    if (!page) return;
+    navigator.clipboard.writeText(page.accessCode);
+    setIsCodeCopied(true);
+    toast({
+      title: "Code Copied!",
+      description: "Secret access code copied to clipboard.",
+    });
+    setTimeout(() => setIsCodeCopied(false), 2000);
+  };
+
   if (isPageLoading) return <div className="p-20 text-center">Loading editor...</div>;
   if (!page) return <div className="p-20 text-center">Surprise not found.</div>;
   if (page.ownerId !== user?.uid) return <div className="p-20 text-center text-destructive">Unauthorized access.</div>;
@@ -133,9 +144,20 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
           </Link>
           
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3 bg-secondary px-6 h-12 rounded-full border-none shadow-sm" title="Secret Access Code">
-              <Key className="h-5 w-5 text-secondary-foreground opacity-60" />
-              <span className="text-base font-bold text-secondary-foreground tracking-wider">{page.accessCode}</span>
+            <div className="flex items-center gap-2 bg-secondary pl-6 pr-2 h-12 rounded-full border-none shadow-sm group" title="Secret Access Code">
+              <div className="flex items-center gap-3">
+                <Key className="h-5 w-5 text-secondary-foreground opacity-60" />
+                <span className="text-base font-bold text-secondary-foreground tracking-wider">{page.accessCode}</span>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-9 w-9 p-0 rounded-full hover:bg-white/20 ml-2"
+                onClick={copyAccessCode}
+                title="Copy Secret Code"
+              >
+                {isCodeCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+              </Button>
             </div>
 
             <Button 
@@ -149,9 +171,9 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
             <Button 
               className={headerButtonStyle}
               onClick={copyShareLink} 
-              title="Copy Share Link"
+              title="Share Surprise (Copy URL)"
             >
-              {isCopied ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5" />}
+              {isCopied ? <Check className="h-5 w-5 text-green-500" /> : <Share2 className="h-5 w-5" />}
             </Button>
             
             <Button 

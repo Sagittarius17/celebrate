@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState } from 'react';
@@ -22,7 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, User, Key, ArrowRight, Gift, LogOut, Copy, Check, Type, Trash2, Edit2, Sun, Moon, Music } from 'lucide-react';
+import { Plus, User, Key, ArrowRight, Gift, LogOut, Copy, Check, Type, Trash2, Edit2, Sun, Moon, Music, Share2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -67,7 +66,8 @@ export default function Dashboard() {
   
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [copiedCodeId, setCopiedCodeId] = useState<string | null>(null);
+  const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null);
   const [newSurprise, setNewSurprise] = useState({
     recipientName: '',
     title: '',
@@ -142,17 +142,27 @@ export default function Dashboard() {
     });
   };
 
+  const copyAccessCode = (surprise: any) => {
+    navigator.clipboard.writeText(surprise.accessCode);
+    setCopiedCodeId(surprise.id);
+    toast({
+      title: "Code Copied!",
+      description: "Secret access code copied to clipboard.",
+    });
+    setTimeout(() => setCopiedCodeId(null), 2000);
+  };
+
   const copyShareLink = (surprise: any) => {
     const baseUrl = window.location.origin;
     const nameSlug = slugify(surprise.recipientName);
     const shareUrl = `${baseUrl}/surprise/${nameSlug}/${surprise.accessCode}`;
     navigator.clipboard.writeText(shareUrl);
-    setCopiedId(surprise.id);
+    setCopiedLinkId(surprise.id);
     toast({
       title: "Link Copied!",
       description: `Share this unique link for ${surprise.recipientName}.`,
     });
-    setTimeout(() => setCopiedId(null), 2000);
+    setTimeout(() => setCopiedLinkId(null), 2000);
   };
 
   if (isUserLoading) return <div className="p-20 text-center">Loading...</div>;
@@ -378,10 +388,10 @@ export default function Dashboard() {
                       variant="ghost" 
                       size="sm" 
                       className="h-10 w-10 p-0 rounded-full hover:bg-secondary/20"
-                      onClick={() => copyShareLink(surprise)}
-                      title="Copy Share Link"
+                      onClick={() => copyAccessCode(surprise)}
+                      title="Copy Secret Code"
                     >
-                      {copiedId === surprise.id ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                      {copiedCodeId === surprise.id ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                     </Button>
                   </div>
                   <div className="flex items-center text-sm text-muted-foreground">
@@ -393,6 +403,15 @@ export default function Dashboard() {
                         Edit Timeline <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
                     </Link>
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="rounded-full shrink-0 h-11 w-11 border-muted hover:bg-secondary/10 hover:text-secondary"
+                      onClick={() => copyShareLink(surprise)}
+                      title="Share Surprise (Copy URL)"
+                    >
+                      {copiedLinkId === surprise.id ? <Check className="h-4 w-4 text-green-500" /> : <Share2 className="h-4 w-4" />}
+                    </Button>
                     <Button 
                       variant="outline" 
                       size="icon" 

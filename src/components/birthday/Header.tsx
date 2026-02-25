@@ -76,8 +76,26 @@ export const Header: React.FC<HeaderProps> = ({
   const voiceStrokeDashoffset = circumference - (voiceProgress / 100) * circumference;
 
   return (
-    <header className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden z-10">
-      <div className="fixed top-8 right-8 z-[100] flex flex-col gap-4 items-center">
+    <header className="relative min-h-screen flex flex-col z-10">
+      {/* Sticky Top Bar for Spotify */}
+      <div className="sticky top-0 w-full z-50 flex justify-center p-4 pointer-events-none">
+        {spotifyTrackId && (
+          <div className="w-full max-w-md bg-black/5 dark:bg-white/5 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md border border-white/10 transition-all duration-500 animate-in fade-in slide-in-from-top-4 pointer-events-auto">
+            <iframe 
+              src={`https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0`} 
+              width="100%" 
+              height="80" 
+              frameBorder="0" 
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+              loading="lazy"
+              className="rounded-none border-none"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Fixed Controls (Right side) */}
+      <div className="fixed top-24 right-8 z-[100] flex flex-col gap-4 items-center">
         {onToggleTheme && (
           <Button
             onClick={onToggleTheme}
@@ -143,58 +161,46 @@ export const Header: React.FC<HeaderProps> = ({
         className="hidden"
       />
 
-      <div className="relative z-30 animate-fade-in space-y-8 flex flex-col items-center">
-        <div className="space-y-4">
-          <div className={cn(
-            "inline-block px-6 py-2 rounded-full font-bold tracking-widest uppercase text-xs sm:text-sm mb-4 transition-colors",
-            isCandle ? "bg-primary/20 text-foreground border border-primary/30" : "bg-secondary/20 text-secondary-foreground"
-          )}>
-            A special {occasion.toLowerCase()} surprise
+      {/* Main Centered Content */}
+      <div className="flex-1 flex flex-col items-center justify-center text-center px-4 overflow-hidden -mt-20">
+        <div className="relative z-30 animate-fade-in space-y-8 flex flex-col items-center">
+          <div className="space-y-4">
+            <div className={cn(
+              "inline-block px-6 py-2 rounded-full font-bold tracking-widest uppercase text-xs sm:text-sm mb-4 transition-colors",
+              isCandle ? "bg-primary/20 text-foreground border border-primary/30" : "bg-secondary/20 text-secondary-foreground"
+            )}>
+              A special {occasion.toLowerCase()} surprise
+            </div>
+            <h1 className={cn(
+              "text-5xl sm:text-7xl md:text-9xl font-extrabold leading-tight drop-shadow-sm px-2 transition-all duration-1000",
+              isCandle ? "text-foreground drop-shadow-[0_0_40px_rgba(255,215,0,0.6)]" : "text-foreground"
+            )}>
+              {title ? (
+                <>
+                  {title.includes(',') ? (
+                    <>
+                      {title.split(',')[0]} <br />
+                      <span className={isCandle ? "text-primary" : "text-primary-foreground"}>
+                        {title.split(',')[1]}
+                      </span>
+                    </>
+                  ) : title}
+                </>
+              ) : (
+                <>
+                  Happy <br />
+                  <span className={isCandle ? "text-primary" : "text-primary-foreground"}>{occasion}</span>
+                </>
+              )}
+            </h1>
+            <p className={cn(
+              "text-lg sm:text-xl md:text-2xl max-w-2xl mx-auto leading-relaxed px-4 transition-colors",
+              isCandle ? "text-foreground/80" : "text-muted-foreground"
+            )}>
+              Relive the beautiful moments that shaped an extraordinary life and journey through time together.
+            </p>
           </div>
-          <h1 className={cn(
-            "text-5xl sm:text-7xl md:text-9xl font-extrabold leading-tight drop-shadow-sm px-2 transition-all duration-1000",
-            isCandle ? "text-foreground drop-shadow-[0_0_40px_rgba(255,215,0,0.6)]" : "text-foreground"
-          )}>
-            {title ? (
-              <>
-                {title.includes(',') ? (
-                  <>
-                    {title.split(',')[0]} <br />
-                    <span className={isCandle ? "text-primary" : "text-primary-foreground"}>
-                      {title.split(',')[1]}
-                    </span>
-                  </>
-                ) : title}
-              </>
-            ) : (
-              <>
-                Happy <br />
-                <span className={isCandle ? "text-primary" : "text-primary-foreground"}>{occasion}</span>
-              </>
-            )}
-          </h1>
-          <p className={cn(
-            "text-lg sm:text-xl md:text-2xl max-w-2xl mx-auto leading-relaxed px-4 transition-colors",
-            isCandle ? "text-foreground/80" : "text-muted-foreground"
-          )}>
-            Relive the beautiful moments that shaped an extraordinary life and journey through time together.
-          </p>
         </div>
-
-        {/* The Spotify Box */}
-        {spotifyTrackId && (
-          <div className="w-full max-w-md bg-black/5 dark:bg-white/5 rounded-[2rem] overflow-hidden shadow-2xl backdrop-blur-md border border-white/10 transition-all duration-500 animate-in fade-in slide-in-from-bottom-4">
-            <iframe 
-              src={`https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0&autoplay=1`} 
-              width="100%" 
-              height="80" 
-              frameBorder="0" 
-              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-              loading="lazy"
-              className="rounded-none border-none"
-            />
-          </div>
-        )}
       </div>
 
       <div 

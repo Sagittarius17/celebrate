@@ -37,7 +37,6 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
   const [scrollProgress, setScrollProgress] = useState(0);
   const [theme, setTheme] = useState<'light' | 'candle-light'>('light');
   const [showFireworks, setShowFireworks] = useState(false);
-  const [isMusicEnabled, setIsMusicEnabled] = useState(false);
   const [isRevealed, setIsRevealed] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -163,8 +162,6 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
 
   const handleRevealClick = () => {
     setIsOpening(true);
-    // Setting music to true immediately ensures the track autoplays upon reveal
-    setIsMusicEnabled(true);
     setTimeout(() => {
       setIsRevealed(true);
     }, 800);
@@ -214,7 +211,7 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
       <ButterflySwarm theme={theme} />
       <FireworkEffect enabled={showFireworks} />
 
-      {/* Main Content - Always rendered, opacity controlled for smooth autoplay on reveal */}
+      {/* Main Content */}
       <div className={cn("transition-opacity duration-1000", isRevealed ? "opacity-100" : "opacity-0 pointer-events-none")}>
         <Header 
           title={page?.title} 
@@ -225,8 +222,6 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
           onToggleFireworks={() => setShowFireworks(prev => !prev)}
           voiceNoteUrl={page?.voiceNoteDataUri}
           spotifyTrackId={page?.spotifyTrackId}
-          isMusicEnabled={isMusicEnabled}
-          onToggleMusic={() => setIsMusicEnabled(!isMusicEnabled)}
         />
         
         <section id="journey" ref={journeyRef} className="pt-8 pb-0 sm:pt-16 relative z-10">
@@ -295,7 +290,7 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
         </section>
       </div>
 
-      {/* Reveal Overlay - Covers the content until the user clicks */}
+      {/* Reveal Overlay */}
       {!isRevealed && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 px-4">
           <div className="flex flex-col items-center gap-12 animate-fade-in w-full max-w-sm">

@@ -52,9 +52,24 @@ export const Header: React.FC<HeaderProps> = ({
       audioRef.current.pause();
       setIsPlayingVoice(false);
     } else {
+      // Pause music if it's currently enabled to let the voice note take center stage
+      if (isMusicEnabled && onToggleMusic) {
+        onToggleMusic();
+      }
       audioRef.current.play();
       setIsPlayingVoice(true);
     }
+  };
+
+  const handleMusicToggleClick = () => {
+    // If turning on music while voice is playing, pause the voice
+    if (!isMusicEnabled && isPlayingVoice) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        setIsPlayingVoice(false);
+      }
+    }
+    if (onToggleMusic) onToggleMusic();
   };
 
   useEffect(() => {
@@ -147,28 +162,28 @@ export const Header: React.FC<HeaderProps> = ({
         {hasMusic && onToggleMusic && (
           <div className="relative w-14 h-14 flex items-center justify-center">
             <svg className="absolute inset-0 w-full h-full -rotate-90 transform pointer-events-none" viewBox="0 0 60 60">
-              <circle cx="30" cy="30" r={radius} stroke="currentColor" strokeWidth="2.5" fill="transparent" className="text-primary/10" />
+              <circle cx="30" cy="30" r={radius} stroke="currentColor" strokeWidth="3" fill="transparent" className="text-secondary/20" />
               <circle
                 cx="30"
                 cy="30"
                 r={radius}
                 stroke="currentColor"
-                strokeWidth="2.5"
+                strokeWidth="3"
                 fill="transparent"
                 strokeDasharray={circumference}
                 style={{ strokeDashoffset: musicStrokeDashoffset, transition: 'stroke-dashoffset 0.2s linear' }}
                 strokeLinecap="round"
-                className="text-primary"
+                className="text-secondary"
               />
             </svg>
             <Button
-              onClick={onToggleMusic}
+              onClick={handleMusicToggleClick}
               variant="ghost"
               className={cn(
                 "rounded-full w-11 h-11 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-md overflow-hidden relative group",
                 !isMusicEnabled && "opacity-60 grayscale"
               )}
-              title={isMusicEnabled ? "Hide Music Controls" : "Show Music Controls"}
+              title={isMusicEnabled ? "Mute Soundtrack" : "Play Soundtrack"}
             >
               {spotifyMetadata?.imageUrl ? (
                 <Image 
@@ -192,13 +207,13 @@ export const Header: React.FC<HeaderProps> = ({
         {voiceNoteUrl && (
           <div className="relative w-14 h-14 flex items-center justify-center">
             <svg className="absolute inset-0 w-full h-full -rotate-90 transform pointer-events-none" viewBox="0 0 60 60">
-              <circle cx="30" cy="30" r={radius} stroke="currentColor" strokeWidth="2.5" fill="transparent" className="text-orange-500/10" />
+              <circle cx="30" cy="30" r={radius} stroke="currentColor" strokeWidth="3" fill="transparent" className="text-orange-500/20" />
               <circle
                 cx="30"
                 cy="30"
                 r={radius}
                 stroke="currentColor"
-                strokeWidth="2.5"
+                strokeWidth="3"
                 fill="transparent"
                 strokeDasharray={circumference}
                 style={{ strokeDashoffset: voiceStrokeDashoffset, transition: 'stroke-dashoffset 0.1s linear' }}
@@ -263,7 +278,6 @@ export const Header: React.FC<HeaderProps> = ({
           Relive the beautiful moments that shaped an extraordinary life and journey through time together.
         </p>
 
-        {/* Visible Spotify Player for reliability with autoplay enabled */}
         {hasMusic && isMusicEnabled && spotifyTrackId && (
           <div className="mt-8 w-full max-w-md mx-auto animate-fade-in relative z-50 px-4">
             <iframe 

@@ -1,4 +1,3 @@
-
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
@@ -31,13 +30,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'image-cdn-ak.spotifycdn.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'image-cdn-fa.spotifycdn.com',
+        hostname: '**.spotifycdn.com',
         port: '',
         pathname: '/**',
       },
@@ -49,7 +42,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'mosaic.scdn.co',
+        hostname: '**.scdn.co',
         port: '',
         pathname: '/**',
       },

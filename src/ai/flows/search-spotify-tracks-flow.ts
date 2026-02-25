@@ -14,7 +14,7 @@ const TrackSchema = z.object({
   title: z.string().describe('The title of the song.'),
   artist: z.string().describe('The artist of the song.'),
   trackId: z.string().describe('The Spotify Track ID (e.g., "4PTG3C64LUButARq9I9Uf8").'),
-  imageUrl: z.string().optional().describe('A URL to the album artwork.'),
+  imageUrl: z.string().optional().describe('A URL to the album artwork starting with https://i.scdn.co/image/ or https://image-cdn-ak.spotifycdn.com/image/'),
 });
 
 const SearchSpotifyTracksInputSchema = z.object({
@@ -37,13 +37,18 @@ const prompt = ai.definePrompt({
   name: 'searchSpotifyTracksPrompt',
   input: {schema: SearchSpotifyTracksInputSchema},
   output: {schema: SearchSpotifyTracksOutputSchema},
-  prompt: `You are an AI assistant that helps users find Spotify Track IDs for their favorite songs.
+  prompt: `You are a music search expert with access to a vast database of Spotify metadata.
+
 User Query: "{{{query}}}"
 
-Please provide a list of up to 5 real, popular songs that match this query. 
-For each song, provide the correct Spotify Track ID. You should know these from your training data for common and popular songs.
-If the song is very obscure, provide the closest popular match.
-Try to include the album artwork URL if you can recall a valid one from Spotify's CDN (e.g., https://i.scdn.co/image/...), or leave it blank.`,
+Instructions:
+1. Identify up to 5 real songs that best match the query.
+2. Provide the EXACT 22-character Spotify Track ID.
+3. Provide the correct Album Artwork URL. Use direct CDN links like:
+   - https://i.scdn.co/image/<hash>
+   - https://image-cdn-ak.spotifycdn.com/image/<hash>
+4. If you are unsure of a specific track's ID, prioritize the most popular/original version of the song which has stable metadata.
+5. If you cannot find a valid image URL for a song, omit the imageUrl field entirely.`,
 });
 
 const searchSpotifyTracksFlow = ai.defineFlow(

@@ -95,6 +95,7 @@ export default function Dashboard() {
   const handleSpotifySearch = async () => {
     if (!searchQuery.trim()) return;
     setIsSearching(true);
+    setSearchResults([]);
     try {
       const { tracks } = await searchSpotifyTracks({ query: searchQuery });
       setSearchResults(tracks);
@@ -258,11 +259,11 @@ export default function Dashboard() {
                     onClick={() => selectTrack(track, isNew)}
                     className="w-full flex items-center gap-3 p-2 hover:bg-accent rounded-xl transition-colors text-left group"
                   >
-                    <div className="w-12 h-12 bg-muted rounded-lg overflow-hidden shrink-0 relative">
-                      {track.imageUrl ? (
-                        <Image src={track.imageUrl} alt={track.title} fill className="object-cover" />
+                    <div className="w-12 h-12 bg-muted rounded-lg overflow-hidden shrink-0 relative flex items-center justify-center">
+                      {track.imageUrl && track.imageUrl.startsWith('http') ? (
+                        <Image src={track.imageUrl} alt="" fill className="object-cover" />
                       ) : (
-                        <Music className="w-full h-full p-3 opacity-20" />
+                        <Music className="w-6 h-6 opacity-40" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">

@@ -61,7 +61,8 @@ export const Header: React.FC<HeaderProps> = ({
     }
   };
 
-  const handleMusicToggleClick = () => {
+  const handleMusicToggleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     // If turning on music while voice is playing, pause the voice
     if (!isMusicEnabled && isPlayingVoice) {
       if (audioRef.current) {
@@ -160,47 +161,72 @@ export const Header: React.FC<HeaderProps> = ({
         )}
 
         {hasMusic && onToggleMusic && (
-          <div className="relative w-14 h-14 flex items-center justify-center">
-            <svg className="absolute inset-0 w-full h-full -rotate-90 transform pointer-events-none" viewBox="0 0 60 60">
-              <circle cx="30" cy="30" r={radius} stroke="currentColor" strokeWidth="3" fill="transparent" className="text-orange-500/20" />
-              <circle
-                cx="30"
-                cy="30"
-                r={radius}
-                stroke="currentColor"
-                strokeWidth="3"
-                fill="transparent"
-                strokeDasharray={circumference}
-                style={{ strokeDashoffset: musicStrokeDashoffset, transition: 'stroke-dashoffset 0.2s linear' }}
-                strokeLinecap="round"
-                className="text-orange-500"
-              />
-            </svg>
-            <Button
-              onClick={handleMusicToggleClick}
-              variant="ghost"
-              className={cn(
-                "rounded-full w-11 h-11 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-md overflow-hidden relative group",
-                !isMusicEnabled && "opacity-60 grayscale"
-              )}
-              title={isMusicEnabled ? "Mute Soundtrack" : "Play Soundtrack"}
-            >
-              {spotifyMetadata?.imageUrl ? (
-                <Image 
-                  src={spotifyMetadata.imageUrl} 
-                  alt="Track" 
-                  fill 
-                  className={cn("object-cover", isMusicEnabled && "animate-spin-slow")} 
+          <div className="relative group/spotify-hub flex items-center justify-end">
+            {/* Animated Spotify Box Hub */}
+            <div className="absolute right-[calc(100%+12px)] top-1/2 -translate-y-1/2 w-0 overflow-hidden transition-all duration-500 group-hover/spotify-hub:w-[320px] pointer-events-none group-hover/spotify-hub:pointer-events-auto">
+              <div className="w-[320px] h-[80px] bg-[#191414] rounded-2xl shadow-2xl border border-white/10 overflow-hidden transition-all duration-500">
+                {isMusicEnabled && spotifyTrackId && (
+                  <iframe 
+                    src={`https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0&autoplay=1`} 
+                    width="100%" 
+                    height="80" 
+                    frameBorder="0" 
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                    loading="lazy"
+                    className="opacity-100"
+                  />
+                )}
+                {!isMusicEnabled && (
+                  <div className="w-full h-full flex items-center justify-center text-white/40 gap-3 px-4">
+                    <Music2 className="h-6 w-6" />
+                    <span className="text-sm font-bold truncate">Click the button to play soundtrack</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="relative w-14 h-14 flex items-center justify-center">
+              <svg className="absolute inset-0 w-full h-full -rotate-90 transform pointer-events-none" viewBox="0 0 60 60">
+                <circle cx="30" cy="30" r={radius} stroke="currentColor" strokeWidth="3" fill="transparent" className="text-orange-500/10" />
+                <circle
+                  cx="30"
+                  cy="30"
+                  r={radius}
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  fill="transparent"
+                  strokeDasharray={circumference}
+                  style={{ strokeDashoffset: musicStrokeDashoffset, transition: 'stroke-dashoffset 0.2s linear' }}
+                  strokeLinecap="round"
+                  className="text-orange-500"
                 />
-              ) : (
-                <Music className={cn("h-5 w-5", isMusicEnabled && "animate-spin-slow")} />
-              )}
-              {!isMusicEnabled && (
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                  <Music2 className="h-4 w-4 text-white" />
-                </div>
-              )}
-            </Button>
+              </svg>
+              <Button
+                onClick={handleMusicToggleClick}
+                variant="ghost"
+                className={cn(
+                  "rounded-full w-11 h-11 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-md overflow-hidden relative group",
+                  !isMusicEnabled && "opacity-80 grayscale-[0.5]"
+                )}
+                title={isMusicEnabled ? "Mute Soundtrack" : "Play Soundtrack"}
+              >
+                {spotifyMetadata?.imageUrl ? (
+                  <Image 
+                    src={spotifyMetadata.imageUrl} 
+                    alt="Track" 
+                    fill 
+                    className={cn("object-cover", isMusicEnabled && "animate-spin-slow")} 
+                  />
+                ) : (
+                  <Music className={cn("h-5 w-5", isMusicEnabled && "animate-spin-slow")} />
+                )}
+                {!isMusicEnabled && (
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <Music2 className="h-4 w-4 text-white" />
+                  </div>
+                )}
+              </Button>
+            </div>
           </div>
         )}
 
@@ -277,20 +303,6 @@ export const Header: React.FC<HeaderProps> = ({
         )}>
           Relive the beautiful moments that shaped an extraordinary life and journey through time together.
         </p>
-
-        {hasMusic && isMusicEnabled && spotifyTrackId && (
-          <div className="mt-8 w-full max-w-md mx-auto animate-fade-in relative z-50 px-4">
-            <iframe 
-              src={`https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0&autoplay=1`} 
-              width="100%" 
-              height="80" 
-              frameBorder="0" 
-              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-              loading="lazy"
-              className="rounded-xl shadow-2xl bg-white/10 backdrop-blur-md"
-            />
-          </div>
-        )}
       </div>
 
       <div 

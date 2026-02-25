@@ -64,11 +64,7 @@ export const FireworkEffect: React.FC<FireworkEffectProps> = ({ enabled }) => {
         max: 1
       },
       sound: {
-        enabled: true,
-        volume: {
-          min: 10,
-          max: 20
-        }
+        enabled: false // Disabled to prevent EncodingError: decodeAudioData
       }
     });
 

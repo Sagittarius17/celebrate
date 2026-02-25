@@ -11,6 +11,7 @@ import { CarouselLayout } from '@/components/birthday/CarouselLayout';
 import { FinalMessage } from '@/components/birthday/FinalMessage';
 import { ButterflySwarm } from '@/components/birthday/ButterflySwarm';
 import { FireworkEffect } from '@/components/birthday/FireworkEffect';
+import { CelebrationControls } from '@/components/birthday/CelebrationControls';
 import { Gift, PackageOpen, Loader2, Heart, Sparkles } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -82,7 +83,6 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
     } else {
       document.body.classList.remove('candle-light');
     }
-    
     return () => {
       document.body.classList.remove('candle-light');
     };
@@ -204,12 +204,22 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
   const layout = page?.layout || 'Timeline';
   
   const isFullyConnected = scrollProgress >= 100;
-  const isCandle = theme === 'candle-light';
 
   return (
-    <main className={cn("min-h-screen bg-background overflow-x-hidden transition-all duration-1000", theme)} style={globalStyle}>
+    <main className={cn("min-h-screen bg-background transition-all duration-1000", theme)} style={globalStyle}>
       <ButterflySwarm theme={theme} />
       <FireworkEffect enabled={showFireworks} />
+
+      {/* Persistent Controls - High z-index for full access */}
+      <CelebrationControls 
+        theme={theme}
+        onToggleTheme={() => setTheme(prev => prev === 'light' ? 'candle-light' : 'light')}
+        showFireworks={showFireworks}
+        onToggleFireworks={() => setShowFireworks(prev => !prev)}
+        voiceNoteUrl={page?.voiceNoteDataUri}
+        spotifyTrackId={page?.spotifyTrackId}
+        isRevealed={isRevealed}
+      />
 
       {/* Main Content */}
       <div className={cn("transition-opacity duration-1000", isRevealed ? "opacity-100" : "opacity-0 pointer-events-none")}>
@@ -217,12 +227,6 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
           title={page?.title} 
           occasion={page?.occasion} 
           theme={theme} 
-          onToggleTheme={() => setTheme(prev => prev === 'light' ? 'candle-light' : 'light')} 
-          showFireworks={showFireworks}
-          onToggleFireworks={() => setShowFireworks(prev => !prev)}
-          voiceNoteUrl={page?.voiceNoteDataUri}
-          spotifyTrackId={page?.spotifyTrackId}
-          isRevealed={isRevealed}
         />
         
         <section id="journey" ref={journeyRef} className="pt-8 pb-0 sm:pt-16 relative z-10">
@@ -259,7 +263,7 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
                   )}>
                     <div className={cn(
                       "bg-white p-3 sm:p-4 rounded-full shadow-2xl border-4 transition-all duration-700",
-                      isFullyConnected && isCandle 
+                      isFullyConnected && theme === 'candle-light'
                         ? "animate-rgb-border" 
                         : (isFullyConnected ? "border-secondary" : "border-secondary/40")
                     )}>

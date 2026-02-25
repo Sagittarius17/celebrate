@@ -140,7 +140,6 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       
       const triggerPoint = viewportHeight * 0.7; 
       const journeyTop = journeyRect.top;
-      // Exact center calculation
       const heartCenter = heartRect.top + (heartRect.height / 2); 
       
       const totalHeight = heartCenter - journeyTop;
@@ -239,6 +238,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
           onToggleFireworks={() => setShowFireworks(prev => !prev)}
           voiceNoteUrl={page?.voiceNoteDataUri}
           spotifyTrackId={page?.spotifyTrackId}
+          isRevealed={isRevealed}
         />
         
         <section id="journey" ref={journeyRef} className="pt-8 pb-0 sm:pt-16 relative z-10">
@@ -250,7 +250,6 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
             
             {layout === 'Timeline' ? (
               <div className="relative flex flex-col items-center">
-                {/* Visual Line Container adjusted to touch the heart */}
                 <div 
                   className="absolute left-1/2 -translate-x-1/2 w-2 z-0 pointer-events-none" 
                   style={{ 
@@ -308,10 +307,9 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         </section>
       </div>
 
-      {/* Reveal Overlay */}
       {!isRevealed && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 px-4">
-          <div className="flex flex-col items-center gap-12 animate-fade-in w-full max-sm">
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 px-4">
+          <div className="flex flex-col items-center gap-12 animate-fade-in w-full max-w-sm">
             <div className="relative">
               <div className="absolute -inset-4 bg-primary/20 blur-3xl rounded-full animate-pulse" />
               <div className="relative bg-white p-10 rounded-[3rem] shadow-2xl border-b-8 border-primary/20 transition-all duration-500 flex items-center justify-center">

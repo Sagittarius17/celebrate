@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { use, useEffect, useState, useRef } from 'react';
@@ -123,7 +124,6 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
       
       const triggerPoint = viewportHeight * 0.7; 
       const journeyTop = journeyRect.top;
-      // Calculate exactly to the heart's vertical center for better connection
       const heartCenter = heartRect.top + (heartRect.height / 2); 
       
       const totalHeight = heartCenter - journeyTop;
@@ -222,6 +222,7 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
           onToggleFireworks={() => setShowFireworks(prev => !prev)}
           voiceNoteUrl={page?.voiceNoteDataUri}
           spotifyTrackId={page?.spotifyTrackId}
+          isRevealed={isRevealed}
         />
         
         <section id="journey" ref={journeyRef} className="pt-8 pb-0 sm:pt-16 relative z-10">
@@ -233,7 +234,6 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
             
             {layout === 'Timeline' ? (
               <div className="relative flex flex-col items-center">
-                {/* Visual Line Container - Connects the spine line to the center of the heart */}
                 <div 
                   className="absolute left-1/2 -translate-x-1/2 w-2 z-0 pointer-events-none" 
                   style={{ 
@@ -252,7 +252,6 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
                   <TimelineLayout events={events} scrollProgress={scrollProgress} />
                 </div>
 
-                {/* Final Heart Trigger */}
                 <div ref={endTriggerRef} className="flex flex-col items-center pt-24 pb-8 relative z-20">
                   <div className={cn(
                     "transition-all duration-1000 transform relative z-20",
@@ -292,9 +291,8 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
         </section>
       </div>
 
-      {/* Reveal Overlay */}
       {!isRevealed && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 px-4">
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 px-4">
           <div className="flex flex-col items-center gap-12 animate-fade-in w-full max-w-sm">
             <div className="relative">
               <div className="absolute -inset-4 bg-primary/20 blur-3xl rounded-full animate-pulse" />

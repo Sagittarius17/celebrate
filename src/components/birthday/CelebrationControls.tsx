@@ -80,7 +80,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
 
     el.addEventListener('wheel', handleWheel, { passive: false });
     return () => el.removeEventListener('wheel', handleWheel);
-  }, []);
+  }, [isHoveringVoice]);
 
   const toggleVoiceNote = () => {
     if (!audioRef.current) return;
@@ -123,7 +123,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
 
   return (
     <div 
-      className="fixed top-6 right-6 sm:right-10 z-[10000] flex flex-col items-end gap-4 pointer-events-auto"
+      className="fixed top-10 right-10 z-[10000] flex flex-col items-center gap-6 pointer-events-auto"
       onMouseEnter={clearMinimizeTimer}
       onMouseLeave={startMinimizeTimer}
     >
@@ -133,14 +133,28 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
         className="hidden"
       />
 
-      {/* Spotify Section */}
+      {/* Spotify Section - At Top */}
       {spotifyTrackId && isRevealed && (
-        <div className="flex flex-row items-center gap-4">
+        <div className="relative flex flex-col items-center">
+          <button 
+            className={cn(
+              "relative w-16 h-16 rounded-full overflow-hidden shadow-2xl border-2 transition-all duration-300 bg-black shrink-0 flex items-center justify-center cursor-pointer",
+              isMusicExpanded ? "border-primary scale-110" : "border-white/20 hover:scale-110"
+            )}
+            onClick={() => setIsMusicExpanded(!isMusicExpanded)}
+          >
+            {trackImageUrl ? (
+              <Image src={trackImageUrl} alt="Track Art" fill className="object-cover" />
+            ) : (
+              <Music className="h-6 w-6 text-primary" />
+            )}
+          </button>
+          
           <div className={cn(
-            "transition-all duration-500 ease-in-out overflow-hidden flex justify-end",
+            "absolute top-0 right-[calc(100%+24px)] transition-all duration-500 ease-in-out overflow-hidden h-20 flex items-center",
             isMusicExpanded ? "w-[300px] md:w-[350px] opacity-100" : "w-0 opacity-0 pointer-events-none"
           )}>
-            <div className="w-[300px] md:w-[350px] h-20 bg-white/10 dark:bg-black/40 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md border border-white/10">
+            <div className="w-full h-full bg-black/80 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md border border-white/10">
               <iframe 
                 src={`https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0&autoplay=1`} 
                 width="100%" 
@@ -152,36 +166,22 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
               />
             </div>
           </div>
-
-          <button 
-            className={cn(
-              "relative w-14 h-14 rounded-full overflow-hidden shadow-2xl border-2 transition-all duration-300 bg-white dark:bg-black shrink-0 flex items-center justify-center cursor-pointer",
-              isMusicExpanded ? "border-primary scale-110" : "border-white/20 hover:scale-110"
-            )}
-            onClick={() => setIsMusicExpanded(!isMusicExpanded)}
-          >
-            {trackImageUrl ? (
-              <Image src={trackImageUrl} alt="Track Art" fill className="object-cover" />
-            ) : (
-              <Music className="h-6 w-6 text-primary" />
-            )}
-          </button>
         </div>
       )}
 
-      {/* Theme Toggle */}
+      {/* Theme Toggle - Middle */}
       {onToggleTheme && (
         <Button
           onClick={onToggleTheme}
           variant="ghost"
-          className="rounded-full w-14 h-14 p-0 bg-white/20 dark:bg-black/20 hover:bg-white/40 backdrop-blur-md border-none text-foreground shadow-2xl transition-all hover:scale-110 active:scale-90"
+          className="rounded-full w-14 h-14 p-0 bg-white/10 hover:bg-white/20 backdrop-blur-md border-none text-foreground shadow-2xl transition-all hover:scale-110 active:scale-90"
           title={isCandle ? "Return to Light Mode" : "Enter Candle-Light Mode"}
         >
           {isCandle ? <Sun className="h-6 w-6 text-yellow-400" /> : <Flame className="h-6 w-6 text-orange-500 fill-orange-500" />}
         </Button>
       )}
 
-      {/* Fireworks */}
+      {/* Fireworks - Middle */}
       {onToggleFireworks && isCandle && (
         <Button
           onClick={onToggleFireworks}
@@ -190,42 +190,40 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
             "rounded-full w-14 h-14 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-2xl",
             showFireworks 
               ? "bg-primary text-primary-foreground" 
-              : "bg-white/20 dark:bg-black/20 text-foreground hover:bg-white/40"
+              : "bg-white/10 text-foreground hover:bg-white/20"
           )}
           title={showFireworks ? "Disable Fireworks" : "Enable Fireworks"}
         >
-          <div className="relative">
-            <Sparkles className={cn("h-6 w-6", showFireworks && "animate-pulse")} />
-          </div>
+          <Sparkles className={cn("h-6 w-6", showFireworks && "animate-pulse")} />
         </Button>
       )}
 
-      {/* Voice Note Section - Refined for Scroll Lock & UI */}
+      {/* Voice Note Section - At Bottom */}
       {voiceNoteUrl && (
         <div 
           ref={volumeAreaRef}
-          className="relative flex items-center gap-4 group/voice"
+          className="relative flex items-center gap-4"
           onMouseEnter={() => setIsHoveringVoice(true)}
           onMouseLeave={() => setIsHoveringVoice(false)}
         >
-          {/* Vertical Volume Bar - Positioned exactly as in reference */}
+          {/* Volume Bar - Shown to the left on hover */}
           <div className={cn(
-            "flex flex-col items-center gap-2 transition-all duration-300 transform",
+            "absolute right-[calc(100%+16px)] top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 transition-all duration-300 transform",
             isHoveringVoice ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4 pointer-events-none"
           )}>
-            <div className="h-28 w-2.5 bg-white/10 rounded-full relative overflow-hidden flex flex-col justify-end backdrop-blur-sm shadow-sm border border-white/5">
+            <div className="h-28 w-2.5 bg-white/10 rounded-full relative overflow-hidden flex flex-col justify-end backdrop-blur-sm border border-white/5">
               <div 
                 className="w-full bg-orange-500 transition-all duration-150 rounded-full"
                 style={{ height: `${voiceVolume * 100}%` }}
               />
             </div>
-            <span className="text-[11px] font-bold text-orange-500 drop-shadow-sm">
+            <span className="text-[11px] font-bold text-orange-500 whitespace-nowrap">
               {Math.round(voiceVolume * 100)}%
             </span>
           </div>
 
-          {/* Voice Note Play Button with Progress Ring */}
-          <div className="relative w-14 h-14 flex items-center justify-center">
+          {/* Voice Play Button */}
+          <div className="relative w-16 h-16 flex items-center justify-center">
             <svg className="absolute inset-0 w-full h-full -rotate-90 transform pointer-events-none" viewBox="0 0 60 60">
               <circle cx="30" cy="30" r={radius} stroke="currentColor" strokeWidth="4" fill="transparent" className="text-orange-500/10" />
               <circle
@@ -245,18 +243,18 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
               onClick={toggleVoiceNote}
               variant="ghost"
               className={cn(
-                "rounded-full w-12 h-12 p-0 backdrop-blur-md border-none transition-all hover:scale-105 active:scale-95 shadow-lg bg-orange-500 text-black font-black flex items-center justify-center relative z-10",
+                "rounded-full w-14 h-14 p-0 shadow-lg bg-orange-500 text-black border-none transition-all hover:scale-105 active:scale-95 z-10",
                 !isPlayingVoice && "bg-orange-500/90"
               )}
               title={isPlayingVoice ? "Pause Message" : "Play Creator Message"}
             >
               {isPlayingVoice ? (
-                <div className="flex gap-1">
+                <div className="flex gap-1 items-center justify-center">
                   <div className="w-1.5 h-4 bg-black rounded-full" />
                   <div className="w-1.5 h-4 bg-black rounded-full" />
                 </div>
               ) : (
-                <Play className="h-5 w-5 fill-black ml-1" />
+                <Play className="h-6 w-6 fill-black ml-1" />
               )}
             </Button>
           </div>

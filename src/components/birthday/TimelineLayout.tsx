@@ -21,8 +21,9 @@ export function TimelineLayout({ events, scrollProgress, theme }: TimelineLayout
     <div className="relative z-10">
       <div className="space-y-16 sm:space-y-32 relative z-10 pt-10 sm:pt-20">
         {events.map((event, index) => {
-          // Precise threshold for when the spine line reaches the circle
-          const threshold = (index / events.length) * 100;
+          // Calculate when the spine reaches this point.
+          // We map the index to a percentage range.
+          const threshold = (index / (events.length || 1)) * 100;
           const isActive = scrollProgress >= threshold;
 
           return (
@@ -52,7 +53,7 @@ export function TimelineLayout({ events, scrollProgress, theme }: TimelineLayout
                 isCandle ? "bg-black" : "bg-background",
                 isActive 
                   ? (isCandle ? "border-primary scale-125 shadow-[0_0_25px_rgba(255,215,0,0.6)]" : "border-secondary scale-110 shadow-[0_0_15px_rgba(255,182,193,0.4)]")
-                  : (isCandle ? "border-primary/20" : "border-primary/40")
+                  : (isCandle ? "border-primary/20 scale-50 opacity-0" : "border-primary/40 scale-50 opacity-0")
               )}> 
                 {isCandle ? (
                   <Heart className={cn(

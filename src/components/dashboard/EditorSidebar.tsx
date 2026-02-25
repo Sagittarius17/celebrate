@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useRef } from 'react';
@@ -15,10 +14,19 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
-import { LayoutTemplate, Quote, Save, Music, Mic, Square, Play, Trash2 } from 'lucide-react';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger 
+} from '@/components/ui/dialog';
+import { LayoutTemplate, Quote, Save, Music, Mic, Square, Play, Trash2, Search, Loader2 } from 'lucide-react';
 import { DocumentReference, Firestore } from 'firebase/firestore';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { useToast } from '@/hooks/use-toast';
+import { searchSpotifyTracks } from '@/ai/flows/search-spotify-tracks-flow';
+import Image from 'next/image';
 
 const FONTS = [
   "Playfair Display", "PT Sans", "Montserrat", "Lora", "Quicksand", 
@@ -53,12 +61,37 @@ export function EditorSidebar({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
+  // Spotify Search State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
   const handleUpdatePage = (updates: any) => {
     if (!db || !pageRef) return;
     updateDocumentNonBlocking(pageRef, {
       ...updates,
       updatedAt: new Date().toISOString()
     });
+  };
+
+  const handleSpotifySearch = async () => {
+    if (!searchQuery.trim()) return;
+    setIsSearching(true);
+    try {
+      const { tracks } = await searchSpotifyTracks({ query: searchQuery });
+      setSearchResults(tracks);
+    } catch (error) {
+      toast({ variant: "destructive", title: "Search Failed", description: "AI could not find tracks." });
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const selectTrack = (track: any) => {
+    handleUpdatePage({ spotifyTrackId: track.trackId });
+    setIsSearchOpen(false);
+    toast({ title: "Track Selected", description: `${track.title} by ${track.artist}` });
   };
 
   const startRecording = async () => {
@@ -170,19 +203,70 @@ export function EditorSidebar({
           <CardContent className="space-y-4 pt-6">
             <div className="space-y-2">
               <Label htmlFor="spotify">Spotify Track ID</Label>
-              <Input 
-                id="spotify"
-                placeholder="e.g. 4PTG3C64LUButARq9I9Uf8" 
-                defaultValue={page.spotifyTrackId || ''}
-                onBlur={(e) => {
-                  if (e.target.value !== page.spotifyTrackId) {
-                    handleUpdatePage({ spotifyTrackId: e.target.value });
-                    toast({ title: "Track Updated", description: "Spotify song has been set." });
-                  }
-                }}
-              />
+              <div className="flex gap-2">
+                <Input 
+                  id="spotify"
+                  placeholder="e.g. 4PTG3C64LUButARq9I9Uf8" 
+                  value={page.spotifyTrackId || ''}
+                  onChange={(e) => handleUpdatePage({ spotifyTrackId: e.target.value })}
+                />
+                <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="icon" className="shrink-0 rounded-xl">
+                      <Search className="h-4 w-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Search for a Song</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 pt-4">
+                      <div className="flex gap-2">
+                        <Input 
+                          placeholder="Song name or artist..." 
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && handleSpotifySearch()}
+                        />
+                        <Button onClick={handleSpotifySearch} disabled={isSearching}>
+                          {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : "Search"}
+                        </Button>
+                      </div>
+                      <ScrollArea className="h-[300px] rounded-xl border p-2">
+                        {searchResults.length === 0 && !isSearching ? (
+                          <div className="text-center py-10 text-muted-foreground text-sm">
+                            Try searching for your favorite track
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            {searchResults.map((track) => (
+                              <button
+                                key={track.trackId}
+                                onClick={() => selectTrack(track)}
+                                className="w-full flex items-center gap-3 p-2 hover:bg-accent rounded-xl transition-colors text-left group"
+                              >
+                                <div className="w-12 h-12 bg-muted rounded-lg overflow-hidden shrink-0 relative">
+                                  {track.imageUrl ? (
+                                    <Image src={track.imageUrl} alt={track.title} fill className="object-cover" />
+                                  ) : (
+                                    <Music className="w-full h-full p-3 opacity-20" />
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-bold truncate text-sm">{track.title}</p>
+                                  <p className="text-xs text-muted-foreground truncate">{track.artist}</p>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </ScrollArea>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
               <p className="text-[10px] text-muted-foreground italic">
-                Tip: Copy the track ID from a Spotify Share link.
+                Tip: Search for a song or paste a Spotify Track ID.
               </p>
             </div>
           </CardContent>

@@ -3,8 +3,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Sun, Flame, Sparkles, Volume2, VolumeX } from 'lucide-react';
+import { Sun, Flame, Sparkles, Volume2, VolumeX, Music } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 interface HeaderProps {
   title?: string;
@@ -30,7 +31,37 @@ export const Header: React.FC<HeaderProps> = ({
   const isCandle = theme === 'candle-light';
   const [isPlayingVoice, setIsPlayingVoice] = useState(false);
   const [voiceProgress, setVoiceProgress] = useState(0);
+  const [isMusicExpanded, setIsMusicExpanded] = useState(true);
+  const [trackImageUrl, setTrackImageUrl] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const resetTimer = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      setIsMusicExpanded(false);
+    }, 5000);
+  };
+
+  useEffect(() => {
+    resetTimer();
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (spotifyTrackId) {
+      fetch(`https://open.spotify.com/oembed?url=spotify:track:${spotifyTrackId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.thumbnail_url) {
+            setTrackImageUrl(data.thumbnail_url);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [spotifyTrackId]);
 
   const scrollToJourney = () => {
     document.getElementById('journey')?.scrollIntoView({ behavior: 'smooth' });
@@ -38,6 +69,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   const toggleVoiceNote = () => {
     if (!audioRef.current) return;
+    resetTimer();
     if (isPlayingVoice) {
       audioRef.current.pause();
       setIsPlayingVoice(false);
@@ -78,24 +110,51 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="relative min-h-screen flex flex-col z-10">
       {/* Fixed Controls Bar (Top Right) */}
-      <div className="fixed top-4 right-4 sm:right-8 z-[150] flex flex-row items-start gap-4 pointer-events-none">
-        {/* Spotify Box - Positioned beside (to the left of) the buttons group */}
+      <div 
+        className="fixed top-4 right-4 sm:right-8 z-[150] flex flex-row items-start gap-4"
+        onMouseEnter={resetTimer}
+        onMouseMove={resetTimer}
+      >
+        {/* Spotify Hub */}
         {spotifyTrackId && (
-          <div className="hidden sm:block w-[300px] md:w-[350px] bg-white/10 dark:bg-black/10 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md border border-white/10 transition-all duration-500 animate-in fade-in slide-in-from-top-4 pointer-events-auto">
-            <iframe 
-              src={`https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0`} 
-              width="100%" 
-              height="80" 
-              frameBorder="0" 
-              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-              loading="lazy"
-              className="rounded-none border-none"
-            />
+          <div 
+            className={cn(
+              "hidden sm:flex transition-all duration-500 ease-in-out items-center",
+              isMusicExpanded ? "w-[300px] md:w-[350px] opacity-100" : "w-12 h-12 opacity-100"
+            )}
+            onMouseEnter={() => setIsMusicExpanded(true)}
+          >
+            {isMusicExpanded ? (
+              <div className="w-full h-20 bg-white/10 dark:bg-black/10 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md border border-white/10 animate-in fade-in slide-in-from-top-4">
+                <iframe 
+                  src={`https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0`} 
+                  width="100%" 
+                  height="80" 
+                  frameBorder="0" 
+                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                  loading="lazy"
+                  className="rounded-none border-none"
+                />
+              </div>
+            ) : (
+              <button 
+                className="w-12 h-12 rounded-full overflow-hidden shadow-xl border-2 border-white/20 transition-transform hover:scale-110 active:scale-95 bg-muted relative"
+                onClick={() => setIsMusicExpanded(true)}
+              >
+                {trackImageUrl ? (
+                  <Image src={trackImageUrl} alt="Track Art" fill className="object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-primary/20">
+                    <Music className="h-5 w-5 text-primary" />
+                  </div>
+                )}
+              </button>
+            )}
           </div>
         )}
 
         {/* Buttons Group - Stacked vertically */}
-        <div className="flex flex-col gap-3 pointer-events-auto pt-1">
+        <div className="flex flex-col gap-3 pt-1">
           {onToggleTheme && (
             <Button
               onClick={onToggleTheme}

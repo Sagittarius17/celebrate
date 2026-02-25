@@ -16,7 +16,7 @@ interface SpotifyPlayerProps {
 
 export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ 
   trackId, 
-  durationMs = 180000, // Default 3 mins if unknown
+  durationMs = 180000, 
   isEnabled, 
   onToggle 
 }) => {
@@ -49,7 +49,7 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
       progressInterval.current = setInterval(() => {
         setCurrentTimeMs(prev => {
           const next = prev + stepMs;
-          if (next >= durationMs) return 0; // Loop or stop
+          if (next >= durationMs) return 0;
           return next;
         });
       }, stepMs);
@@ -80,10 +80,8 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
 
   return (
     <div className="relative group/spotify-hub flex items-center justify-end p-2 -m-2">
-      {/* Invisible bridge to maintain hover between button and hub */}
       <div className="absolute right-0 top-0 bottom-0 w-[400px] h-full pointer-events-none group-hover/spotify-hub:pointer-events-auto z-40" />
 
-      {/* Animated Spotify Box Hub */}
       <div className="absolute right-[calc(100%-12px)] top-1/2 -translate-y-1/2 w-0 overflow-hidden transition-all duration-500 ease-in-out group-hover/spotify-hub:w-[320px] z-50 pointer-events-none group-hover/spotify-hub:pointer-events-auto">
         <div className="w-[320px] bg-[#191414] rounded-2xl shadow-2xl border border-white/10 overflow-hidden ml-auto relative">
           <div className="h-[80px] relative">
@@ -103,34 +101,29 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
                 <div className="flex items-center justify-between">
                   <div className="flex flex-col min-w-0">
                     <span className="text-sm font-bold truncate">{metadata?.title || 'Celebration Track'}</span>
-                    <span className="text-xs text-white/40 truncate">{metadata?.artist || 'Spotify Soundtrack'}</span>
+                    <span className="text-xs text-white/40 truncate">{metadata?.artist || 'Spotify Artist'}</span>
                   </div>
                   <Music2 className="h-5 w-5 text-orange-500 opacity-60" />
-                </div>
-                <div className="flex items-center gap-2 mt-1">
-                   <span className="text-[10px] font-mono text-orange-500 font-bold">{formatTime(currentTimeMs)}</span>
-                   <div className="h-0.5 flex-1 bg-white/10 rounded-full overflow-hidden">
-                      <div className="h-full bg-orange-500 transition-all duration-300" style={{ width: `${progress}%` }} />
-                   </div>
-                   <span className="text-[10px] font-mono text-white/40">-{formatTime(timeRemaining)}</span>
                 </div>
               </div>
             )}
             
-            {/* Contextual time-sync overlay when playing */}
-            {isEnabled && (
-              <div className="absolute bottom-2 right-4 pointer-events-none z-50">
-                <div className="bg-black/80 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/10 flex items-center gap-1.5 shadow-lg">
-                  <div className="w-1 h-1 bg-orange-500 rounded-full animate-pulse" />
-                  <span className="text-[10px] font-mono text-orange-500 font-bold">-{formatTime(timeRemaining)}</span>
+            <div className="absolute bottom-1 left-4 right-4 z-50">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono text-orange-500 font-bold">{formatTime(currentTimeMs)}</span>
+                <div className="h-0.5 flex-1 bg-white/10 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-orange-500 transition-all duration-300" 
+                    style={{ width: `${progress}%` }} 
+                  />
                 </div>
+                <span className="text-[10px] font-mono text-white/40">-{formatTime(timeRemaining)}</span>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Control Button with Progress Ring */}
       <div className="relative w-14 h-14 flex items-center justify-center z-[60]">
         <svg className="absolute inset-0 w-full h-full -rotate-90 transform pointer-events-none" viewBox="0 0 60 60">
           <circle cx="30" cy="30" r={radius} stroke="currentColor" strokeWidth="3" fill="transparent" className="text-orange-500/10" />

@@ -16,7 +16,7 @@ const TrackSchema = z.object({
   artist: z.string().describe('The artist of the song.'),
   trackId: z.string().describe('The Spotify Track ID (e.g., "4PTG3C64LUButARq9I9Uf8").'),
   imageUrl: z.string().optional().describe('A URL to the album artwork starting with https://i.scdn.co/image/ or https://image-cdn-ak.spotifycdn.com/image/'),
-  durationMs: z.number().optional().describe('The duration of the track in milliseconds.'),
+  durationMs: z.number().describe('The exact duration of the track in milliseconds.'),
 });
 
 const SearchSpotifyTracksInputSchema = z.object({
@@ -49,7 +49,7 @@ Instructions:
 3. Provide the correct Album Artwork URL. Use direct CDN links like:
    - https://i.scdn.co/image/<hash>
    - https://image-cdn-ak.spotifycdn.com/image/<hash>
-4. Provide the approximate DURATION in milliseconds (durationMs) for each track.
+4. CRITICAL: Provide the EXACT DURATION in milliseconds (durationMs) for each track. Do not guess; use standard metadata lengths for these songs.
 5. If you are unsure of a specific track's ID, prioritize the most popular/original version of the song which has stable metadata.
 6. If you cannot find a valid image URL for a song, omit the imageUrl field entirely.`,
 });

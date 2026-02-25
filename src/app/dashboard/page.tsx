@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -23,7 +24,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
-import { Plus, User, Key, ArrowRight, Gift, LogOut, Copy, Check, Type, Trash2, Edit2, Sun, Moon, Music, Share2, Search, Loader2 } from 'lucide-react';
+import { Plus, User, Key, ArrowRight, Gift, LogOut, Copy, Check, Type, Trash2, Edit2, Sun, Moon, Music, Share2, Search, Loader2, PlusCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -264,52 +265,66 @@ export default function Dashboard() {
           <Search className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Search for a Song</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4 pt-4">
-          <div className="flex gap-2">
-            <Input 
-              placeholder="Song name or artist..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSpotifySearch()}
-            />
-            <Button onClick={handleSpotifySearch} disabled={isSearching}>
+      <DialogContent className="sm:max-w-[450px] p-0 overflow-hidden rounded-3xl">
+        <div className="p-6 pb-0">
+          <DialogHeader>
+            <DialogTitle className="text-xl">Search for a Song</DialogTitle>
+          </DialogHeader>
+          <div className="flex gap-2 mt-4 relative">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input 
+                placeholder="Song name or artist..." 
+                className="pl-10 h-11 bg-muted/50 border-none rounded-2xl"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSpotifySearch()}
+              />
+            </div>
+            <Button onClick={handleSpotifySearch} disabled={isSearching} className="h-11 rounded-2xl px-6">
               {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : "Search"}
             </Button>
           </div>
-          <ScrollArea className="h-[300px] rounded-xl border p-2">
-            {searchResults.length === 0 && !isSearching ? (
-              <div className="text-center py-10 text-muted-foreground text-sm">
-                Try searching for your favorite track
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {searchResults.map((track) => (
-                  <button
-                    key={track.trackId}
-                    onClick={() => selectTrack(track, isNew)}
-                    className="w-full flex items-center gap-3 p-2 hover:bg-accent rounded-xl transition-colors text-left group"
-                  >
-                    <div className="w-12 h-12 bg-muted rounded-lg overflow-hidden shrink-0 relative flex items-center justify-center">
-                      {track.imageUrl && track.imageUrl.startsWith('http') ? (
-                        <Image src={track.imageUrl} alt="" fill className="object-cover" />
-                      ) : (
-                        <Music className="w-6 h-6 opacity-40" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold truncate text-sm">{track.title}</p>
-                      <p className="text-xs text-muted-foreground truncate">{track.artist}</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </ScrollArea>
         </div>
+        
+        <ScrollArea className="h-[400px] mt-4 px-2 pb-6">
+          {isSearching ? (
+            <div className="flex flex-col items-center justify-center py-20 gap-4">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">Finding the perfect tracks...</p>
+            </div>
+          ) : searchResults.length === 0 ? (
+            <div className="text-center py-20 text-muted-foreground">
+              <Music className="h-12 w-12 mx-auto mb-4 opacity-10" />
+              <p className="text-sm">Try searching for your favorite celebration track</p>
+            </div>
+          ) : (
+            <div className="space-y-1 px-2">
+              {searchResults.map((track) => (
+                <button
+                  key={track.trackId}
+                  onClick={() => selectTrack(track, isNew)}
+                  className="w-full flex items-center gap-4 p-3 hover:bg-muted/80 rounded-2xl transition-all text-left group"
+                >
+                  <div className="w-14 h-14 bg-muted rounded-xl overflow-hidden shrink-0 relative flex items-center justify-center shadow-sm">
+                    {track.imageUrl && track.imageUrl.startsWith('http') ? (
+                      <Image src={track.imageUrl} alt="" fill className="object-cover" />
+                    ) : (
+                      <Music className="w-6 h-6 opacity-30" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-foreground leading-tight truncate">{track.title}</p>
+                    <p className="text-sm text-muted-foreground truncate mt-0.5">Song • {track.artist}</p>
+                  </div>
+                  <div className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity pr-2">
+                    <PlusCircle className="h-6 w-6 text-primary" />
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
@@ -350,7 +365,7 @@ export default function Dashboard() {
                   <Plus className="h-6 w-6" />
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
+              <DialogContent className="sm:max-w-[425px] rounded-[2rem]">
                 <DialogHeader>
                   <DialogTitle>Create a New Surprise Page</DialogTitle>
                 </DialogHeader>
@@ -361,7 +376,7 @@ export default function Dashboard() {
                       value={newSurprise.occasion} 
                       onValueChange={(val) => setNewSurprise({...newSurprise, occasion: val})}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="rounded-xl h-12">
                         <SelectValue placeholder="Select" />
                       </SelectTrigger>
                       <SelectContent>
@@ -376,6 +391,7 @@ export default function Dashboard() {
                     <Input 
                       id="recipient" 
                       placeholder="e.g. Sarah Jones" 
+                      className="rounded-xl h-12"
                       value={newSurprise.recipientName}
                       onChange={(e) => setNewSurprise({...newSurprise, recipientName: e.target.value})}
                     />
@@ -385,6 +401,7 @@ export default function Dashboard() {
                     <Input 
                       id="title" 
                       placeholder="e.g. Happy 25th Birthday, Sarah!" 
+                      className="rounded-xl h-12"
                       value={newSurprise.title}
                       onChange={(e) => setNewSurprise({...newSurprise, title: e.target.value})}
                     />
@@ -397,13 +414,14 @@ export default function Dashboard() {
                       <Input 
                         id="spotify-id" 
                         placeholder="e.g. 4PTG3C64LUButARq9I9Uf8 or Spotify Link" 
+                        className="rounded-xl h-12"
                         value={newSurprise.spotifyTrackId}
                         onChange={(e) => setNewSurprise({...newSurprise, spotifyTrackId: extractSpotifyTrackId(e.target.value)})}
                       />
                       <SpotifySearchDialog isNew={true} />
                     </div>
                   </div>
-                  <div className="bg-muted/50 p-4 rounded-xl border border-dashed text-xs text-muted-foreground">
+                  <div className="bg-muted/50 p-4 rounded-xl border border-dashed text-xs text-muted-foreground mt-2">
                     <p className="flex items-center gap-2">
                       <Key className="h-3 w-3" /> A unique 10-character secret code will be generated automatically.
                     </p>
@@ -418,7 +436,7 @@ export default function Dashboard() {
         </div>
 
         <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[425px] rounded-[2rem]">
             <DialogHeader>
               <DialogTitle>Edit Surprise Details</DialogTitle>
             </DialogHeader>
@@ -430,7 +448,7 @@ export default function Dashboard() {
                     value={editingSurprise.occasion} 
                     onValueChange={(val) => setEditingSurprise({...editingSurprise, occasion: val})}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="rounded-xl h-12">
                       <SelectValue placeholder="Select" />
                     </SelectTrigger>
                     <SelectContent>
@@ -444,6 +462,7 @@ export default function Dashboard() {
                   <Label htmlFor="edit-recipient">Who is this for?</Label>
                   <Input 
                     id="edit-recipient" 
+                    className="rounded-xl h-12"
                     value={editingSurprise.recipientName}
                     onChange={(e) => setEditingSurprise({...editingSurprise, recipientName: e.target.value})}
                   />
@@ -452,6 +471,7 @@ export default function Dashboard() {
                   <Label htmlFor="edit-title">Page Title</Label>
                   <Input 
                     id="edit-title" 
+                    className="rounded-xl h-12"
                     value={editingSurprise.title}
                     onChange={(e) => setEditingSurprise({...editingSurprise, title: e.target.value})}
                   />
@@ -463,6 +483,7 @@ export default function Dashboard() {
                   <div className="flex gap-2">
                     <Input 
                       id="edit-spotify" 
+                      className="rounded-xl h-12"
                       value={editingSurprise.spotifyTrackId || ''}
                       onChange={(e) => setEditingSurprise({...editingSurprise, spotifyTrackId: extractSpotifyTrackId(e.target.value)})}
                     />
@@ -474,7 +495,7 @@ export default function Dashboard() {
                   <Input 
                     disabled
                     value={editingSurprise.accessCode}
-                    className="bg-muted"
+                    className="bg-muted rounded-xl h-12"
                   />
                 </div>
               </div>
@@ -522,7 +543,7 @@ export default function Dashboard() {
                       size="sm" 
                       className="h-10 w-10 p-0 rounded-full hover:bg-secondary/20"
                       onClick={() => copyAccessCode(surprise)}
-                      title="Copy Secret Code"
+                      title="Copy Secret Code Only"
                     >
                       {copiedCodeId === surprise.id ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                     </Button>

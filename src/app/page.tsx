@@ -1,11 +1,13 @@
+
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { useUser, useAuth } from '@/firebase';
+import { useUser, useAuth, useFirestore, setDocumentNonBlocking } from '@/firebase';
+import { doc } from 'firebase/firestore';
 import { initiateEmailSignIn, initiateEmailSignUp, resendVerificationEmail } from '@/firebase/non-blocking-login';
-import { Sparkles, Gift, Loader2, Mail, ArrowRight, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Gift, Loader2, Mail, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
@@ -16,6 +18,7 @@ import { useRouter } from 'next/navigation';
 export default function Home() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
+  const db = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
@@ -29,7 +32,18 @@ export default function Home() {
     
     setIsSubmitting(true);
     initiateEmailSignUp(auth, email, password)
-      .then(() => {
+      .then((credential) => {
+        // Save user info to Firestore
+        if (credential.user) {
+          const userRef = doc(db, 'users', credential.user.uid);
+          setDocumentNonBlocking(userRef, {
+            uid: credential.user.uid,
+            email: credential.user.email,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          }, { merge: true });
+        }
+
         setIsSubmitting(false);
         setVerificationSent(true);
         toast({
@@ -76,7 +90,6 @@ export default function Home() {
       })
       .catch((error: any) => {
         setIsSubmitting(false);
-        // Firebase error codes for non-existent users or bad passwords
         if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
           toast({
             variant: "destructive",
@@ -101,7 +114,6 @@ export default function Home() {
     }
   };
 
-  // Only allow dashboard access if the user is signed in, NOT anonymous, and VERIFIED
   const isFullyAuthenticated = user && !user.isAnonymous && user.emailVerified;
 
   return (

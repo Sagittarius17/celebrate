@@ -1,6 +1,37 @@
 
 {
   "entities": {
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Information about a registered user of the application.",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The unique identifier for the user (Firebase Auth UID)."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's registered email address."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the user account was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the user profile was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "uid",
+        "email",
+        "createdAt"
+      ]
+    },
     "CelebrationPage": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "CelebrationPage",
@@ -157,6 +188,10 @@
     ]
   },
   "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/backend/entities/UserProfile" },
+      "description": "User profile documents storing basic account information."
+    },
     "/celebrationPages/{celebrationPageId}": {
       "schema": { "$ref": "#/backend/entities/CelebrationPage" },
       "description": "Publicly accessible celebration pages (via code)."

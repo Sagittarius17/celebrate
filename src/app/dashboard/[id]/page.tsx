@@ -7,13 +7,14 @@ import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/no
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Copy, Check, Eye, EyeOff, Settings2, Key, Calendar, Sun, Moon, Plus, Share2 } from 'lucide-react';
+import { ArrowLeft, Copy, Check, Eye, EyeOff, Key, Calendar, Sun, Moon, Plus, Share2, Menu } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { EditorSidebar } from '@/components/dashboard/EditorSidebar';
 import { MemoryEditorList } from '@/components/dashboard/MemoryEditorList';
 import { LivePreviewFrame } from '@/components/dashboard/LivePreviewFrame';
 import { useDashboardTheme } from '../layout';
+import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 
 const slugify = (text: string) => {
   return text
@@ -153,117 +154,107 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
 
   const livePreviewUrl = getShareUrl();
 
-  const headerButtonStyle = "rounded-full h-12 w-12 p-0 flex items-center justify-center border-none bg-secondary hover:bg-secondary/80 text-secondary-foreground transition-all shadow-sm";
+  const headerButtonStyle = "rounded-full h-10 w-10 p-0 flex items-center justify-center border-none bg-secondary hover:bg-secondary/80 text-secondary-foreground transition-all shadow-sm";
 
   return (
-    <div className="p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
-        <div className="flex justify-between items-center">
-          <Link href="/dashboard">
-            <Button variant="ghost" className="rounded-full hover:bg-secondary/10 px-4 transition-all h-12">
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back
-            </Button>
-          </Link>
-          
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-secondary pl-6 pr-2 h-12 rounded-full border-none shadow-sm group" title="Secret Access Code">
-              <div className="flex items-center gap-3">
-                <Key className="h-5 w-5 text-secondary-foreground opacity-60" />
-                <span className="text-base font-bold text-secondary-foreground tracking-wider">{page.accessCode}</span>
+    <SidebarProvider>
+      <EditorSidebar 
+        page={page}
+        pageRef={pageRef}
+        db={db}
+        customQuote={customQuote}
+        setCustomQuote={setCustomQuote}
+        onSaveQuote={handleSaveFinalQuote}
+        isSavingQuote={isSavingQuote}
+      />
+      <SidebarInset>
+        <div className="flex flex-col min-h-screen">
+          {/* Top Navbar */}
+          <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <SidebarTrigger className="-ml-1" />
+            <div className="flex-1">
+               <h1 className="text-xl font-bold font-headline truncate max-w-[200px] md:max-w-md">{page.title}</h1>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <div className="hidden sm:flex items-center gap-2 bg-secondary pl-4 pr-1 h-10 rounded-full border-none shadow-sm group" title="Secret Access Code">
+                <div className="flex items-center gap-2">
+                  <Key className="h-4 w-4 text-secondary-foreground opacity-60" />
+                  <span className="text-sm font-bold text-secondary-foreground tracking-wider">{page.accessCode}</span>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 p-0 rounded-full hover:bg-white/20 ml-1"
+                  onClick={copyAccessCode}
+                >
+                  {isCodeCopied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                </Button>
               </div>
+
               <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-9 w-9 p-0 rounded-full hover:bg-white/20 ml-2"
-                onClick={copyAccessCode}
-                title="Copy Secret Code"
+                className={headerButtonStyle}
+                onClick={toggleTheme}
+                title={isDark ? "Light Mode" : "Dark Mode"}
               >
-                {isCodeCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                {isDark ? <Sun className="h-4 w-4 text-yellow-400" /> : <Moon className="h-4 w-4 text-slate-700" />}
+              </Button>
+
+              <Button 
+                className={headerButtonStyle}
+                onClick={copyShareLink} 
+                title="Copy Link"
+              >
+                {isCopied ? <Check className="h-4 w-4 text-green-500" /> : <Share2 className="h-4 w-4" />}
+              </Button>
+              
+              <Button 
+                className={`${headerButtonStyle} ${showLivePreview ? 'ring-2 ring-primary ring-offset-2' : ''}`}
+                onClick={() => setShowLivePreview(!showLivePreview)}
+                title={showLivePreview ? "Editor" : "Preview"}
+              >
+                {showLivePreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </Button>
             </div>
+          </header>
 
-            <Button 
-              className={headerButtonStyle}
-              onClick={toggleTheme}
-              title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
-            >
-              {isDark ? <Sun className="h-5 w-5 text-yellow-400" /> : <Moon className="h-5 w-5 text-slate-700" />}
-            </Button>
-
-            <Button 
-              className={headerButtonStyle}
-              onClick={copyShareLink} 
-              title="Share Surprise (Copy URL)"
-            >
-              {isCopied ? <Check className="h-5 w-5 text-green-500" /> : <Share2 className="h-5 w-5" />}
-            </Button>
-            
-            <Button 
-              className={`${headerButtonStyle} ${showLivePreview ? 'ring-2 ring-primary ring-offset-2' : ''}`}
-              onClick={() => setShowLivePreview(!showLivePreview)}
-              title={showLivePreview ? "Hide Preview" : "Show Preview"}
-            >
-              {showLivePreview ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-            </Button>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <h1 className="text-4xl font-headline font-bold">{page.title}</h1>
-          <p className="text-muted-foreground italic">Celebrating {page.recipientName} ({page.occasion})</p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1">
-            <h2 className="text-2xl font-bold flex items-center gap-2 mb-4">
-              <Settings2 className="h-6 w-6 text-primary" /> Customize
-            </h2>
-            <EditorSidebar 
-              page={page}
-              pageRef={pageRef}
-              db={db}
-              customQuote={customQuote}
-              setCustomQuote={setCustomQuote}
-              onSaveQuote={handleSaveFinalQuote}
-              isSavingQuote={isSavingQuote}
-            />
-          </div>
-
-          <div className="lg:col-span-2">
-            <div className="flex justify-between items-center mb-4">
-              <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-bold flex items-center gap-2">
-                  <Calendar className="h-6 w-6 text-primary" /> {showLivePreview ? "Miniature Preview" : "Memory Editor"}
-                </h2>
-                {!isEventsLoading && events && (
-                  <Badge variant="secondary" className="rounded-full px-4 py-1.5 font-bold bg-primary text-primary-foreground border-none shadow-sm">
-                    {events.length} {events.length === 1 ? 'Card' : 'Cards'}
-                  </Badge>
+          <main className="flex-1 overflow-y-auto p-6 lg:p-10">
+            <div className="max-w-5xl mx-auto space-y-8">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <h2 className="text-2xl font-bold flex items-center gap-2">
+                    <Calendar className="h-6 w-6 text-primary" /> {showLivePreview ? "Miniature Preview" : "Memory Editor"}
+                  </h2>
+                  {!isEventsLoading && events && (
+                    <Badge variant="secondary" className="rounded-full px-4 py-1.5 font-bold bg-primary text-primary-foreground border-none shadow-sm">
+                      {events.length} {events.length === 1 ? 'Card' : 'Cards'}
+                    </Badge>
+                  )}
+                </div>
+                {!showLivePreview && (
+                  <Button 
+                    onClick={handleAddEmptyCard} 
+                    className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 font-bold"
+                  >
+                    <Plus className="mr-2 h-4 w-4" /> Add Card
+                  </Button>
                 )}
               </div>
-              {!showLivePreview && (
-                <Button 
-                  onClick={handleAddEmptyCard} 
-                  className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 font-bold"
-                >
-                  <Plus className="mr-2 h-4 w-4" /> Add Card
-                </Button>
+              
+              {showLivePreview ? (
+                <LivePreviewFrame url={livePreviewUrl} />
+              ) : (
+                <MemoryEditorList 
+                  events={events} 
+                  isLoading={isEventsLoading} 
+                  pageId={id} 
+                  db={db} 
+                />
               )}
             </div>
-            
-            {showLivePreview ? (
-              <LivePreviewFrame url={livePreviewUrl} />
-            ) : (
-              <MemoryEditorList 
-                events={events} 
-                isLoading={isEventsLoading} 
-                pageId={id} 
-                db={db} 
-              />
-            )}
-          </div>
+          </main>
         </div>
-      </div>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

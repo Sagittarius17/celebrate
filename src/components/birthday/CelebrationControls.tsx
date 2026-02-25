@@ -62,13 +62,11 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
     }
   }, [spotifyTrackId]);
 
-  // Non-passive wheel listener to block background scroll and adjust volume
   useEffect(() => {
     const el = volumeAreaRef.current;
     if (!el) return;
 
     const handleWheel = (e: WheelEvent) => {
-      // Always prevent default if hovering to satisfy "background scroll wont work"
       e.preventDefault(); 
       const delta = e.deltaY > 0 ? -0.05 : 0.05;
       setVoiceVolume(v => {
@@ -117,9 +115,11 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
     };
   }, [voiceNoteUrl]);
 
-  const radius = 27;
+  const radius = 28;
   const circumference = 2 * Math.PI * radius;
   const voiceStrokeDashoffset = circumference - (voiceProgress / 100) * circumference;
+
+  const standardButtonStyle = "rounded-full w-16 h-16 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-2xl flex items-center justify-center";
 
   return (
     <div 
@@ -133,7 +133,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
         className="hidden"
       />
 
-      {/* Spotify Section - At Top */}
+      {/* Spotify Section */}
       {spotifyTrackId && isRevealed && (
         <div className="relative flex flex-col items-center">
           <button 
@@ -169,36 +169,36 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
         </div>
       )}
 
-      {/* Theme Toggle - Middle */}
+      {/* Theme Toggle */}
       {onToggleTheme && (
         <Button
           onClick={onToggleTheme}
           variant="ghost"
-          className="rounded-full w-14 h-14 p-0 bg-white/10 hover:bg-white/20 backdrop-blur-md border-none text-foreground shadow-2xl transition-all hover:scale-110 active:scale-90"
+          className={cn(standardButtonStyle, "bg-white/10 hover:bg-white/20 text-foreground")}
           title={isCandle ? "Return to Light Mode" : "Enter Candle-Light Mode"}
         >
-          {isCandle ? <Sun className="h-6 w-6 text-yellow-400" /> : <Flame className="h-6 w-6 text-orange-500 fill-orange-500" />}
+          {isCandle ? <Sun className="h-7 w-7 text-yellow-400" /> : <Flame className="h-7 w-7 text-orange-500 fill-orange-500" />}
         </Button>
       )}
 
-      {/* Fireworks - Middle */}
+      {/* Fireworks */}
       {onToggleFireworks && isCandle && (
         <Button
           onClick={onToggleFireworks}
           variant="ghost"
           className={cn(
-            "rounded-full w-14 h-14 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-2xl",
+            standardButtonStyle,
             showFireworks 
               ? "bg-primary text-primary-foreground" 
               : "bg-white/10 text-foreground hover:bg-white/20"
           )}
           title={showFireworks ? "Disable Fireworks" : "Enable Fireworks"}
         >
-          <Sparkles className={cn("h-6 w-6", showFireworks && "animate-pulse")} />
+          <Sparkles className={cn("h-7 w-7", showFireworks && "animate-pulse")} />
         </Button>
       )}
 
-      {/* Voice Note Section - At Bottom */}
+      {/* Voice Note Section */}
       {voiceNoteUrl && (
         <div 
           ref={volumeAreaRef}
@@ -206,7 +206,6 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
           onMouseEnter={() => setIsHoveringVoice(true)}
           onMouseLeave={() => setIsHoveringVoice(false)}
         >
-          {/* Volume Bar - Shown to the left on hover */}
           <div className={cn(
             "absolute right-[calc(100%+16px)] top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 transition-all duration-300 transform",
             isHoveringVoice ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4 pointer-events-none"
@@ -222,13 +221,12 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
             </span>
           </div>
 
-          {/* Voice Play Button */}
           <div className="relative w-16 h-16 flex items-center justify-center">
-            <svg className="absolute inset-0 w-full h-full -rotate-90 transform pointer-events-none" viewBox="0 0 60 60">
-              <circle cx="30" cy="30" r={radius} stroke="currentColor" strokeWidth="4" fill="transparent" className="text-orange-500/10" />
+            <svg className="absolute inset-0 w-full h-full -rotate-90 transform pointer-events-none" viewBox="0 0 64 64">
+              <circle cx="32" cy="32" r={radius} stroke="currentColor" strokeWidth="4" fill="transparent" className="text-orange-500/10" />
               <circle
-                cx="30"
-                cy="30"
+                cx="32"
+                cy="32"
                 r={radius}
                 stroke="currentColor"
                 strokeWidth="4"
@@ -243,18 +241,19 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
               onClick={toggleVoiceNote}
               variant="ghost"
               className={cn(
-                "rounded-full w-14 h-14 p-0 shadow-lg bg-orange-500 text-black border-none transition-all hover:scale-105 active:scale-95 z-10",
-                !isPlayingVoice && "bg-orange-500/90"
+                standardButtonStyle,
+                "w-14 h-14 bg-orange-500 text-black border-none hover:bg-orange-600 z-10",
+                !isPlayingVoice && "bg-orange-500"
               )}
               title={isPlayingVoice ? "Pause Message" : "Play Creator Message"}
             >
               {isPlayingVoice ? (
                 <div className="flex gap-1 items-center justify-center">
-                  <div className="w-1.5 h-4 bg-black rounded-full" />
-                  <div className="w-1.5 h-4 bg-black rounded-full" />
+                  <div className="w-2 h-5 bg-black rounded-full" />
+                  <div className="w-2 h-5 bg-black rounded-full" />
                 </div>
               ) : (
-                <Play className="h-6 w-6 fill-black ml-1" />
+                <Play className="h-7 w-7 fill-black ml-1" />
               )}
             </Button>
           </div>

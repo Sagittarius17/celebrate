@@ -106,5 +106,10 @@ export default {
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [
+    require('tailwindcss-animate'),
+    ({ addVariant }: any) => {
+      addVariant('candle-light', '.candle-light &')
+    },
+  ],
 } satisfies Config;

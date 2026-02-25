@@ -120,7 +120,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
   const circumference = 2 * Math.PI * radius;
   const voiceStrokeDashoffset = circumference - (voiceProgress / 100) * circumference;
 
-  const standardButtonStyle = "rounded-full w-16 h-16 p-0 backdrop-blur-md border-none transition-all hover:scale-105 active:scale-95 shadow-2xl flex items-center justify-center shrink-0";
+  const standardButtonStyle = "rounded-full w-14 h-14 p-0 backdrop-blur-md border-none transition-all hover:scale-105 active:scale-95 shadow-2xl flex items-center justify-center shrink-0";
 
   return (
     <div 
@@ -139,7 +139,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
         <div className="relative flex flex-col items-center">
           <button 
             className={cn(
-              "relative w-16 h-16 rounded-full overflow-hidden shadow-2xl border-2 transition-all duration-300 bg-black shrink-0 flex items-center justify-center cursor-pointer",
+              "relative w-14 h-14 rounded-full overflow-hidden shadow-2xl border-2 transition-all duration-300 bg-black shrink-0 flex items-center justify-center cursor-pointer",
               isMusicExpanded ? "border-primary scale-105" : "border-white/20 hover:scale-105"
             )}
             onClick={() => setIsMusicExpanded(!isMusicExpanded)}
@@ -178,7 +178,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
           className={cn(standardButtonStyle, "bg-white/10 hover:bg-white/20 text-foreground")}
           title={isCandle ? "Return to Light Mode" : "Enter Candle-Light Mode"}
         >
-          {isCandle ? <Sun className="h-7 w-7 text-yellow-400" /> : <Flame className="h-7 w-7 text-orange-500 fill-orange-500" />}
+          {isCandle ? <Sun className="h-6 w-6 text-yellow-400" /> : <Flame className="h-6 w-6 text-orange-500 fill-orange-500" />}
         </Button>
       )}
 
@@ -195,15 +195,15 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
           )}
           title={showFireworks ? "Disable Fireworks" : "Enable Fireworks"}
         >
-          <Sparkles className={cn("h-7 w-7", showFireworks && "animate-pulse")} />
+          <Sparkles className={cn("h-6 w-6", showFireworks && "animate-pulse")} />
         </Button>
       )}
 
-      {/* Voice Note Section */}
+      {/* Voice Note Section - Kept at w-16 h-16 as requested */}
       {voiceNoteUrl && (
         <div 
           ref={volumeAreaRef}
-          className="relative flex items-center gap-4"
+          className="relative flex items-center gap-4 mt-1"
           onMouseEnter={() => setIsHoveringVoice(true)}
           onMouseLeave={() => setIsHoveringVoice(false)}
         >

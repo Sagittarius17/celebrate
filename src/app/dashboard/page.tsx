@@ -60,6 +60,18 @@ const slugify = (text: string) => {
     .replace(/^-+|-+$/g, '');
 };
 
+const extractSpotifyTrackId = (input: string) => {
+  if (!input) return '';
+  // Check for standard URL
+  const urlMatch = input.match(/\/track\/([a-zA-Z0-9]{22})/);
+  if (urlMatch && urlMatch[1]) return urlMatch[1];
+  // Check for URI
+  const uriMatch = input.match(/spotify:track:([a-zA-Z0-9]{22})/);
+  if (uriMatch && uriMatch[1]) return uriMatch[1];
+  // Otherwise return trimmed input
+  return input.trim();
+};
+
 export default function Dashboard() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
@@ -379,14 +391,14 @@ export default function Dashboard() {
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="spotify-id" className="flex items-center gap-2">
-                      <Music className="h-4 w-4 text-primary" /> Spotify Track ID
+                      <Music className="h-4 w-4 text-primary" /> Spotify Track ID or URL
                     </Label>
                     <div className="flex gap-2">
                       <Input 
                         id="spotify-id" 
-                        placeholder="e.g. 4PTG3C64LUButARq9I9Uf8" 
+                        placeholder="e.g. 4PTG3C64LUButARq9I9Uf8 or Spotify Link" 
                         value={newSurprise.spotifyTrackId}
-                        onChange={(e) => setNewSurprise({...newSurprise, spotifyTrackId: e.target.value})}
+                        onChange={(e) => setNewSurprise({...newSurprise, spotifyTrackId: extractSpotifyTrackId(e.target.value)})}
                       />
                       <SpotifySearchDialog isNew={true} />
                     </div>
@@ -446,13 +458,13 @@ export default function Dashboard() {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="edit-spotify" className="flex items-center gap-2">
-                    <Music className="h-4 w-4 text-primary" /> Spotify Track ID
+                    <Music className="h-4 w-4 text-primary" /> Spotify Track ID or URL
                   </Label>
                   <div className="flex gap-2">
                     <Input 
                       id="edit-spotify" 
                       value={editingSurprise.spotifyTrackId || ''}
-                      onChange={(e) => setEditingSurprise({...editingSurprise, spotifyTrackId: e.target.value})}
+                      onChange={(e) => setEditingSurprise({...editingSurprise, spotifyTrackId: extractSpotifyTrackId(e.target.value)})}
                     />
                     <SpotifySearchDialog isNew={false} />
                   </div>

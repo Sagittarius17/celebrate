@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -46,6 +45,15 @@ interface EditorSidebarProps {
   onSaveQuote: () => void;
   isSavingQuote: boolean;
 }
+
+const extractSpotifyTrackId = (input: string) => {
+  if (!input) return '';
+  const urlMatch = input.match(/\/track\/([a-zA-Z0-9]{22})/);
+  if (urlMatch && urlMatch[1]) return urlMatch[1];
+  const uriMatch = input.match(/spotify:track:([a-zA-Z0-9]{22})/);
+  if (uriMatch && uriMatch[1]) return uriMatch[1];
+  return input.trim();
+};
 
 export function EditorSidebar({
   page,
@@ -131,7 +139,6 @@ export function EditorSidebar({
           const base64String = reader.result as string;
           setAudioUrl(base64String);
           
-          // Use the final recorded time from the ref to avoid stale closure
           const finalDuration = recordingTimeRef.current;
           setRecordedDuration(finalDuration);
 
@@ -182,7 +189,6 @@ export function EditorSidebar({
     toast({ title: "Voice Note Removed" });
   };
 
-  // Get duration to display - check local state first then the saved page data
   const displayDuration = recordedDuration !== null ? recordedDuration : page.voiceNoteDuration;
 
   return (
@@ -246,13 +252,13 @@ export function EditorSidebar({
           </CardHeader>
           <CardContent className="space-y-4 pt-6">
             <div className="space-y-2">
-              <Label htmlFor="spotify">Spotify Track ID</Label>
+              <Label htmlFor="spotify">Spotify Track ID or URL</Label>
               <div className="flex gap-2">
                 <Input 
                   id="spotify"
-                  placeholder="e.g. 4PTG3C64LUButARq9I9Uf8" 
+                  placeholder="e.g. 4PTG3C64LUButARq9I9Uf8 or Spotify Link" 
                   value={page.spotifyTrackId || ''}
-                  onChange={(e) => handleUpdatePage({ spotifyTrackId: e.target.value })}
+                  onChange={(e) => handleUpdatePage({ spotifyTrackId: extractSpotifyTrackId(e.target.value) })}
                 />
                 <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
                   <DialogTrigger asChild>
@@ -310,7 +316,7 @@ export function EditorSidebar({
                 </Dialog>
               </div>
               <p className="text-[10px] text-muted-foreground italic">
-                Tip: Search for a song or paste a Spotify Track ID.
+                Tip: Search for a song or paste a Spotify Track URL.
               </p>
             </div>
           </CardContent>

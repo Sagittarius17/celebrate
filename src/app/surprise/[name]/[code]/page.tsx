@@ -161,6 +161,7 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
   }, [events, page?.layout]);
 
   const handleRevealClick = () => {
+    if (isOpening) return;
     setIsOpening(true);
     setTimeout(() => {
       setIsRevealed(true);
@@ -297,27 +298,30 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
 
       {!isRevealed && (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 px-4">
-          <div className="flex flex-col items-center gap-12 animate-fade-in w-full max-w-sm">
-            <div className="relative">
-              <div className="absolute -inset-4 bg-primary/20 blur-3xl rounded-full animate-pulse" />
-              <div className="relative bg-white p-10 rounded-[3rem] shadow-2xl border-b-8 border-primary/20 transition-all duration-500 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-6 animate-fade-in w-full max-w-sm">
+            <div className="relative group cursor-pointer" onClick={handleRevealClick}>
+              <div className="absolute -inset-4 bg-primary/20 blur-3xl rounded-full animate-pulse group-hover:bg-primary/30 transition-all" />
+              <div className="relative bg-white p-10 rounded-[3rem] shadow-2xl border-b-8 border-primary/20 transition-all duration-500 flex flex-col items-center justify-center hover:scale-105 active:scale-95">
                 {isOpening ? (
-                  <PackageOpen className="h-20 w-20 text-primary animate-in zoom-in-50 duration-300" />
+                  <div className="flex flex-col items-center gap-4">
+                    <PackageOpen className="h-24 w-24 text-primary animate-in zoom-in-50 duration-300" />
+                    <p className="text-primary font-bold animate-pulse">Opening...</p>
+                  </div>
                 ) : (
-                  <Gift className="h-20 w-20 text-primary animate-bounce" />
+                  <div className="flex flex-col items-center gap-4">
+                    <Gift className="h-24 w-24 text-primary animate-bounce" />
+                    <p className="text-slate-500 font-bold tracking-wide uppercase text-xs opacity-60 group-hover:opacity-100 transition-opacity">Click to Reveal</p>
+                  </div>
                 )}
               </div>
             </div>
             
-            <Button 
-              size="lg" 
-              onClick={handleRevealClick}
-              disabled={isOpening}
-              className="rounded-full px-12 py-8 text-xl font-bold shadow-xl hover:scale-105 transition-all bg-primary text-primary-foreground border-none w-full"
-            >
-              {isOpening ? <Loader2 className="mr-3 h-6 w-6 animate-spin" /> : <Sparkles className="mr-3 h-6 w-6" />}
-              {isOpening ? "Opening Surprise..." : "Reveal My Surprise"}
-            </Button>
+            {isOpening && (
+              <div className="flex items-center gap-2 text-primary font-bold animate-fade-in">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span>Preparing your journey...</span>
+              </div>
+            )}
           </div>
         </div>
       )}

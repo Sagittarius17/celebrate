@@ -122,6 +122,7 @@ export default function Dashboard() {
 
   const [newSurprise, setNewSurprise] = useState({
     recipientName: '',
+    creatorName: '',
     title: '',
     occasion: 'Birthday',
     spotifyTrackId: '',
@@ -157,7 +158,6 @@ export default function Dashboard() {
       id: pageId,
       accessCode: accessCode,
       font: 'Playfair Display',
-      creatorName: user.displayName || 'Creator',
       ownerId: user.uid,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -165,7 +165,7 @@ export default function Dashboard() {
 
     addDocumentNonBlocking(collection(db, 'celebrationPages'), payload);
     setIsCreateOpen(false);
-    setNewSurprise({ recipientName: '', title: '', occasion: 'Birthday', spotifyTrackId: '', spotifyTrackDurationMs: 180000 });
+    setNewSurprise({ recipientName: '', creatorName: '', title: '', occasion: 'Birthday', spotifyTrackId: '', spotifyTrackDurationMs: 180000 });
     toast({ title: "Surprise Created", description: "Your unique access code is: " + accessCode });
   };
 
@@ -284,8 +284,12 @@ export default function Dashboard() {
                     </Select>
                   </div>
                   <div className="grid gap-2">
-                    <Label>Who is this for?</Label>
+                    <Label>Who is this for? (Recipient)</Label>
                     <Input placeholder="e.g. Sarah Jones" className="rounded-xl h-12" value={newSurprise.recipientName} onChange={(e) => setNewSurprise({...newSurprise, recipientName: e.target.value})} />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Your Name (Creator)</Label>
+                    <Input placeholder="e.g. David" className="rounded-xl h-12" value={newSurprise.creatorName} onChange={(e) => setNewSurprise({...newSurprise, creatorName: e.target.value})} />
                   </div>
                   <div className="grid gap-2">
                     <Label>Page Title</Label>
@@ -298,7 +302,7 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button className="w-full rounded-full h-12" onClick={handleCreate} disabled={!newSurprise.recipientName || !newSurprise.title}>Create Surprise</Button>
+                  <Button className="w-full rounded-full h-12" onClick={handleCreate} disabled={!newSurprise.recipientName || !newSurprise.title || !newSurprise.creatorName}>Create Surprise</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -318,8 +322,12 @@ export default function Dashboard() {
                   </Select>
                 </div>
                 <div className="grid gap-2">
-                  <Label>Who is this for?</Label>
+                  <Label>Who is this for? (Recipient)</Label>
                   <Input className="rounded-xl h-12" value={editingSurprise.recipientName} onChange={(e) => setEditingSurprise({...editingSurprise, recipientName: e.target.value})} />
+                </div>
+                <div className="grid gap-2">
+                  <Label>Your Name (Creator)</Label>
+                  <Input className="rounded-xl h-12" value={editingSurprise.creatorName || ''} onChange={(e) => setEditingSurprise({...editingSurprise, creatorName: e.target.value})} />
                 </div>
                 <div className="grid gap-2">
                   <Label>Page Title</Label>

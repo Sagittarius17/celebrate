@@ -6,6 +6,7 @@ import { collection, doc, query, orderBy } from 'firebase/firestore';
 import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, Copy, Check, Eye, EyeOff, Settings2, Key, Calendar, Sun, Moon, Plus, Share2 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
@@ -35,6 +36,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
   const [isSavingQuote, setIsSavingQuote] = useState(false);
   const [customQuote, setCustomQuote] = useState('');
   const [showLivePreview, setShowLivePreview] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
 
   const pageRef = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -42,6 +44,18 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
   }, [db, user, id]);
 
   const { data: page, isLoading: isPageLoading } = useDoc(pageRef);
+
+  // Simulated progress loader
+  useEffect(() => {
+    if (isPageLoading) {
+      const interval = setInterval(() => {
+        setLoadingProgress(prev => (prev >= 90 ? 90 : prev + 10));
+      }, 100);
+      return () => clearInterval(interval);
+    } else {
+      setLoadingProgress(100);
+    }
+  }, [isPageLoading]);
 
   useEffect(() => {
     if (page?.finalQuote) {
@@ -125,7 +139,15 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
     setTimeout(() => setIsCodeCopied(false), 2000);
   };
 
-  if (isPageLoading) return <div className="p-20 text-center">Loading editor...</div>;
+  if (isPageLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-8 space-y-6 max-w-sm mx-auto">
+        <h2 className="text-2xl font-bold font-headline">Unlocking Editor...</h2>
+        <Progress value={loadingProgress} className="h-2 w-full" />
+      </div>
+    );
+  }
+
   if (!page) return <div className="p-20 text-center">Surprise not found.</div>;
   if (page.ownerId !== user?.uid) return <div className="p-20 text-center text-destructive">Unauthorized access.</div>;
 

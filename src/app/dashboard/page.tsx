@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase, useAuth } from '@/firebase';
 import { collection, doc, query, where } from 'firebase/firestore';
 import { addDocumentNonBlocking, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -22,6 +22,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Progress } from '@/components/ui/progress';
 import { Plus, User, Key, ArrowRight, Gift, LogOut, Copy, Check, Type, Trash2, Edit2, Sun, Moon, Music, Share2, Search, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -71,6 +72,8 @@ export default function Dashboard() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [copiedCodeId, setCopiedCodeId] = useState<string | null>(null);
   const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+
   const [newSurprise, setNewSurprise] = useState({
     recipientName: '',
     title: '',
@@ -85,12 +88,24 @@ export default function Dashboard() {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
+  // Simulated progress loader
+  useEffect(() => {
+    if (isUserLoading) {
+      const interval = setInterval(() => {
+        setLoadingProgress(prev => (prev >= 90 ? 90 : prev + 10));
+      }, 100);
+      return () => clearInterval(interval);
+    } else {
+      setLoadingProgress(100);
+    }
+  }, [isUserLoading]);
+
   const celebrationPagesQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
     return query(collection(db, 'celebrationPages'), where('ownerId', '==', user.uid));
   }, [db, user]);
 
-  const { data: surprises, isLoading } = useCollection(celebrationPagesQuery);
+  const { data: surprises, isLoading: isSurprisesLoading } = useCollection(celebrationPagesQuery);
 
   const handleSpotifySearch = async () => {
     if (!searchQuery.trim()) return;
@@ -198,7 +213,14 @@ export default function Dashboard() {
     setTimeout(() => setCopiedLinkId(null), 2000);
   };
 
-  if (isUserLoading) return <div className="p-20 text-center">Loading...</div>;
+  if (isUserLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-8 space-y-6 max-w-sm mx-auto">
+        <h2 className="text-2xl font-bold font-headline">Checking account...</h2>
+        <Progress value={loadingProgress} className="h-2 w-full" />
+      </div>
+    );
+  }
 
   if (!user || user.isAnonymous) {
     return (
@@ -451,8 +473,11 @@ export default function Dashboard() {
           </DialogContent>
         </Dialog>
 
-        {isLoading ? (
-          <div className="text-center py-20">Loading your surprises...</div>
+        {isSurprisesLoading ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+             <p className="text-muted-foreground font-medium">Loading your surprises...</p>
+             <Progress value={loadingProgress} className="h-1 w-full max-w-xs" />
+          </div>
         ) : surprises?.length === 0 ? (
           <Card className="p-12 text-center border-dashed bg-card/50 rounded-[3rem]">
             <Gift className="mx-auto h-12 w-12 text-muted-foreground mb-4" />

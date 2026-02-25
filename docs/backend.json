@@ -142,9 +142,17 @@
           "type": "string",
           "description": "A concise title for the event card."
         },
+        "titleFont": {
+          "type": "string",
+          "description": "Custom font for this memory's title."
+        },
         "message": {
           "type": "string",
           "description": "The celebratory message or a memorable quote associated with this event."
+        },
+        "messageFont": {
+          "type": "string",
+          "description": "Custom font for this memory's message."
         },
         "order": {
           "type": "number",

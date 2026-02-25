@@ -12,9 +12,19 @@ interface EventCardProps {
   message: string;
   imageUrl: string;
   icon?: React.ReactNode;
+  titleFont?: string;
+  messageFont?: string;
 }
 
-export const EventCard: React.FC<EventCardProps> = ({ title, date, message, imageUrl, icon }) => {
+export const EventCard: React.FC<EventCardProps> = ({ 
+  title, 
+  date, 
+  message, 
+  imageUrl, 
+  icon,
+  titleFont,
+  messageFont
+}) => {
   return (
     <Card className="overflow-hidden border-none shadow-2xl transition-all duration-1000 hover:scale-[1.02] bg-white/80 dark:bg-card/80 candle-light:bg-black/60 candle-light:shadow-[0_0_40px_rgba(255,215,0,0.15)] backdrop-blur-md rounded-[1.5rem] sm:rounded-[2rem]">
       <div className="relative h-48 sm:h-64 w-full">
@@ -38,11 +48,17 @@ export const EventCard: React.FC<EventCardProps> = ({ title, date, message, imag
               {icon}
             </div>
           )}
-          <h3 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight line-clamp-2">
+          <h3 
+            className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight line-clamp-2"
+            style={{ fontFamily: titleFont || 'inherit' }}
+          >
             {title}
           </h3>
         </div>
-        <p className="text-muted-foreground leading-relaxed text-base sm:text-lg italic">
+        <p 
+          className="text-muted-foreground leading-relaxed text-base sm:text-lg italic"
+          style={{ fontFamily: messageFont || 'inherit' }}
+        >
           "{message}"
         </p>
       </CardContent>

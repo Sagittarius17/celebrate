@@ -20,9 +20,20 @@ interface MemoryEditorListProps {
   isLoading: boolean;
   pageId: string;
   db: Firestore | null;
+  onFieldFocus?: (eventId: string, field: 'title' | 'message') => void;
 }
 
-function MemoryItemEditor({ event, pageId, db }: { event: any, pageId: string, db: Firestore | null }) {
+function MemoryItemEditor({ 
+  event, 
+  pageId, 
+  db, 
+  onFieldFocus 
+}: { 
+  event: any, 
+  pageId: string, 
+  db: Firestore | null,
+  onFieldFocus?: (eventId: string, field: 'title' | 'message') => void;
+}) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -127,8 +138,10 @@ function MemoryItemEditor({ event, pageId, db }: { event: any, pageId: string, d
             <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Memory Title</Label>
             <Input 
               placeholder="e.g. First Steps" 
+              style={{ fontFamily: event.titleFont || 'inherit' }}
               className="border-none bg-transparent p-0 h-auto text-2xl font-headline font-bold focus-visible:ring-0 shadow-none"
               value={event.title}
+              onFocus={() => onFieldFocus?.(event.id, 'title')}
               onChange={(e) => handleUpdateEvent({ title: e.target.value })}
             />
           </div>
@@ -137,8 +150,10 @@ function MemoryItemEditor({ event, pageId, db }: { event: any, pageId: string, d
             <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">The Story</Label>
             <Textarea 
               placeholder="Tell the story of this moment..." 
+              style={{ fontFamily: event.messageFont || 'inherit' }}
               className="border-none bg-transparent p-0 h-auto min-h-[60px] italic text-muted-foreground focus-visible:ring-0 shadow-none resize-none leading-relaxed"
               value={event.message}
+              onFocus={() => onFieldFocus?.(event.id, 'message')}
               onChange={(e) => handleUpdateEvent({ message: e.target.value })}
             />
           </div>
@@ -148,7 +163,7 @@ function MemoryItemEditor({ event, pageId, db }: { event: any, pageId: string, d
   );
 }
 
-export function MemoryEditorList({ events, isLoading, pageId, db }: MemoryEditorListProps) {
+export function MemoryEditorList({ events, isLoading, pageId, db, onFieldFocus }: MemoryEditorListProps) {
   if (isLoading) return <div className="text-center py-10">Loading events...</div>;
   if (!events || events.length === 0) {
     return (
@@ -163,7 +178,13 @@ export function MemoryEditorList({ events, isLoading, pageId, db }: MemoryEditor
     <ScrollArea className="h-[calc(100vh-320px)] -mx-4 px-4">
       <div className="space-y-8 py-8 px-4">
         {events.map((event) => (
-          <MemoryItemEditor key={event.id} event={event} pageId={pageId} db={db} />
+          <MemoryItemEditor 
+            key={event.id} 
+            event={event} 
+            pageId={pageId} 
+            db={db} 
+            onFieldFocus={onFieldFocus}
+          />
         ))}
       </div>
     </ScrollArea>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, use, useRef, useEffect } from 'react';
@@ -25,6 +26,11 @@ const slugify = (text: string) => {
     .replace(/^-+|-+$/g, '');
 };
 
+export type SelectionContext = {
+  eventId: string;
+  field: 'title' | 'message' | null;
+} | null;
+
 export default function SurpriseEditor({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { user } = useUser();
@@ -38,6 +44,7 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
   const [customQuote, setCustomQuote] = useState('');
   const [showLivePreview, setShowLivePreview] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
+  const [selectionContext, setSelectionContext] = useState<SelectionContext>(null);
 
   const pageRef = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -166,6 +173,8 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
         setCustomQuote={setCustomQuote}
         onSaveQuote={handleSaveFinalQuote}
         isSavingQuote={isSavingQuote}
+        selectionContext={selectionContext}
+        events={events}
       />
       <SidebarInset>
         <div className="flex flex-col min-h-screen">
@@ -248,7 +257,8 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
                   events={events} 
                   isLoading={isEventsLoading} 
                   pageId={id} 
-                  db={db} 
+                  db={db}
+                  onFieldFocus={(eventId, field) => setSelectionContext({ eventId, field })}
                 />
               )}
             </div>

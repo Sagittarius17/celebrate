@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -24,9 +25,10 @@ import {
   Clock, 
   Music2, 
   Settings2,
-  ArrowLeft
+  ArrowLeft,
+  Type
 } from 'lucide-react';
-import { DocumentReference, Firestore } from 'firebase/firestore';
+import { DocumentReference, Firestore, doc } from 'firebase/firestore';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
@@ -40,6 +42,7 @@ import {
   SidebarGroupContent,
   SidebarSeparator,
 } from '@/components/ui/sidebar';
+import { SelectionContext } from '@/app/dashboard/[id]/page';
 
 const FONTS = [
   "Playfair Display", "PT Sans", "Montserrat", "Lora", "Quicksand", 
@@ -57,6 +60,8 @@ interface EditorSidebarProps {
   setCustomQuote: (val: string) => void;
   onSaveQuote: () => void;
   isSavingQuote: boolean;
+  selectionContext: SelectionContext;
+  events: any[] | null;
 }
 
 const extractSpotifyTrackId = (input: string) => {
@@ -114,7 +119,9 @@ export function EditorSidebar({
   customQuote,
   setCustomQuote,
   onSaveQuote,
-  isSavingQuote
+  isSavingQuote,
+  selectionContext,
+  events
 }: EditorSidebarProps) {
   const { toast } = useToast();
   const [isRecording, setIsRecording] = useState(false);
@@ -143,6 +150,17 @@ export function EditorSidebar({
     if (!db || !pageRef) return;
     updateDocumentNonBlocking(pageRef, {
       ...updates,
+      updatedAt: new Date().toISOString()
+    });
+  };
+
+  const handleUpdateEventFont = (font: string) => {
+    if (!db || !selectionContext || !selectionContext.eventId) return;
+    const eventRef = doc(db, 'celebrationPages', page.id, 'birthdayEvents', selectionContext.eventId);
+    const fieldName = selectionContext.field === 'title' ? 'titleFont' : 'messageFont';
+    
+    updateDocumentNonBlocking(eventRef, {
+      [fieldName]: font,
       updatedAt: new Date().toISOString()
     });
   };
@@ -213,6 +231,11 @@ export function EditorSidebar({
 
   const displayDuration = recordedDuration !== null ? recordedDuration : page.voiceNoteDuration;
 
+  const selectedEvent = events?.find(e => e.id === selectionContext?.eventId);
+  const currentFont = selectionContext?.field === 'title' 
+    ? (selectedEvent?.titleFont || 'inherit') 
+    : (selectedEvent?.messageFont || 'inherit');
+
   return (
     <Sidebar className="border-r">
       <SidebarHeader className="p-6">
@@ -228,6 +251,37 @@ export function EditorSidebar({
       <SidebarSeparator />
 
       <SidebarContent>
+        {selectionContext && selectionContext.field && (
+          <SidebarGroup className="animate-in slide-in-from-top-2">
+            <SidebarGroupLabel className="px-6 mb-2 flex items-center gap-2 text-primary font-bold">
+              <Type className="h-3 w-3" /> Selected Text Style
+            </SidebarGroupLabel>
+            <SidebarGroupContent className="px-6 space-y-4">
+               <div className="p-3 bg-primary/5 rounded-2xl border border-dashed border-primary/20 space-y-3">
+                 <p className="text-[10px] font-bold uppercase tracking-widest opacity-60">
+                   Styling {selectionContext.field === 'title' ? 'Memory Title' : 'Story Content'}
+                 </p>
+                 <div className="space-y-2">
+                  <Label className="text-[10px] font-bold">Change Font</Label>
+                  <Select value={currentFont} onValueChange={handleUpdateEventFont}>
+                    <SelectTrigger className="w-full h-10 rounded-xl bg-background border-none shadow-sm">
+                      <SelectValue placeholder="Inherit Page Font" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="inherit">Use Default Page Font</SelectItem>
+                      {FONTS.map(font => (
+                        <SelectItem key={font} value={font}>
+                          <span style={{ fontFamily: font }} className="text-sm">{font}</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                 </div>
+               </div>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
         <SidebarGroup>
           <SidebarGroupLabel className="px-6 mb-2">Layout & Style</SidebarGroupLabel>
           <SidebarGroupContent className="px-6 space-y-4">
@@ -239,7 +293,7 @@ export function EditorSidebar({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">Choose Font</Label>
+              <Label className="text-xs">Global Font</Label>
               <Select value={page.font || 'Playfair Display'} onValueChange={(val) => handleUpdatePage({ font: val })}>
                 <SelectTrigger className="w-full h-10 rounded-xl"><SelectValue placeholder="Select font" /></SelectTrigger>
                 <SelectContent>{FONTS.map(font => <SelectItem key={font} value={font}><span style={{ fontFamily: font }} className="text-sm">{font}</span></SelectItem>)}</SelectContent>

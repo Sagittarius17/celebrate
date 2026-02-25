@@ -77,10 +77,10 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="relative min-h-screen flex flex-col z-10">
-      {/* Sticky Top Bar for Spotify */}
-      <div className="sticky top-0 w-full z-50 flex justify-center p-4 pointer-events-none">
+      {/* Fixed Top Bar for Spotify */}
+      <div className="fixed top-0 left-0 right-0 z-[150] flex justify-center p-4 pointer-events-none">
         {spotifyTrackId && (
-          <div className="w-full max-w-md bg-black/5 dark:bg-white/5 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md border border-white/10 transition-all duration-500 animate-in fade-in slide-in-from-top-4 pointer-events-auto">
+          <div className="w-full max-w-md bg-white/10 dark:bg-black/10 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md border border-white/10 transition-all duration-500 animate-in fade-in slide-in-from-top-4 pointer-events-auto">
             <iframe 
               src={`https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0`} 
               width="100%" 
@@ -95,7 +95,7 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Fixed Controls (Right side) */}
-      <div className="fixed top-24 right-8 z-[100] flex flex-col gap-4 items-center">
+      <div className="fixed top-28 right-8 z-[100] flex flex-col gap-4 items-center">
         {onToggleTheme && (
           <Button
             onClick={onToggleTheme}

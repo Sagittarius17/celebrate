@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -15,11 +14,11 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
-import { LayoutTemplate, Quote, Save, Music, Mic, Square, Play, Trash2, Clock } from 'lucide-react';
+import { LayoutTemplate, Quote, Save, Music, Mic, Square, Play, Trash2, Clock, Music2 } from 'lucide-react';
 import { DocumentReference, Firestore } from 'firebase/firestore';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { useToast } from '@/hooks/use-toast';
-import { SpotifySearch } from '@/components/dashboard/SpotifySearch';
+import Image from 'next/image';
 
 const FONTS = [
   "Playfair Display", "PT Sans", "Montserrat", "Lora", "Quicksand", 
@@ -47,6 +46,45 @@ const extractSpotifyTrackId = (input: string) => {
   if (uriMatch && uriMatch[1]) return uriMatch[1];
   return input.trim();
 };
+
+function TrackMetadataDisplay({ trackId }: { trackId: string }) {
+  const [metadata, setMetadata] = useState<{ title: string; artist: string; imageUrl: string } | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (trackId && trackId.length === 22) {
+      setLoading(true);
+      fetch(`https://open.spotify.com/oembed?url=spotify:track:${trackId}`)
+        .then(r => r.json())
+        .then(data => {
+          setMetadata({
+            title: data.title,
+            artist: data.author_name,
+            imageUrl: data.thumbnail_url
+          });
+        })
+        .catch(() => setMetadata(null))
+        .finally(() => setLoading(false));
+    } else {
+      setMetadata(null);
+    }
+  }, [trackId]);
+
+  if (loading) return <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground"><Music2 className="h-3 w-3 animate-pulse" /> Loading track info...</div>;
+  if (!metadata) return null;
+
+  return (
+    <div className="flex items-center gap-3 mt-4 p-2 bg-muted/30 rounded-xl border border-dashed animate-in fade-in slide-in-from-top-2">
+      <div className="relative h-10 w-10 shrink-0 rounded-lg overflow-hidden bg-muted">
+        <Image src={metadata.imageUrl} alt="" fill className="object-cover" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-bold truncate leading-tight">{metadata.title}</p>
+        <p className="text-xs text-muted-foreground truncate">{metadata.artist}</p>
+      </div>
+    </div>
+  );
+}
 
 export function EditorSidebar({
   page,
@@ -190,10 +228,8 @@ export function EditorSidebar({
           <CardContent className="space-y-4 pt-6">
             <div className="space-y-2">
               <Label>Spotify Track ID or URL</Label>
-              <div className="flex gap-2">
-                <Input placeholder="e.g. Track ID or Spotify Link" value={page.spotifyTrackId || ''} onChange={(e) => handleUpdatePage({ spotifyTrackId: extractSpotifyTrackId(e.target.value) })} />
-                <SpotifySearch onSelect={(track) => handleUpdatePage({ spotifyTrackId: track.trackId, spotifyTrackDurationMs: track.durationMs || 180000 })} />
-              </div>
+              <Input placeholder="Paste Link or ID here" value={page.spotifyTrackId || ''} onChange={(e) => handleUpdatePage({ spotifyTrackId: extractSpotifyTrackId(e.target.value) })} />
+              <TrackMetadataDisplay trackId={page.spotifyTrackId || ''} />
             </div>
           </CardContent>
         </Card>

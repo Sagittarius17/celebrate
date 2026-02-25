@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -23,12 +22,12 @@ import {
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
-import { Plus, User, Key, ArrowRight, Gift, LogOut, Copy, Check, Type, Trash2, Edit2, Sun, Moon, Music, Share2 } from 'lucide-react';
+import { Plus, User, Key, ArrowRight, Gift, LogOut, Copy, Check, Type, Trash2, Edit2, Sun, Moon, Music, Share2, Music2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useDashboardTheme } from './layout';
-import { SpotifySearch } from '@/components/dashboard/SpotifySearch';
+import Image from 'next/image';
 
 const OCCASIONS = [
   "Birthday",
@@ -67,6 +66,45 @@ const extractSpotifyTrackId = (input: string) => {
   if (uriMatch && uriMatch[1]) return uriMatch[1];
   return input.trim();
 };
+
+function TrackMetadataDisplay({ trackId }: { trackId: string }) {
+  const [metadata, setMetadata] = useState<{ title: string; artist: string; imageUrl: string } | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (trackId && trackId.length === 22) {
+      setLoading(true);
+      fetch(`https://open.spotify.com/oembed?url=spotify:track:${trackId}`)
+        .then(r => r.json())
+        .then(data => {
+          setMetadata({
+            title: data.title,
+            artist: data.author_name,
+            imageUrl: data.thumbnail_url
+          });
+        })
+        .catch(() => setMetadata(null))
+        .finally(() => setLoading(false));
+    } else {
+      setMetadata(null);
+    }
+  }, [trackId]);
+
+  if (loading) return <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground"><Music2 className="h-3 w-3 animate-pulse" /> Loading track info...</div>;
+  if (!metadata) return null;
+
+  return (
+    <div className="flex items-center gap-3 mt-4 p-2 bg-muted/30 rounded-xl border border-dashed animate-in fade-in slide-in-from-top-2">
+      <div className="relative h-10 w-10 shrink-0 rounded-lg overflow-hidden bg-muted">
+        <Image src={metadata.imageUrl} alt="" fill className="object-cover" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-bold truncate leading-tight">{metadata.title}</p>
+        <p className="text-xs text-muted-foreground truncate">{metadata.artist}</p>
+      </div>
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const { user, isUserLoading } = useUser();
@@ -255,10 +293,8 @@ export default function Dashboard() {
                   </div>
                   <div className="grid gap-2">
                     <Label className="flex items-center gap-2"><Music className="h-4 w-4 text-primary" /> Spotify Track ID or URL</Label>
-                    <div className="flex gap-2">
-                      <Input placeholder="e.g. Track ID or Spotify Link" className="rounded-xl h-12" value={newSurprise.spotifyTrackId} onChange={(e) => setNewSurprise({...newSurprise, spotifyTrackId: extractSpotifyTrackId(e.target.value)})} />
-                      <SpotifySearch onSelect={(track) => setNewSurprise({...newSurprise, spotifyTrackId: track.trackId, spotifyTrackDurationMs: track.durationMs || 180000 })} />
-                    </div>
+                    <Input placeholder="Paste Link or ID here" className="rounded-xl h-12" value={newSurprise.spotifyTrackId} onChange={(e) => setNewSurprise({...newSurprise, spotifyTrackId: extractSpotifyTrackId(e.target.value)})} />
+                    <TrackMetadataDisplay trackId={newSurprise.spotifyTrackId} />
                   </div>
                 </div>
                 <DialogFooter>
@@ -291,10 +327,8 @@ export default function Dashboard() {
                 </div>
                 <div className="grid gap-2">
                   <Label className="flex items-center gap-2"><Music className="h-4 w-4 text-primary" /> Spotify Track ID or URL</Label>
-                  <div className="flex gap-2">
-                    <Input className="rounded-xl h-12" value={editingSurprise.spotifyTrackId || ''} onChange={(e) => setEditingSurprise({...editingSurprise, spotifyTrackId: extractSpotifyTrackId(e.target.value)})} />
-                    <SpotifySearch onSelect={(track) => setEditingSurprise({...editingSurprise, spotifyTrackId: track.trackId, spotifyTrackDurationMs: track.durationMs || 180000 })} />
-                  </div>
+                  <Input className="rounded-xl h-12" value={editingSurprise.spotifyTrackId || ''} onChange={(e) => setEditingSurprise({...editingSurprise, spotifyTrackId: extractSpotifyTrackId(e.target.value)})} />
+                  <TrackMetadataDisplay trackId={editingSurprise.spotifyTrackId || ''} />
                 </div>
               </div>
             )}

@@ -65,6 +65,7 @@ export function EditorSidebar({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const recordingTimeRef = useRef(0);
 
   // Spotify Search State
   const [searchQuery, setSearchQuery] = useState('');
@@ -130,8 +131,8 @@ export function EditorSidebar({
           const base64String = reader.result as string;
           setAudioUrl(base64String);
           
-          // Use the final recorded time
-          const finalDuration = recordingTime;
+          // Use the final recorded time from the ref to avoid stale closure
+          const finalDuration = recordingTimeRef.current;
           setRecordedDuration(finalDuration);
 
           handleUpdatePage({ 
@@ -145,9 +146,11 @@ export function EditorSidebar({
       mediaRecorder.start();
       setIsRecording(true);
       setRecordingTime(0);
+      recordingTimeRef.current = 0;
       setRecordedDuration(null);
       timerRef.current = setInterval(() => {
-        setRecordingTime((prev) => prev + 1);
+        recordingTimeRef.current += 1;
+        setRecordingTime(recordingTimeRef.current);
       }, 1000);
     } catch (err) {
       toast({ 

@@ -31,7 +31,7 @@ export const Header: React.FC<HeaderProps> = ({
   const isCandle = theme === 'candle-light';
   const [isPlayingVoice, setIsPlayingVoice] = useState(false);
   const [voiceProgress, setVoiceProgress] = useState(0);
-  const [isMusicExpanded, setIsMusicExpanded] = useState(true);
+  const [isMusicExpanded, setIsMusicExpanded] = useState(false);
   const [trackImageUrl, setTrackImageUrl] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -147,10 +147,10 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             </div>
 
-            {/* Spotify Button (Fixed in the vertical stack) */}
+            {/* Spotify Toggle Button */}
             <button 
               className={cn(
-                "w-12 h-12 rounded-full overflow-hidden shadow-xl border-2 transition-all duration-300 bg-muted shrink-0 flex items-center justify-center",
+                "relative w-12 h-12 rounded-full overflow-hidden shadow-xl border-2 transition-all duration-300 bg-muted shrink-0 flex items-center justify-center",
                 isMusicExpanded ? "border-primary scale-110" : "border-white/20 hover:scale-110"
               )}
               onClick={() => setIsMusicExpanded(!isMusicExpanded)}

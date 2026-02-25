@@ -254,7 +254,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
                   <div className="w-2 h-6 bg-black rounded-full" />
                 </div>
               ) : (
-                <Play className="h-8 w-8 fill-black ml-1" />
+                <Play className="h-10 w-10 fill-black ml-1" />
               )}
             </Button>
           </div>

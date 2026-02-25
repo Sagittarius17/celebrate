@@ -36,19 +36,32 @@ export const Header: React.FC<HeaderProps> = ({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const resetTimer = () => {
+  // Auto-minimize logic
+  const startMinimizeTimer = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
       setIsMusicExpanded(false);
     }, 5000);
   };
 
+  const clearMinimizeTimer = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+  };
+
   useEffect(() => {
-    resetTimer();
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
+    // Start initial timer
+    startMinimizeTimer();
+    return () => clearMinimizeTimer();
   }, []);
+
+  const handleContainerMouseEnter = () => {
+    clearMinimizeTimer();
+    setIsMusicExpanded(true);
+  };
+
+  const handleContainerMouseLeave = () => {
+    startMinimizeTimer();
+  };
 
   useEffect(() => {
     if (spotifyTrackId) {
@@ -69,7 +82,6 @@ export const Header: React.FC<HeaderProps> = ({
 
   const toggleVoiceNote = () => {
     if (!audioRef.current) return;
-    resetTimer();
     if (isPlayingVoice) {
       audioRef.current.pause();
       setIsPlayingVoice(false);
@@ -112,44 +124,50 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Fixed Controls Bar (Top Right) */}
       <div 
         className="fixed top-4 right-4 sm:right-8 z-[150] flex flex-row items-start gap-4"
-        onMouseEnter={resetTimer}
-        onMouseMove={resetTimer}
+        onMouseEnter={handleContainerMouseEnter}
+        onMouseLeave={handleContainerMouseLeave}
+        onMouseMove={handleContainerMouseEnter} // Reset timer on move
       >
         {/* Spotify Hub */}
         {spotifyTrackId && (
           <div 
             className={cn(
-              "hidden sm:flex transition-all duration-500 ease-in-out items-center",
-              isMusicExpanded ? "w-[300px] md:w-[350px] opacity-100" : "w-12 h-12 opacity-100"
+              "hidden sm:flex relative transition-all duration-500 ease-in-out items-center justify-end",
+              isMusicExpanded ? "w-[300px] md:w-[350px]" : "w-12 h-12"
             )}
-            onMouseEnter={() => setIsMusicExpanded(true)}
           >
-            {isMusicExpanded ? (
-              <div className="w-full h-20 bg-white/10 dark:bg-black/10 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md border border-white/10 animate-in fade-in slide-in-from-top-4">
-                <iframe 
-                  src={`https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0`} 
-                  width="100%" 
-                  height="80" 
-                  frameBorder="0" 
-                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-                  loading="lazy"
-                  className="rounded-none border-none"
-                />
-              </div>
-            ) : (
-              <button 
-                className="w-12 h-12 rounded-full overflow-hidden shadow-xl border-2 border-white/20 transition-transform hover:scale-110 active:scale-95 bg-muted relative"
-                onClick={() => setIsMusicExpanded(true)}
-              >
-                {trackImageUrl ? (
-                  <Image src={trackImageUrl} alt="Track Art" fill className="object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-primary/20">
-                    <Music className="h-5 w-5 text-primary" />
-                  </div>
-                )}
-              </button>
-            )}
+            {/* The actual iframe box (Persistent to prevent pausing) */}
+            <div className={cn(
+              "absolute right-0 w-[300px] md:w-[350px] h-20 bg-white/10 dark:bg-black/20 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md border border-white/10 transition-all duration-500",
+              isMusicExpanded ? "opacity-100 scale-100 translate-x-0" : "opacity-0 scale-90 translate-x-4 pointer-events-none"
+            )}>
+              <iframe 
+                src={`https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0`} 
+                width="100%" 
+                height="80" 
+                frameBorder="0" 
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                loading="lazy"
+                className="rounded-none border-none"
+              />
+            </div>
+
+            {/* Minimized Circle Button */}
+            <button 
+              className={cn(
+                "absolute right-0 w-12 h-12 rounded-full overflow-hidden shadow-xl border-2 border-white/20 transition-all duration-500 bg-muted shrink-0",
+                !isMusicExpanded ? "opacity-100 scale-100" : "opacity-0 scale-75 pointer-events-none"
+              )}
+              onClick={() => setIsMusicExpanded(true)}
+            >
+              {trackImageUrl ? (
+                <Image src={trackImageUrl} alt="Track Art" fill className="object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-primary/20">
+                  <Music className="h-5 w-5 text-primary" />
+                </div>
+              )}
+            </button>
           </div>
         )}
 

@@ -15,19 +15,11 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
-} from '@/components/ui/dialog';
-import { LayoutTemplate, Quote, Save, Music, Mic, Square, Play, Trash2, Search, Loader2, Clock, PlusCircle } from 'lucide-react';
+import { LayoutTemplate, Quote, Save, Music, Mic, Square, Play, Trash2, Clock } from 'lucide-react';
 import { DocumentReference, Firestore } from 'firebase/firestore';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { useToast } from '@/hooks/use-toast';
-import { searchSpotifyTracks } from '@/ai/flows/search-spotify-tracks-flow';
-import Image from 'next/image';
+import { SpotifySearch } from '@/components/dashboard/SpotifySearch';
 
 const FONTS = [
   "Playfair Display", "PT Sans", "Montserrat", "Lora", "Quicksand", 
@@ -76,12 +68,6 @@ export function EditorSidebar({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const recordingTimeRef = useRef(0);
 
-  // Spotify Search State
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -102,26 +88,6 @@ export function EditorSidebar({
     });
   };
 
-  const handleSpotifySearch = async () => {
-    if (!searchQuery.trim()) return;
-    setIsSearching(true);
-    setSearchResults([]);
-    try {
-      const { tracks } = await searchSpotifyTracks({ query: searchQuery });
-      setSearchResults(tracks);
-    } catch (error) {
-      toast({ variant: "destructive", title: "Search Failed", description: "AI could not find tracks." });
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  const selectTrack = (track: any) => {
-    handleUpdatePage({ spotifyTrackId: track.trackId });
-    setIsSearchOpen(false);
-    toast({ title: "Track Selected", description: `${track.title} by ${track.artist}` });
-  };
-
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -140,15 +106,13 @@ export function EditorSidebar({
         reader.onloadend = () => {
           const base64String = reader.result as string;
           setAudioUrl(base64String);
-          
           const finalDuration = recordingTimeRef.current;
           setRecordedDuration(finalDuration);
-
           handleUpdatePage({ 
             voiceNoteDataUri: base64String,
             voiceNoteDuration: finalDuration
           });
-          toast({ title: "Voice Note Recorded", description: "Your message has been saved." });
+          toast({ title: "Voice Note Recorded" });
         };
       };
 
@@ -165,7 +129,7 @@ export function EditorSidebar({
       toast({ 
         variant: "destructive", 
         title: "Microphone Error", 
-        description: "Could not access your microphone. Please check permissions." 
+        description: "Could not access microphone." 
       });
     }
   };
@@ -184,10 +148,7 @@ export function EditorSidebar({
   const deleteVoiceNote = () => {
     setAudioUrl(null);
     setRecordedDuration(null);
-    handleUpdatePage({ 
-      voiceNoteDataUri: null,
-      voiceNoteDuration: null 
-    });
+    handleUpdatePage({ voiceNoteDataUri: null, voiceNoteDuration: null });
     toast({ title: "Voice Note Removed" });
   };
 
@@ -205,42 +166,16 @@ export function EditorSidebar({
           <CardContent className="space-y-4 pt-6">
             <div className="space-y-2">
               <Label>Choose Layout</Label>
-              <Select 
-                value={page.layout || 'Timeline'} 
-                onValueChange={(val) => {
-                  handleUpdatePage({ layout: val });
-                  toast({ title: "Layout Updated", description: `Switched to ${val} view.` });
-                }}
-              >
-                <SelectTrigger className="w-full h-10 rounded-xl border border-input bg-background">
-                  <SelectValue placeholder="Select layout" />
-                </SelectTrigger>
-                <SelectContent>
-                  {LAYOUTS.map(layout => (
-                    <SelectItem key={layout} value={layout}>{layout}</SelectItem>
-                  ))}
-                </SelectContent>
+              <Select value={page.layout || 'Timeline'} onValueChange={(val) => handleUpdatePage({ layout: val })}>
+                <SelectTrigger className="w-full h-10 rounded-xl"><SelectValue placeholder="Select layout" /></SelectTrigger>
+                <SelectContent>{LAYOUTS.map(layout => <SelectItem key={layout} value={layout}>{layout}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
               <Label>Choose Font</Label>
-              <Select 
-                value={page.font || 'Playfair Display'} 
-                onValueChange={(val) => {
-                  handleUpdatePage({ font: val });
-                  toast({ title: "Font Updated", description: `Style changed to ${val}.` });
-                }}
-              >
-                <SelectTrigger className="w-full h-10 rounded-xl border border-input bg-background">
-                  <SelectValue placeholder="Select font" />
-                </SelectTrigger>
-                <SelectContent>
-                  {FONTS.map(font => (
-                    <SelectItem key={font} value={font}>
-                      <span style={{ fontFamily: font }} className="text-lg">{font}</span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
+              <Select value={page.font || 'Playfair Display'} onValueChange={(val) => handleUpdatePage({ font: val })}>
+                <SelectTrigger className="w-full h-10 rounded-xl"><SelectValue placeholder="Select font" /></SelectTrigger>
+                <SelectContent>{FONTS.map(font => <SelectItem key={font} value={font}><span style={{ fontFamily: font }} className="text-lg">{font}</span></SelectItem>)}</SelectContent>
               </Select>
             </div>
           </CardContent>
@@ -254,86 +189,11 @@ export function EditorSidebar({
           </CardHeader>
           <CardContent className="space-y-4 pt-6">
             <div className="space-y-2">
-              <Label htmlFor="spotify">Spotify Track ID or URL</Label>
+              <Label>Spotify Track ID or URL</Label>
               <div className="flex gap-2">
-                <Input 
-                  id="spotify"
-                  placeholder="e.g. 4PTG3C64LUButARq9I9Uf8 or Spotify Link" 
-                  value={page.spotifyTrackId || ''}
-                  onChange={(e) => handleUpdatePage({ spotifyTrackId: extractSpotifyTrackId(e.target.value) })}
-                />
-                <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="icon" className="shrink-0 rounded-xl">
-                      <Search className="h-4 w-4" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[450px] p-0 overflow-hidden rounded-3xl">
-                    <div className="p-6 pb-0">
-                      <DialogHeader>
-                        <DialogTitle className="text-xl">Search for a Song</DialogTitle>
-                      </DialogHeader>
-                      <div className="flex gap-2 mt-4 relative">
-                        <div className="relative flex-1">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                          <Input 
-                            placeholder="Song name or artist..." 
-                            className="pl-10 h-11 bg-muted/50 border-none rounded-2xl"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSpotifySearch()}
-                          />
-                        </div>
-                        <Button onClick={handleSpotifySearch} disabled={isSearching} className="h-11 rounded-2xl px-6">
-                          {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : "Search"}
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <ScrollArea className="h-[400px] mt-4 px-2 pb-6">
-                      {isSearching ? (
-                        <div className="flex flex-col items-center justify-center py-20 gap-4">
-                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                          <p className="text-sm text-muted-foreground">Finding the perfect tracks...</p>
-                        </div>
-                      ) : searchResults.length === 0 ? (
-                        <div className="text-center py-20 text-muted-foreground">
-                          <Music className="h-12 w-12 mx-auto mb-4 opacity-10" />
-                          <p className="text-sm">Try searching for your favorite celebration track</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-1 px-2">
-                          {searchResults.map((track) => (
-                            <button
-                              key={track.trackId}
-                              onClick={() => selectTrack(track)}
-                              className="w-full flex items-center gap-4 p-3 hover:bg-muted/80 rounded-2xl transition-all text-left group"
-                            >
-                              <div className="w-14 h-14 bg-muted rounded-xl overflow-hidden shrink-0 relative flex items-center justify-center shadow-sm">
-                                {track.imageUrl ? (
-                                  <Image src={track.imageUrl} alt={track.title} fill className="object-cover" />
-                                ) : (
-                                  <Music className="w-6 h-6 opacity-30" />
-                                )}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="font-bold text-foreground leading-tight truncate">{track.title}</p>
-                                <p className="text-sm text-muted-foreground truncate mt-0.5">Song • {track.artist}</p>
-                              </div>
-                              <div className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity pr-2">
-                                <PlusCircle className="h-6 w-6 text-primary" />
-                              </div>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </ScrollArea>
-                  </DialogContent>
-                </Dialog>
+                <Input placeholder="e.g. Track ID or Spotify Link" value={page.spotifyTrackId || ''} onChange={(e) => handleUpdatePage({ spotifyTrackId: extractSpotifyTrackId(e.target.value) })} />
+                <SpotifySearch onSelect={(track) => handleUpdatePage({ spotifyTrackId: track.trackId })} />
               </div>
-              <p className="text-[10px] text-muted-foreground italic">
-                Tip: Search for a song or paste a Spotify Track URL.
-              </p>
             </div>
           </CardContent>
         </Card>
@@ -347,51 +207,28 @@ export function EditorSidebar({
           <CardContent className="space-y-4 pt-6">
             <div className="flex flex-col gap-3">
               {!isRecording ? (
-                <Button 
-                  onClick={startRecording} 
-                  variant="outline" 
-                  className="w-full rounded-full border-dashed border-orange-200 hover:bg-orange-50 hover:border-orange-300 h-12"
-                >
-                  <Mic className="mr-2 h-4 w-4 text-orange-500" /> 
-                  {audioUrl ? "Record New Message" : "Record Voice Note"}
+                <Button onClick={startRecording} variant="outline" className="w-full rounded-full border-dashed border-orange-200 h-12">
+                  <Mic className="mr-2 h-4 w-4 text-orange-500" /> {audioUrl ? "Record New Message" : "Record Voice Note"}
                 </Button>
               ) : (
-                <Button 
-                  onClick={stopRecording} 
-                  variant="destructive" 
-                  className="w-full rounded-full animate-pulse h-12 relative overflow-hidden"
-                >
-                  <div className="flex items-center justify-center gap-3">
-                    <Square className="h-4 w-4" /> 
-                    <span>Stop Recording</span>
-                    <span className="bg-white/20 px-2 py-0.5 rounded text-xs font-mono">
-                      {formatTime(recordingTime)}
-                    </span>
-                  </div>
+                <Button onClick={stopRecording} variant="destructive" className="w-full rounded-full animate-pulse h-12">
+                  <Square className="mr-2 h-4 w-4" /> Stop Recording ({formatTime(recordingTime)})
                 </Button>
               )}
-
               {audioUrl && !isRecording && (
                 <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-2xl border border-dashed">
                   <div className="flex-1 flex flex-col gap-1 pl-1">
                     <div className="flex items-center gap-2">
                       <Play className="h-3 w-3 text-orange-500" />
                       <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Message Saved</span>
-                      {displayDuration !== undefined && displayDuration !== null && (
+                      {displayDuration != null && (
                         <span className="text-[10px] flex items-center gap-1 bg-orange-500/10 text-orange-600 font-bold px-2 py-0.5 rounded-full">
                           <Clock className="h-3 w-3" /> {formatTime(displayDuration)}
                         </span>
                       )}
                     </div>
                   </div>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={deleteVoiceNote}
-                    className="rounded-full h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <Button variant="ghost" size="icon" onClick={deleteVoiceNote} className="rounded-full h-8 w-8"><Trash2 className="h-4 w-4" /></Button>
                 </div>
               )}
             </div>
@@ -405,23 +242,8 @@ export function EditorSidebar({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 pt-6">
-            <div className="space-y-2">
-              <Label>The Ending Message</Label>
-              <Textarea 
-                placeholder="A final heart-warming message..." 
-                value={customQuote}
-                onChange={(e) => setCustomQuote(e.target.value)}
-                className="min-h-[80px]"
-              />
-            </div>
-            <Button 
-              variant="secondary"
-              className="w-full rounded-full" 
-              onClick={onSaveQuote}
-              disabled={isSavingQuote}
-            >
-              {isSavingQuote ? "Saving..." : <><Save className="mr-2 h-4 w-4" /> Save Ending</>}
-            </Button>
+            <Textarea placeholder="A final heart-warming message..." value={customQuote} onChange={(e) => setCustomQuote(e.target.value)} className="min-h-[80px]" />
+            <Button variant="secondary" className="w-full rounded-full" onClick={onSaveQuote} disabled={isSavingQuote}>{isSavingQuote ? "Saving..." : <><Save className="mr-2 h-4 w-4" /> Save Ending</>}</Button>
           </CardContent>
         </Card>
       </div>

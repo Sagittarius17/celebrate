@@ -22,15 +22,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
-import { Plus, User, Key, ArrowRight, Gift, LogOut, Copy, Check, Type, Trash2, Edit2, Sun, Moon, Music, Share2, Search, Loader2, PlusCircle } from 'lucide-react';
+import { Plus, User, Key, ArrowRight, Gift, LogOut, Copy, Check, Type, Trash2, Edit2, Sun, Moon, Music, Share2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useDashboardTheme } from './layout';
-import { searchSpotifyTracks } from '@/ai/flows/search-spotify-tracks-flow';
-import Image from 'next/image';
+import { SpotifySearch } from '@/components/dashboard/SpotifySearch';
 
 const OCCASIONS = [
   "Birthday",
@@ -44,7 +42,7 @@ const OCCASIONS = [
 ];
 
 const generateUniqueCode = () => {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Avoid ambiguous chars
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let result = '';
   for (let i = 0; i < 10; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -63,13 +61,10 @@ const slugify = (text: string) => {
 
 const extractSpotifyTrackId = (input: string) => {
   if (!input) return '';
-  // Check for standard URL
   const urlMatch = input.match(/\/track\/([a-zA-Z0-9]{22})/);
   if (urlMatch && urlMatch[1]) return urlMatch[1];
-  // Check for URI
   const uriMatch = input.match(/spotify:track:([a-zA-Z0-9]{22})/);
   if (uriMatch && uriMatch[1]) return uriMatch[1];
-  // Otherwise return trimmed input
   return input.trim();
 };
 
@@ -95,13 +90,6 @@ export default function Dashboard() {
   });
   const [editingSurprise, setEditingSurprise] = useState<any>(null);
 
-  // Spotify Search
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-
-  // Simulated progress loader
   useEffect(() => {
     if (isUserLoading) {
       const interval = setInterval(() => {
@@ -119,30 +107,6 @@ export default function Dashboard() {
   }, [db, user]);
 
   const { data: surprises, isLoading: isSurprisesLoading } = useCollection(celebrationPagesQuery);
-
-  const handleSpotifySearch = async () => {
-    if (!searchQuery.trim()) return;
-    setIsSearching(true);
-    setSearchResults([]);
-    try {
-      const { tracks } = await searchSpotifyTracks({ query: searchQuery });
-      setSearchResults(tracks);
-    } catch (error) {
-      toast({ variant: "destructive", title: "Search Failed", description: "AI could not find tracks." });
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  const selectTrack = (track: any, isNew: boolean) => {
-    if (isNew) {
-      setNewSurprise({ ...newSurprise, spotifyTrackId: track.trackId });
-    } else if (editingSurprise) {
-      setEditingSurprise({ ...editingSurprise, spotifyTrackId: track.trackId });
-    }
-    setIsSearchOpen(false);
-    toast({ title: "Track Selected", description: `${track.title} by ${track.artist}` });
-  };
 
   const handleCreate = () => {
     if (!user || !db) return;
@@ -191,25 +155,17 @@ export default function Dashboard() {
     if (!db) return;
     const pageRef = doc(db, 'celebrationPages', id);
     deleteDocumentNonBlocking(pageRef);
-    toast({
-      title: "Surprise Deleted",
-      description: "The celebration page has been removed.",
-    });
+    toast({ title: "Surprise Deleted" });
   };
 
   const handleLogout = () => {
-    auth.signOut().then(() => {
-      router.push('/');
-    });
+    auth.signOut().then(() => router.push('/'));
   };
 
   const copyAccessCode = (surprise: any) => {
     navigator.clipboard.writeText(surprise.accessCode);
     setCopiedCodeId(surprise.id);
-    toast({
-      title: "Code Copied!",
-      description: "Secret access code copied to clipboard.",
-    });
+    toast({ title: "Code Copied!" });
     setTimeout(() => setCopiedCodeId(null), 2000);
   };
 
@@ -219,10 +175,7 @@ export default function Dashboard() {
     const shareUrl = `${baseUrl}/surprise/${nameSlug}/${surprise.accessCode}`;
     navigator.clipboard.writeText(shareUrl);
     setCopiedLinkId(surprise.id);
-    toast({
-      title: "Link Copied!",
-      description: `Share this unique link for ${surprise.recipientName}.`,
-    });
+    toast({ title: "Link Copied!" });
     setTimeout(() => setCopiedLinkId(null), 2000);
   };
 
@@ -243,91 +196,14 @@ export default function Dashboard() {
             <User className="h-8 w-8 text-primary" />
           </div>
           <h1 className="text-2xl font-bold">Account Required</h1>
-          <p className="text-muted-foreground">
-            To create and manage interactive surprises, you need a registered account.
-          </p>
-          <div className="flex flex-col gap-3">
-            <Link href="/">
-              <Button className="w-full rounded-full h-12">Go to Sign Up</Button>
-            </Link>
-          </div>
+          <p className="text-muted-foreground">To create and manage interactive surprises, you need a registered account.</p>
+          <Link href="/"><Button className="w-full rounded-full h-12">Go to Sign Up</Button></Link>
         </Card>
       </div>
     );
   }
 
   const headerButtonStyle = "rounded-full h-12 w-12 p-0 flex items-center justify-center border-none transition-all shadow-sm";
-
-  const SpotifySearchDialog = ({ isNew }: { isNew: boolean }) => (
-    <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="icon" className="shrink-0 rounded-xl">
-          <Search className="h-4 w-4" />
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[450px] p-0 overflow-hidden rounded-3xl">
-        <div className="p-6 pb-0">
-          <DialogHeader>
-            <DialogTitle className="text-xl">Search for a Song</DialogTitle>
-          </DialogHeader>
-          <div className="flex gap-2 mt-4 relative">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder="Song name or artist..." 
-                className="pl-10 h-11 bg-muted/50 border-none rounded-2xl"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSpotifySearch()}
-              />
-            </div>
-            <Button onClick={handleSpotifySearch} disabled={isSearching} className="h-11 rounded-2xl px-6">
-              {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : "Search"}
-            </Button>
-          </div>
-        </div>
-        
-        <ScrollArea className="h-[400px] mt-4 px-2 pb-6">
-          {isSearching ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-4">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-sm text-muted-foreground">Finding the perfect tracks...</p>
-            </div>
-          ) : searchResults.length === 0 ? (
-            <div className="text-center py-20 text-muted-foreground">
-              <Music className="h-12 w-12 mx-auto mb-4 opacity-10" />
-              <p className="text-sm">Try searching for your favorite celebration track</p>
-            </div>
-          ) : (
-            <div className="space-y-1 px-2">
-              {searchResults.map((track) => (
-                <button
-                  key={track.trackId}
-                  onClick={() => selectTrack(track, isNew)}
-                  className="w-full flex items-center gap-4 p-3 hover:bg-muted/80 rounded-2xl transition-all text-left group"
-                >
-                  <div className="w-14 h-14 bg-muted rounded-xl overflow-hidden shrink-0 relative flex items-center justify-center shadow-sm">
-                    {track.imageUrl && track.imageUrl.startsWith('http') ? (
-                      <Image src={track.imageUrl} alt="" fill className="object-cover" />
-                    ) : (
-                      <Music className="w-6 h-6 opacity-30" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-foreground leading-tight truncate">{track.title}</p>
-                    <p className="text-sm text-muted-foreground truncate mt-0.5">Song • {track.artist}</p>
-                  </div>
-                  <div className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity pr-2">
-                    <PlusCircle className="h-6 w-6 text-primary" />
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </ScrollArea>
-      </DialogContent>
-    </Dialog>
-  );
 
   return (
     <div className="p-8">
@@ -344,87 +220,44 @@ export default function Dashboard() {
               className={`${headerButtonStyle} bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-lg shadow-destructive/20`}
               onClick={handleLogout}
               title="Log Out"
-            >
-              <LogOut className="h-5 w-5" />
-            </Button>
+            ><LogOut className="h-5 w-5" /></Button>
 
             <Button 
               className={`${headerButtonStyle} bg-secondary hover:bg-secondary/80 text-secondary-foreground`}
               onClick={toggleTheme}
               title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
-            >
-              {isDark ? <Sun className="h-5 w-5 text-yellow-400" /> : <Moon className="h-5 w-5 text-slate-700" />}
-            </Button>
+            >{isDark ? <Sun className="h-5 w-5 text-yellow-400" /> : <Moon className="h-5 w-5 text-slate-700" />}</Button>
 
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
               <DialogTrigger asChild>
-                <Button 
-                  className={`${headerButtonStyle} bg-secondary hover:bg-secondary/80 text-secondary-foreground`}
-                  title="New Surprise"
-                >
+                <Button className={`${headerButtonStyle} bg-secondary hover:bg-secondary/80 text-secondary-foreground`} title="New Surprise">
                   <Plus className="h-6 w-6" />
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px] rounded-[2rem]">
-                <DialogHeader>
-                  <DialogTitle>Create a New Surprise Page</DialogTitle>
-                </DialogHeader>
+                <DialogHeader><DialogTitle>Create a New Surprise Page</DialogTitle></DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="occasion">Occasion</Label>
-                    <Select 
-                      value={newSurprise.occasion} 
-                      onValueChange={(val) => setNewSurprise({...newSurprise, occasion: val})}
-                    >
-                      <SelectTrigger className="rounded-xl h-12">
-                        <SelectValue placeholder="Select" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {OCCASIONS.map(occ => (
-                          <SelectItem key={occ} value={occ}>{occ}</SelectItem>
-                        ))}
-                      </SelectContent>
+                    <Label>Occasion</Label>
+                    <Select value={newSurprise.occasion} onValueChange={(val) => setNewSurprise({...newSurprise, occasion: val})}>
+                      <SelectTrigger className="rounded-xl h-12"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent>{OCCASIONS.map(occ => <SelectItem key={occ} value={occ}>{occ}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="recipient">Who is this for?</Label>
-                    <Input 
-                      id="recipient" 
-                      placeholder="e.g. Sarah Jones" 
-                      className="rounded-xl h-12"
-                      value={newSurprise.recipientName}
-                      onChange={(e) => setNewSurprise({...newSurprise, recipientName: e.target.value})}
-                    />
+                    <Label>Who is this for?</Label>
+                    <Input placeholder="e.g. Sarah Jones" className="rounded-xl h-12" value={newSurprise.recipientName} onChange={(e) => setNewSurprise({...newSurprise, recipientName: e.target.value})} />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="title">Page Title</Label>
-                    <Input 
-                      id="title" 
-                      placeholder="e.g. Happy 25th Birthday, Sarah!" 
-                      className="rounded-xl h-12"
-                      value={newSurprise.title}
-                      onChange={(e) => setNewSurprise({...newSurprise, title: e.target.value})}
-                    />
+                    <Label>Page Title</Label>
+                    <Input placeholder="e.g. Happy 25th Birthday, Sarah!" className="rounded-xl h-12" value={newSurprise.title} onChange={(e) => setNewSurprise({...newSurprise, title: e.target.value})} />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="spotify-id" className="flex items-center gap-2">
-                      <Music className="h-4 w-4 text-primary" /> Spotify Track ID or URL
-                    </Label>
+                    <Label className="flex items-center gap-2"><Music className="h-4 w-4 text-primary" /> Spotify Track ID or URL</Label>
                     <div className="flex gap-2">
-                      <Input 
-                        id="spotify-id" 
-                        placeholder="e.g. 4PTG3C64LUButARq9I9Uf8 or Spotify Link" 
-                        className="rounded-xl h-12"
-                        value={newSurprise.spotifyTrackId}
-                        onChange={(e) => setNewSurprise({...newSurprise, spotifyTrackId: extractSpotifyTrackId(e.target.value)})}
-                      />
-                      <SpotifySearchDialog isNew={true} />
+                      <Input placeholder="e.g. Track ID or Spotify Link" className="rounded-xl h-12" value={newSurprise.spotifyTrackId} onChange={(e) => setNewSurprise({...newSurprise, spotifyTrackId: extractSpotifyTrackId(e.target.value)})} />
+                      <SpotifySearch onSelect={(track) => setNewSurprise({...newSurprise, spotifyTrackId: track.trackId})} />
                     </div>
-                  </div>
-                  <div className="bg-muted/50 p-4 rounded-xl border border-dashed text-xs text-muted-foreground mt-2">
-                    <p className="flex items-center gap-2">
-                      <Key className="h-3 w-3" /> A unique 10-character secret code will be generated automatically.
-                    </p>
                   </div>
                 </div>
                 <DialogFooter>
@@ -437,66 +270,30 @@ export default function Dashboard() {
 
         <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
           <DialogContent className="sm:max-w-[425px] rounded-[2rem]">
-            <DialogHeader>
-              <DialogTitle>Edit Surprise Details</DialogTitle>
-            </DialogHeader>
+            <DialogHeader><DialogTitle>Edit Surprise Details</DialogTitle></DialogHeader>
             {editingSurprise && (
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-occasion">Occasion</Label>
-                  <Select 
-                    value={editingSurprise.occasion} 
-                    onValueChange={(val) => setEditingSurprise({...editingSurprise, occasion: val})}
-                  >
-                    <SelectTrigger className="rounded-xl h-12">
-                      <SelectValue placeholder="Select" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {OCCASIONS.map(occ => (
-                        <SelectItem key={occ} value={occ}>{occ}</SelectItem>
-                      ))}
-                    </SelectContent>
+                  <Label>Occasion</Label>
+                  <Select value={editingSurprise.occasion} onValueChange={(val) => setEditingSurprise({...editingSurprise, occasion: val})}>
+                    <SelectTrigger className="rounded-xl h-12"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent>{OCCASIONS.map(occ => <SelectItem key={occ} value={occ}>{occ}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-recipient">Who is this for?</Label>
-                  <Input 
-                    id="edit-recipient" 
-                    className="rounded-xl h-12"
-                    value={editingSurprise.recipientName}
-                    onChange={(e) => setEditingSurprise({...editingSurprise, recipientName: e.target.value})}
-                  />
+                  <Label>Who is this for?</Label>
+                  <Input className="rounded-xl h-12" value={editingSurprise.recipientName} onChange={(e) => setEditingSurprise({...editingSurprise, recipientName: e.target.value})} />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-title">Page Title</Label>
-                  <Input 
-                    id="edit-title" 
-                    className="rounded-xl h-12"
-                    value={editingSurprise.title}
-                    onChange={(e) => setEditingSurprise({...editingSurprise, title: e.target.value})}
-                  />
+                  <Label>Page Title</Label>
+                  <Input className="rounded-xl h-12" value={editingSurprise.title} onChange={(e) => setEditingSurprise({...editingSurprise, title: e.target.value})} />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-spotify" className="flex items-center gap-2">
-                    <Music className="h-4 w-4 text-primary" /> Spotify Track ID or URL
-                  </Label>
+                  <Label className="flex items-center gap-2"><Music className="h-4 w-4 text-primary" /> Spotify Track ID or URL</Label>
                   <div className="flex gap-2">
-                    <Input 
-                      id="edit-spotify" 
-                      className="rounded-xl h-12"
-                      value={editingSurprise.spotifyTrackId || ''}
-                      onChange={(e) => setEditingSurprise({...editingSurprise, spotifyTrackId: extractSpotifyTrackId(e.target.value)})}
-                    />
-                    <SpotifySearchDialog isNew={false} />
+                    <Input className="rounded-xl h-12" value={editingSurprise.spotifyTrackId || ''} onChange={(e) => setEditingSurprise({...editingSurprise, spotifyTrackId: extractSpotifyTrackId(e.target.value)})} />
+                    <SpotifySearch onSelect={(track) => setEditingSurprise({...editingSurprise, spotifyTrackId: track.trackId})} />
                   </div>
-                </div>
-                <div className="grid gap-2">
-                  <Label className="opacity-60">Secret Access Code (Read-only)</Label>
-                  <Input 
-                    disabled
-                    value={editingSurprise.accessCode}
-                    className="bg-muted rounded-xl h-12"
-                  />
                 </div>
               </div>
             )}
@@ -525,80 +322,24 @@ export default function Dashboard() {
                 <CardHeader className="bg-primary/10">
                   <div className="flex justify-between items-start">
                     <CardTitle className="font-headline text-2xl truncate pr-4">{surprise.title}</CardTitle>
-                    <div className="bg-primary/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest text-primary-foreground">
-                      {surprise.occasion}
-                    </div>
+                    <div className="bg-primary/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest text-primary-foreground">{surprise.occasion}</div>
                   </div>
-                  <CardDescription className="flex items-center gap-2 mt-2">
-                    <User className="h-4 w-4" /> For {surprise.recipientName}
-                  </CardDescription>
+                  <CardDescription className="flex items-center gap-2 mt-2"><User className="h-4 w-4" /> For {surprise.recipientName}</CardDescription>
                 </CardHeader>
                 <CardContent className="p-6 space-y-4">
                   <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    <div className="flex items-center">
-                      <Key className="h-4 w-4 mr-2" /> Code: <code className="bg-muted px-2 py-0.5 rounded ml-2 font-bold">{surprise.accessCode}</code>
-                    </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-10 w-10 p-0 rounded-full hover:bg-secondary/20"
-                      onClick={() => copyAccessCode(surprise)}
-                      title="Copy Secret Code Only"
-                    >
-                      {copiedCodeId === surprise.id ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-                    </Button>
-                  </div>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Type className="h-4 w-4 mr-2" /> Style: <span className="font-medium" style={{ fontFamily: surprise.font || 'inherit' }}>{surprise.font || 'Default'}</span>
+                    <div className="flex items-center"><Key className="h-4 w-4 mr-2" /> Code: <code className="bg-muted px-2 py-0.5 rounded ml-2 font-bold">{surprise.accessCode}</code></div>
+                    <Button variant="ghost" size="sm" className="h-10 w-10 p-0 rounded-full" onClick={() => copyAccessCode(surprise)}>{copiedCodeId === surprise.id ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}</Button>
                   </div>
                   <div className="flex gap-2 pt-2">
-                    <Link href={`/dashboard/${surprise.id}`} className="flex-1">
-                      <Button className="w-full rounded-full h-11 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
-                        Edit Timeline <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </Link>
-                    <Button 
-                      variant="outline" 
-                      size="icon" 
-                      className="rounded-full shrink-0 h-11 w-11 border-muted hover:bg-secondary/10 hover:text-secondary"
-                      onClick={() => copyShareLink(surprise)}
-                      title="Share Surprise (Copy URL)"
-                    >
-                      {copiedLinkId === surprise.id ? <Check className="h-4 w-4 text-green-500" /> : <Share2 className="h-4 w-4" />}
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="icon" 
-                      className="rounded-full shrink-0 h-11 w-11 border-muted hover:bg-muted"
-                      onClick={() => handleOpenEdit(surprise)}
-                      title="Edit Details"
-                    >
-                      <Edit2 className="h-4 w-4 text-muted-foreground" />
-                    </Button>
+                    <Link href={`/dashboard/${surprise.id}`} className="flex-1"><Button className="w-full rounded-full h-11">Edit Timeline <ArrowRight className="ml-2 h-4 w-4" /></Button></Link>
+                    <Button variant="outline" size="icon" className="rounded-full h-11 w-11" onClick={() => copyShareLink(surprise)}>{copiedLinkId === surprise.id ? <Check className="h-4 w-4 text-green-500" /> : <Share2 className="h-4 w-4" />}</Button>
+                    <Button variant="outline" size="icon" className="rounded-full h-11 w-11" onClick={() => handleOpenEdit(surprise)}><Edit2 className="h-4 w-4 text-muted-foreground" /></Button>
                     <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button 
-                          variant="outline" 
-                          size="icon" 
-                          className="rounded-full shrink-0 h-11 w-11 border-muted hover:bg-destructive/10 hover:text-destructive hover:border-destructive"
-                          title="Delete Surprise"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
+                      <AlertDialogTrigger asChild><Button variant="outline" size="icon" className="rounded-full h-11 w-11"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
                       <AlertDialogContent className="rounded-[2rem]">
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This will permanently delete "{surprise.title}" and remove all memory events from the timeline.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel className="rounded-full">Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDelete(surprise.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-full">
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
+                        <AlertDialogHeader><AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle><AlertDialogDescription>This will permanently delete "{surprise.title}" and remove all memory events from the timeline.</AlertDialogDescription></AlertDialogHeader>
+                        <AlertDialogFooter><AlertDialogCancel className="rounded-full">Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(surprise.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-full">Delete</AlertDialogAction></AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
                   </div>

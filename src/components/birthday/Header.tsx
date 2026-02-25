@@ -3,9 +3,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Sun, Flame, Sparkles, Volume2, VolumeX, Music, Music2 } from 'lucide-react';
+import { Sun, Flame, Sparkles, Volume2, VolumeX } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import Image from 'next/image';
+import { SpotifyPlayer } from './SpotifyPlayer';
 
 interface HeaderProps {
   title?: string;
@@ -37,10 +37,7 @@ export const Header: React.FC<HeaderProps> = ({
   const isCandle = theme === 'candle-light';
   const [isPlayingVoice, setIsPlayingVoice] = useState(false);
   const [voiceProgress, setVoiceProgress] = useState(0);
-  const [spotifyMetadata, setSpotifyMetadata] = useState<{imageUrl: string, title: string} | null>(null);
-  const [simulatedMusicProgress, setSimulatedMusicProgress] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const musicProgressInterval = useRef<NodeJS.Timeout | null>(null);
 
   const scrollToJourney = () => {
     document.getElementById('journey')?.scrollIntoView({ behavior: 'smooth' });
@@ -52,7 +49,7 @@ export const Header: React.FC<HeaderProps> = ({
       audioRef.current.pause();
       setIsPlayingVoice(false);
     } else {
-      // Pause music if it's currently enabled to let the voice note take center stage
+      // Pause music if it's currently enabled
       if (isMusicEnabled && onToggleMusic) {
         onToggleMusic();
       }
@@ -61,8 +58,7 @@ export const Header: React.FC<HeaderProps> = ({
     }
   };
 
-  const handleMusicToggleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleSpotifyToggle = () => {
     // If turning on music while voice is playing, pause the voice
     if (!isMusicEnabled && isPlayingVoice) {
       if (audioRef.current) {
@@ -72,34 +68,6 @@ export const Header: React.FC<HeaderProps> = ({
     }
     if (onToggleMusic) onToggleMusic();
   };
-
-  useEffect(() => {
-    if (hasMusic && spotifyTrackId) {
-      fetch(`https://open.spotify.com/oembed?url=spotify:track:${spotifyTrackId}`)
-        .then(res => res.json())
-        .then(data => {
-          setSpotifyMetadata({
-            imageUrl: data.thumbnail_url,
-            title: data.title
-          });
-        })
-        .catch(() => setSpotifyMetadata(null));
-    }
-  }, [hasMusic, spotifyTrackId]);
-
-  useEffect(() => {
-    if (isMusicEnabled) {
-      musicProgressInterval.current = setInterval(() => {
-        setSimulatedMusicProgress(prev => (prev + 0.5) % 100);
-      }, 200);
-    } else {
-      if (musicProgressInterval.current) clearInterval(musicProgressInterval.current);
-      setSimulatedMusicProgress(0);
-    }
-    return () => {
-      if (musicProgressInterval.current) clearInterval(musicProgressInterval.current);
-    };
-  }, [isMusicEnabled]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -128,7 +96,6 @@ export const Header: React.FC<HeaderProps> = ({
   const radius = 27;
   const circumference = 2 * Math.PI * radius;
   const voiceStrokeDashoffset = circumference - (voiceProgress / 100) * circumference;
-  const musicStrokeDashoffset = circumference - (simulatedMusicProgress / 100) * circumference;
 
   return (
     <header className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden z-10">
@@ -160,74 +127,12 @@ export const Header: React.FC<HeaderProps> = ({
           </Button>
         )}
 
-        {hasMusic && onToggleMusic && (
-          <div className="relative group/spotify-hub flex items-center justify-end">
-            {/* Animated Spotify Box Hub - Slides out from behind the button */}
-            <div className="absolute right-[calc(100%+12px)] top-1/2 -translate-y-1/2 w-0 overflow-hidden transition-all duration-500 group-hover/spotify-hub:w-[320px] pointer-events-none group-hover/spotify-hub:pointer-events-auto">
-              <div className="w-[320px] h-[80px] bg-[#191414] rounded-2xl shadow-2xl border border-white/10 overflow-hidden transition-all duration-500">
-                {isMusicEnabled && spotifyTrackId && (
-                  <iframe 
-                    src={`https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0&autoplay=1`} 
-                    width="100%" 
-                    height="80" 
-                    frameBorder="0" 
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-                    loading="lazy"
-                    className="opacity-100"
-                  />
-                )}
-                {!isMusicEnabled && (
-                  <div className="w-full h-full flex items-center justify-center text-white/40 gap-3 px-4">
-                    <Music2 className="h-6 w-6" />
-                    <span className="text-sm font-bold truncate">Click the button to play soundtrack</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="relative w-14 h-14 flex items-center justify-center">
-              <svg className="absolute inset-0 w-full h-full -rotate-90 transform pointer-events-none" viewBox="0 0 60 60">
-                <circle cx="30" cy="30" r={radius} stroke="currentColor" strokeWidth="3" fill="transparent" className="text-orange-500/10" />
-                <circle
-                  cx="30"
-                  cy="30"
-                  r={radius}
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  fill="transparent"
-                  strokeDasharray={circumference}
-                  style={{ strokeDashoffset: musicStrokeDashoffset, transition: 'stroke-dashoffset 0.2s linear' }}
-                  strokeLinecap="round"
-                  className="text-orange-500"
-                />
-              </svg>
-              <Button
-                onClick={handleMusicToggleClick}
-                variant="ghost"
-                className={cn(
-                  "rounded-full w-11 h-11 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-md overflow-hidden relative group",
-                  !isMusicEnabled && "opacity-80 grayscale-[0.5]"
-                )}
-                title={isMusicEnabled ? "Mute Soundtrack" : "Play Soundtrack"}
-              >
-                {spotifyMetadata?.imageUrl ? (
-                  <Image 
-                    src={spotifyMetadata.imageUrl} 
-                    alt="Track" 
-                    fill 
-                    className={cn("object-cover", isMusicEnabled && "animate-spin-slow")} 
-                  />
-                ) : (
-                  <Music className={cn("h-5 w-5", isMusicEnabled && "animate-spin-slow")} />
-                )}
-                {!isMusicEnabled && (
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                    <Music2 className="h-4 w-4 text-white" />
-                  </div>
-                )}
-              </Button>
-            </div>
-          </div>
+        {hasMusic && spotifyTrackId && onToggleMusic && (
+          <SpotifyPlayer 
+            trackId={spotifyTrackId}
+            isEnabled={isMusicEnabled || false}
+            onToggle={handleSpotifyToggle}
+          />
         )}
 
         {voiceNoteUrl && (
@@ -327,13 +232,6 @@ export const Header: React.FC<HeaderProps> = ({
         }
         .animate-scroll {
           animation: scroll 2s infinite;
-        }
-        .animate-spin-slow {
-          animation: spin 8s linear infinite;
-        }
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
         }
       `}</style>
     </header>

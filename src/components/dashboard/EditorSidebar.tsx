@@ -1,6 +1,7 @@
+
 "use client";
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -21,7 +22,7 @@ import {
   DialogTitle, 
   DialogTrigger 
 } from '@/components/ui/dialog';
-import { LayoutTemplate, Quote, Save, Music, Mic, Square, Play, Trash2, Search, Loader2 } from 'lucide-react';
+import { LayoutTemplate, Quote, Save, Music, Mic, Square, Play, Trash2, Search, Loader2, Clock } from 'lucide-react';
 import { DocumentReference, Firestore } from 'firebase/firestore';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { useToast } from '@/hooks/use-toast';
@@ -57,15 +58,31 @@ export function EditorSidebar({
 }: EditorSidebarProps) {
   const { toast } = useToast();
   const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [recordedDuration, setRecordedDuration] = useState<number | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(page.voiceNoteDataUri || null);
+  
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Spotify Search State
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const handleUpdatePage = (updates: any) => {
     if (!db || !pageRef) return;
@@ -119,6 +136,11 @@ export function EditorSidebar({
 
       mediaRecorder.start();
       setIsRecording(true);
+      setRecordingTime(0);
+      setRecordedDuration(null);
+      timerRef.current = setInterval(() => {
+        setRecordingTime((prev) => prev + 1);
+      }, 1000);
     } catch (err) {
       toast({ 
         variant: "destructive", 
@@ -132,11 +154,17 @@ export function EditorSidebar({
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      setRecordedDuration(recordingTime);
     }
   };
 
   const deleteVoiceNote = () => {
     setAudioUrl(null);
+    setRecordedDuration(null);
     handleUpdatePage({ voiceNoteDataUri: null });
     toast({ title: "Voice Note Removed" });
   };
@@ -153,7 +181,7 @@ export function EditorSidebar({
           <CardContent className="space-y-4 pt-6">
             <div className="space-y-2">
               <Label>Choose Layout</Label>
-              <Select 
+              <40Select 
                 value={page.layout || 'Timeline'} 
                 onValueChange={(val) => {
                   handleUpdatePage({ layout: val });
@@ -284,7 +312,7 @@ export function EditorSidebar({
                 <Button 
                   onClick={startRecording} 
                   variant="outline" 
-                  className="w-full rounded-full border-dashed border-orange-200 hover:bg-orange-50 hover:border-orange-300"
+                  className="w-full rounded-full border-dashed border-orange-200 hover:bg-orange-50 hover:border-orange-300 h-12"
                 >
                   <Mic className="mr-2 h-4 w-4 text-orange-500" /> 
                   {audioUrl ? "Record New Message" : "Record Voice Note"}
@@ -293,9 +321,15 @@ export function EditorSidebar({
                 <Button 
                   onClick={stopRecording} 
                   variant="destructive" 
-                  className="w-full rounded-full animate-pulse"
+                  className="w-full rounded-full animate-pulse h-12 relative overflow-hidden"
                 >
-                  <Square className="mr-2 h-4 w-4" /> Stop Recording
+                  <div className="flex items-center justify-center gap-3">
+                    <Square className="h-4 w-4" /> 
+                    <span>Stop Recording</span>
+                    <span className="bg-white/20 px-2 py-0.5 rounded text-xs font-mono">
+                      {formatTime(recordingTime)}
+                    </span>
+                  </div>
                 </Button>
               )}
 
@@ -303,7 +337,14 @@ export function EditorSidebar({
                 <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-2xl border border-dashed">
                   <div className="flex-1 flex items-center gap-2 pl-2">
                     <Play className="h-4 w-4 text-orange-500" />
-                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Message Saved</span>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Message Saved</span>
+                      {recordedDuration !== null && (
+                        <span className="text-[10px] flex items-center gap-1 text-orange-600 font-medium">
+                          <Clock className="h-3 w-3" /> {formatTime(recordedDuration)}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <Button 
                     variant="ghost" 

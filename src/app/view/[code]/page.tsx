@@ -271,7 +271,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
                 </div>
                 
                 <div className="w-full relative z-10">
-                  <TimelineLayout events={events} scrollProgress={scrollProgress} />
+                  <TimelineLayout events={events} scrollProgress={scrollProgress} theme={theme} />
                 </div>
 
                 <div ref={endTriggerRef} className="flex flex-col items-center pt-24 pb-8 relative z-20">

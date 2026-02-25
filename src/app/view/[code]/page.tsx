@@ -140,16 +140,17 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       
       const triggerPoint = viewportHeight * 0.7; 
       const journeyTop = journeyRect.top;
-      const heartTop = heartRect.top + 24; 
+      // Exact center calculation
+      const heartCenter = heartRect.top + (heartRect.height / 2); 
       
-      const totalHeight = heartTop - journeyTop;
+      const totalHeight = heartCenter - journeyTop;
       const currentDistance = triggerPoint - journeyTop;
       
       const progress = (currentDistance / totalHeight) * 100;
       const clampedProgress = Math.min(Math.max(progress, 0), 100);
       
       setScrollProgress(prev => {
-        if (prev >= 100) return 100;
+        if (prev >= 100 && clampedProgress < 100) return 100;
         return clampedProgress;
       });
     };
@@ -249,10 +250,11 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
             
             {layout === 'Timeline' ? (
               <div className="relative flex flex-col items-center">
+                {/* Visual Line Container adjusted to touch the heart */}
                 <div 
                   className="absolute left-1/2 -translate-x-1/2 w-2 z-0 pointer-events-none" 
                   style={{ 
-                    height: 'calc(100% - 110px)', 
+                    height: 'calc(100% - 60px)', 
                     top: '-40px' 
                   }}
                 >

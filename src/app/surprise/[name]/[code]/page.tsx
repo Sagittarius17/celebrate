@@ -122,18 +122,21 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
       const heartRect = heartTrigger.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
       
+      // Trigger point refined to center of viewport
       const triggerPoint = viewportHeight * 0.7; 
       const journeyTop = journeyRect.top;
-      const heartTop = heartRect.top + 24; 
+      // Calculate exactly to the heart's vertical center
+      const heartCenter = heartRect.top + (heartRect.height / 2); 
       
-      const totalHeight = heartTop - journeyTop;
+      const totalHeight = heartCenter - journeyTop;
       const currentDistance = triggerPoint - journeyTop;
       
       const progress = (currentDistance / totalHeight) * 100;
       const clampedProgress = Math.min(Math.max(progress, 0), 100);
       
       setScrollProgress(prev => {
-        if (prev >= 100) return 100;
+        // Prevent backward progress if they've already "connected" the heart
+        if (prev >= 100 && clampedProgress < 100) return 100;
         return clampedProgress;
       });
     };
@@ -233,10 +236,11 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
             
             {layout === 'Timeline' ? (
               <div className="relative flex flex-col items-center">
+                {/* Visual Line Container - Set to 100% to ensure it reaches the heart */}
                 <div 
                   className="absolute left-1/2 -translate-x-1/2 w-2 z-0 pointer-events-none" 
                   style={{ 
-                    height: 'calc(100% - 110px)', 
+                    height: 'calc(100% - 60px)', 
                     top: '-40px' 
                   }}
                 >
@@ -251,6 +255,7 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
                   <TimelineLayout events={events} scrollProgress={scrollProgress} />
                 </div>
 
+                {/* Final Heart Trigger */}
                 <div ref={endTriggerRef} className="flex flex-col items-center pt-24 pb-8 relative z-20">
                   <div className={cn(
                     "transition-all duration-1000 transform relative z-20",

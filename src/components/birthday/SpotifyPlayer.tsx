@@ -3,23 +3,26 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Music, Music2 } from 'lucide-react';
+import { Music, Music2, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
 interface SpotifyPlayerProps {
   trackId: string;
+  durationMs?: number;
   isEnabled: boolean;
   onToggle: () => void;
 }
 
 export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ 
   trackId, 
+  durationMs = 180000, // Default 3 mins if unknown
   isEnabled, 
   onToggle 
 }) => {
-  const [metadata, setMetadata] = useState<{imageUrl: string, title: string} | null>(null);
+  const [metadata, setMetadata] = useState<{imageUrl: string, title: string, artist: string} | null>(null);
   const [progress, setProgress] = useState(0);
+  const [currentTimeMs, setCurrentTimeMs] = useState(0);
   const progressInterval = useRef<NodeJS.Timeout | null>(null);
 
   const radius = 27;
@@ -32,7 +35,8 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
         .then(data => {
           setMetadata({
             imageUrl: data.thumbnail_url,
-            title: data.title
+            title: data.title,
+            artist: data.author_name || 'Spotify Artist'
           });
         })
         .catch(() => setMetadata(null));
@@ -41,19 +45,38 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
 
   useEffect(() => {
     if (isEnabled) {
+      const stepMs = 500;
       progressInterval.current = setInterval(() => {
-        setProgress(prev => (prev + 0.5) % 100);
-      }, 200);
+        setCurrentTimeMs(prev => {
+          const next = prev + stepMs;
+          if (next >= durationMs) return 0; // Loop or stop
+          return next;
+        });
+      }, stepMs);
     } else {
       if (progressInterval.current) clearInterval(progressInterval.current);
-      setProgress(0);
+      setCurrentTimeMs(0);
     }
     return () => {
       if (progressInterval.current) clearInterval(progressInterval.current);
     };
-  }, [isEnabled]);
+  }, [isEnabled, durationMs]);
+
+  useEffect(() => {
+    const p = (currentTimeMs / durationMs) * 100;
+    setProgress(p);
+  }, [currentTimeMs, durationMs]);
 
   const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+  const formatTime = (ms: number) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const timeRemaining = durationMs - currentTimeMs;
 
   return (
     <div className="relative group/spotify-hub flex items-center justify-end p-2 -m-2">
@@ -63,7 +86,7 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
       {/* Animated Spotify Box Hub */}
       <div className="absolute right-[calc(100%-12px)] top-1/2 -translate-y-1/2 w-0 overflow-hidden transition-all duration-500 ease-in-out group-hover/spotify-hub:w-[320px] z-50 pointer-events-none group-hover/spotify-hub:pointer-events-auto">
         <div className="w-[320px] bg-[#191414] rounded-2xl shadow-2xl border border-white/10 overflow-hidden ml-auto relative">
-          <div className="h-[80px]">
+          <div className="h-[80px] relative">
             {isEnabled && trackId && (
               <iframe 
                 src={`https://open.spotify.com/embed/track/${trackId}?utm_source=generator&theme=0&autoplay=1`} 
@@ -76,19 +99,33 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
               />
             )}
             {!isEnabled && (
-              <div className="w-full h-full flex items-center justify-center text-white/40 gap-3 px-4">
-                <Music2 className="h-6 w-6" />
-                <span className="text-sm font-bold truncate">Click the button to play soundtrack</span>
+              <div className="w-full h-full flex flex-col justify-center gap-1 px-4 text-white">
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-sm font-bold truncate">{metadata?.title || 'Celebration Track'}</span>
+                    <span className="text-xs text-white/40 truncate">{metadata?.artist || 'Spotify Soundtrack'}</span>
+                  </div>
+                  <Music2 className="h-5 w-5 text-orange-500 opacity-60" />
+                </div>
+                <div className="flex items-center gap-2 mt-1">
+                   <span className="text-[10px] font-mono text-orange-500 font-bold">{formatTime(currentTimeMs)}</span>
+                   <div className="h-0.5 flex-1 bg-white/10 rounded-full overflow-hidden">
+                      <div className="h-full bg-orange-500 transition-all duration-300" style={{ width: `${progress}%` }} />
+                   </div>
+                   <span className="text-[10px] font-mono text-white/40">-{formatTime(timeRemaining)}</span>
+                </div>
               </div>
             )}
-          </div>
-          
-          {/* Synced Horizontal Progress Bar inside the box */}
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-white/10 overflow-hidden">
-            <div 
-              className="h-full bg-orange-500 transition-all duration-200 linear"
-              style={{ width: `${progress}%` }}
-            />
+            
+            {/* Contextual time-sync overlay when playing */}
+            {isEnabled && (
+              <div className="absolute bottom-2 right-4 pointer-events-none z-50">
+                <div className="bg-black/80 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/10 flex items-center gap-1.5 shadow-lg">
+                  <div className="w-1 h-1 bg-orange-500 rounded-full animate-pulse" />
+                  <span className="text-[10px] font-mono text-orange-500 font-bold">-{formatTime(timeRemaining)}</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -105,7 +142,7 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
             strokeWidth="3"
             fill="transparent"
             strokeDasharray={circumference}
-            style={{ strokeDashoffset: strokeDashoffset, transition: 'stroke-dashoffset 0.2s linear' }}
+            style={{ strokeDashoffset: strokeDashoffset, transition: 'stroke-dashoffset 0.5s linear' }}
             strokeLinecap="round"
             className="text-orange-500"
           />
@@ -141,7 +178,7 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
       </div>
       <style jsx>{`
         .animate-spin-slow {
-          animation: spin 8s linear infinite;
+          animation: spin 12s linear infinite;
         }
         @keyframes spin {
           from { transform: rotate(0deg); }

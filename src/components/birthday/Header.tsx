@@ -17,6 +17,7 @@ interface HeaderProps {
   voiceNoteUrl?: string | null;
   hasMusic?: boolean;
   spotifyTrackId?: string;
+  spotifyTrackDurationMs?: number;
   isMusicEnabled?: boolean;
   onToggleMusic?: () => void;
 }
@@ -31,6 +32,7 @@ export const Header: React.FC<HeaderProps> = ({
   voiceNoteUrl,
   hasMusic,
   spotifyTrackId,
+  spotifyTrackDurationMs,
   isMusicEnabled,
   onToggleMusic
 }) => {
@@ -130,6 +132,7 @@ export const Header: React.FC<HeaderProps> = ({
         {hasMusic && spotifyTrackId && onToggleMusic && (
           <SpotifyPlayer 
             trackId={spotifyTrackId}
+            durationMs={spotifyTrackDurationMs}
             isEnabled={isMusicEnabled || false}
             onToggle={handleSpotifyToggle}
           />

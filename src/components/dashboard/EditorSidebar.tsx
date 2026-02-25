@@ -192,7 +192,7 @@ export function EditorSidebar({
               <Label>Spotify Track ID or URL</Label>
               <div className="flex gap-2">
                 <Input placeholder="e.g. Track ID or Spotify Link" value={page.spotifyTrackId || ''} onChange={(e) => handleUpdatePage({ spotifyTrackId: extractSpotifyTrackId(e.target.value) })} />
-                <SpotifySearch onSelect={(track) => handleUpdatePage({ spotifyTrackId: track.trackId })} />
+                <SpotifySearch onSelect={(track) => handleUpdatePage({ spotifyTrackId: track.trackId, spotifyTrackDurationMs: track.durationMs || 180000 })} />
               </div>
             </div>
           </CardContent>

@@ -87,6 +87,7 @@ export default function Dashboard() {
     title: '',
     occasion: 'Birthday',
     spotifyTrackId: '',
+    spotifyTrackDurationMs: 180000,
   });
   const [editingSurprise, setEditingSurprise] = useState<any>(null);
 
@@ -126,7 +127,7 @@ export default function Dashboard() {
 
     addDocumentNonBlocking(collection(db, 'celebrationPages'), payload);
     setIsCreateOpen(false);
-    setNewSurprise({ recipientName: '', title: '', occasion: 'Birthday', spotifyTrackId: '' });
+    setNewSurprise({ recipientName: '', title: '', occasion: 'Birthday', spotifyTrackId: '', spotifyTrackDurationMs: 180000 });
     toast({ title: "Surprise Created", description: "Your unique access code is: " + accessCode });
   };
 
@@ -256,7 +257,7 @@ export default function Dashboard() {
                     <Label className="flex items-center gap-2"><Music className="h-4 w-4 text-primary" /> Spotify Track ID or URL</Label>
                     <div className="flex gap-2">
                       <Input placeholder="e.g. Track ID or Spotify Link" className="rounded-xl h-12" value={newSurprise.spotifyTrackId} onChange={(e) => setNewSurprise({...newSurprise, spotifyTrackId: extractSpotifyTrackId(e.target.value)})} />
-                      <SpotifySearch onSelect={(track) => setNewSurprise({...newSurprise, spotifyTrackId: track.trackId})} />
+                      <SpotifySearch onSelect={(track) => setNewSurprise({...newSurprise, spotifyTrackId: track.trackId, spotifyTrackDurationMs: track.durationMs || 180000 })} />
                     </div>
                   </div>
                 </div>
@@ -292,7 +293,7 @@ export default function Dashboard() {
                   <Label className="flex items-center gap-2"><Music className="h-4 w-4 text-primary" /> Spotify Track ID or URL</Label>
                   <div className="flex gap-2">
                     <Input className="rounded-xl h-12" value={editingSurprise.spotifyTrackId || ''} onChange={(e) => setEditingSurprise({...editingSurprise, spotifyTrackId: extractSpotifyTrackId(e.target.value)})} />
-                    <SpotifySearch onSelect={(track) => setEditingSurprise({...editingSurprise, spotifyTrackId: track.trackId})} />
+                    <SpotifySearch onSelect={(track) => setEditingSurprise({...editingSurprise, spotifyTrackId: track.trackId, spotifyTrackDurationMs: track.durationMs || 180000 })} />
                   </div>
                 </div>
               </div>

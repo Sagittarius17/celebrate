@@ -242,6 +242,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
           voiceNoteUrl={page?.voiceNoteDataUri}
           hasMusic={!!page?.spotifyTrackId}
           spotifyTrackId={page?.spotifyTrackId}
+          spotifyTrackDurationMs={page?.spotifyTrackDurationMs}
           isMusicEnabled={isMusicEnabled}
           onToggleMusic={() => setIsMusicEnabled(!isMusicEnabled)}
         />
@@ -315,7 +316,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       {/* Reveal Overlay - Covers the content until the user clicks */}
       {!isRevealed && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 px-4">
-          <div className="flex flex-col items-center gap-12 animate-fade-in w-full max-w-sm">
+          <div className="flex flex-col items-center gap-12 animate-fade-in w-full max-sm">
             <div className="relative">
               <div className="absolute -inset-4 bg-primary/20 blur-3xl rounded-full animate-pulse" />
               <div className="relative bg-white p-10 rounded-[3rem] shadow-2xl border-b-8 border-primary/20 transition-all duration-500 flex items-center justify-center">

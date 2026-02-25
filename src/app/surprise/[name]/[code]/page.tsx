@@ -226,6 +226,7 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
           voiceNoteUrl={page?.voiceNoteDataUri}
           hasMusic={!!page?.spotifyTrackId}
           spotifyTrackId={page?.spotifyTrackId}
+          spotifyTrackDurationMs={page?.spotifyTrackDurationMs}
           isMusicEnabled={isMusicEnabled}
           onToggleMusic={() => setIsMusicEnabled(!isMusicEnabled)}
         />

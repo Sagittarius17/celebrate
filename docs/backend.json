@@ -50,6 +50,10 @@
           "type": "string",
           "description": "The Spotify Track ID to play on the page."
         },
+        "spotifyTrackDurationMs": {
+          "type": "number",
+          "description": "The duration of the selected Spotify track in milliseconds."
+        },
         "voiceNoteDataUri": {
           "type": "string",
           "description": "A Base64 data URI of a recorded voice message."

@@ -69,7 +69,7 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       <div 
-        className="absolute bottom-10 left-1/2 -translate-x-[calc(50%+1px)] animate-bounce cursor-pointer z-30"
+        className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce cursor-pointer z-30"
         onClick={scrollToJourney}
       >
         <div className={cn(

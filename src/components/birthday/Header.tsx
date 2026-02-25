@@ -49,17 +49,16 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   useEffect(() => {
-    // Start initial timer
     startMinimizeTimer();
     return () => clearMinimizeTimer();
   }, []);
 
-  const handleContainerMouseEnter = () => {
+  const handleHubMouseEnter = () => {
     clearMinimizeTimer();
     setIsMusicExpanded(true);
   };
 
-  const handleContainerMouseLeave = () => {
+  const handleHubMouseLeave = () => {
     startMinimizeTimer();
   };
 
@@ -121,116 +120,110 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="relative min-h-screen flex flex-col z-10">
-      {/* Fixed Controls Bar (Top Right) */}
+      {/* Fixed Controls Hub (Top Right) */}
       <div 
-        className="fixed top-4 right-4 sm:right-8 z-[150] flex flex-row items-start gap-4"
-        onMouseEnter={handleContainerMouseEnter}
-        onMouseLeave={handleContainerMouseLeave}
-        onMouseMove={handleContainerMouseEnter} // Reset timer on move
+        className="fixed top-4 right-4 sm:right-8 z-[150] flex flex-col items-end gap-3"
+        onMouseEnter={handleHubMouseEnter}
+        onMouseLeave={handleHubMouseLeave}
       >
-        {/* Spotify Hub */}
+        {/* Spotify Control Row */}
         {spotifyTrackId && (
-          <div 
-            className={cn(
-              "hidden sm:flex relative transition-all duration-500 ease-in-out items-center justify-end",
-              isMusicExpanded ? "w-[300px] md:w-[350px]" : "w-12 h-12"
-            )}
-          >
-            {/* The actual iframe box (Persistent to prevent pausing) */}
+          <div className="flex flex-row items-center gap-3">
+            {/* Expanding Player Box (to the left of the button) */}
             <div className={cn(
-              "absolute right-0 w-[300px] md:w-[350px] h-20 bg-white/10 dark:bg-black/20 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md border border-white/10 transition-all duration-500",
-              isMusicExpanded ? "opacity-100 scale-100 translate-x-0" : "opacity-0 scale-90 translate-x-4 pointer-events-none"
+              "transition-all duration-500 ease-in-out overflow-hidden flex justify-end",
+              isMusicExpanded ? "w-[300px] md:w-[350px] opacity-100" : "w-0 opacity-0 pointer-events-none"
             )}>
-              <iframe 
-                src={`https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0`} 
-                width="100%" 
-                height="80" 
-                frameBorder="0" 
-                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-                loading="lazy"
-                className="rounded-none border-none"
-              />
+              <div className="w-[300px] md:w-[350px] h-20 bg-white/10 dark:bg-black/40 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md border border-white/10">
+                <iframe 
+                  src={`https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0`} 
+                  width="100%" 
+                  height="80" 
+                  frameBorder="0" 
+                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                  loading="lazy"
+                  className="rounded-none border-none"
+                />
+              </div>
             </div>
 
-            {/* Minimized Circle Button */}
+            {/* Spotify Button (Fixed in the vertical stack) */}
             <button 
               className={cn(
-                "absolute right-0 w-12 h-12 rounded-full overflow-hidden shadow-xl border-2 border-white/20 transition-all duration-500 bg-muted shrink-0",
-                !isMusicExpanded ? "opacity-100 scale-100" : "opacity-0 scale-75 pointer-events-none"
+                "w-12 h-12 rounded-full overflow-hidden shadow-xl border-2 transition-all duration-300 bg-muted shrink-0 flex items-center justify-center",
+                isMusicExpanded ? "border-primary scale-110" : "border-white/20 hover:scale-110"
               )}
-              onClick={() => setIsMusicExpanded(true)}
+              onClick={() => setIsMusicExpanded(!isMusicExpanded)}
             >
               {trackImageUrl ? (
                 <Image src={trackImageUrl} alt="Track Art" fill className="object-cover" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-primary/20">
-                  <Music className="h-5 w-5 text-primary" />
-                </div>
+                <Music className="h-5 w-5 text-primary" />
               )}
             </button>
           </div>
         )}
 
-        {/* Buttons Group - Stacked vertically */}
-        <div className="flex flex-col gap-3 pt-1">
-          {onToggleTheme && (
-            <Button
-              onClick={onToggleTheme}
-              variant="ghost"
-              className="rounded-full w-12 h-12 p-0 bg-white/10 hover:bg-white/20 backdrop-blur-md border-none text-foreground shadow-xl transition-all hover:scale-110 active:scale-90"
-              title={isCandle ? "Return to Light Mode" : "Enter Candle-Light Mode"}
-            >
-              {isCandle ? <Sun className="h-5 w-5 text-yellow-400" /> : <Flame className="h-5 w-5 text-orange-500 fill-orange-500" />}
-            </Button>
-          )}
+        {/* Theme Toggle Button */}
+        {onToggleTheme && (
+          <Button
+            onClick={onToggleTheme}
+            variant="ghost"
+            className="rounded-full w-12 h-12 p-0 bg-white/10 hover:bg-white/20 backdrop-blur-md border-none text-foreground shadow-xl transition-all hover:scale-110 active:scale-90"
+            title={isCandle ? "Return to Light Mode" : "Enter Candle-Light Mode"}
+          >
+            {isCandle ? <Sun className="h-5 w-5 text-yellow-400" /> : <Flame className="h-5 w-5 text-orange-500 fill-orange-500" />}
+          </Button>
+        )}
 
-          {onToggleFireworks && isCandle && (
+        {/* Fireworks Button */}
+        {onToggleFireworks && isCandle && (
+          <Button
+            onClick={onToggleFireworks}
+            variant="ghost"
+            className={cn(
+              "rounded-full w-12 h-12 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-xl",
+              showFireworks 
+                ? "bg-primary text-primary-foreground" 
+                : "bg-white/10 text-foreground hover:bg-white/20"
+            )}
+            title={showFireworks ? "Disable Fireworks" : "Enable Fireworks"}
+          >
+            <Sparkles className={cn("h-5 w-5", showFireworks && "animate-pulse")} />
+          </Button>
+        )}
+
+        {/* Voice Note Button */}
+        {voiceNoteUrl && (
+          <div className="relative w-12 h-12 flex items-center justify-center">
+            <svg className="absolute inset-0 w-full h-full -rotate-90 transform pointer-events-none" viewBox="0 0 60 60">
+              <circle cx="30" cy="30" r={radius} stroke="currentColor" strokeWidth="3" fill="transparent" className="text-orange-500/20" />
+              <circle
+                cx="30"
+                cy="30"
+                r={radius}
+                stroke="currentColor"
+                strokeWidth="3"
+                fill="transparent"
+                strokeDasharray={circumference}
+                style={{ strokeDashoffset: voiceStrokeDashoffset, transition: 'stroke-dashoffset 0.1s linear' }}
+                strokeLinecap="round"
+                className="text-orange-500"
+              />
+            </svg>
             <Button
-              onClick={onToggleFireworks}
+              onClick={toggleVoiceNote}
               variant="ghost"
               className={cn(
-                "rounded-full w-12 h-12 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-xl",
-                showFireworks 
-                  ? "bg-primary text-primary-foreground" 
-                  : "bg-white/10 text-foreground hover:bg-white/20"
+                "rounded-full w-9 h-9 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-sm bg-orange-500/10 text-orange-500 relative z-10",
+                isPlayingVoice && "bg-orange-500 text-white"
               )}
-              title={showFireworks ? "Disable Fireworks" : "Enable Fireworks"}
+              title={isPlayingVoice ? "Pause Message" : "Play Creator Message"}
             >
-              <Sparkles className={cn("h-5 w-5", showFireworks && "animate-pulse")} />
+              {isPlayingVoice ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
             </Button>
-          )}
-
-          {voiceNoteUrl && (
-            <div className="relative w-12 h-12 flex items-center justify-center">
-              <svg className="absolute inset-0 w-full h-full -rotate-90 transform pointer-events-none" viewBox="0 0 60 60">
-                <circle cx="30" cy="30" r={radius} stroke="currentColor" strokeWidth="3" fill="transparent" className="text-orange-500/20" />
-                <circle
-                  cx="30"
-                  cy="30"
-                  r={radius}
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  fill="transparent"
-                  strokeDasharray={circumference}
-                  style={{ strokeDashoffset: voiceStrokeDashoffset, transition: 'stroke-dashoffset 0.1s linear' }}
-                  strokeLinecap="round"
-                  className="text-orange-500"
-                />
-              </svg>
-              <Button
-                onClick={toggleVoiceNote}
-                variant="ghost"
-                className={cn(
-                  "rounded-full w-9 h-9 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-sm bg-orange-500/10 text-orange-500 relative z-10",
-                  isPlayingVoice && "bg-orange-500 text-white"
-                )}
-                title={isPlayingVoice ? "Pause Message" : "Play Creator Message"}
-              >
-                {isPlayingVoice ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-              </Button>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       <audio 

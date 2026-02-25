@@ -3,7 +3,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Sun, Flame, Sparkles, Volume2, VolumeX, Music } from 'lucide-react';
+import { Sun, Flame, Sparkles, Play, Pause, Music, Volume2, VolumeX } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
@@ -29,6 +29,8 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
   const isCandle = theme === 'candle-light';
   const [isPlayingVoice, setIsPlayingVoice] = useState(false);
   const [voiceProgress, setVoiceProgress] = useState(0);
+  const [voiceVolume, setVoiceVolume] = useState(1); // 0 to 1
+  const [isHoveringVoice, setIsHoveringVoice] = useState(false);
   const [isMusicExpanded, setIsMusicExpanded] = useState(false);
   const [trackImageUrl, setTrackImageUrl] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -67,6 +69,16 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
       audioRef.current.play();
       setIsPlayingVoice(true);
     }
+  };
+
+  // Handle scroll to adjust volume
+  const handleVoiceWheel = (e: React.WheelEvent) => {
+    if (!audioRef.current) return;
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    const newVolume = Math.min(Math.max(voiceVolume + delta, 0), 1);
+    setVoiceVolume(newVolume);
+    audioRef.current.volume = newVolume;
   };
 
   useEffect(() => {
@@ -174,35 +186,56 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
         </Button>
       )}
 
-      {/* Voice Note */}
+      {/* Voice Note Section */}
       {voiceNoteUrl && (
-        <div className="relative w-14 h-14 flex items-center justify-center">
-          <svg className="absolute inset-0 w-full h-full -rotate-90 transform pointer-events-none" viewBox="0 0 60 60">
-            <circle cx="30" cy="30" r={radius} stroke="currentColor" strokeWidth="4" fill="transparent" className="text-orange-500/20" />
-            <circle
-              cx="30"
-              cy="30"
-              r={radius}
-              stroke="currentColor"
-              strokeWidth="4"
-              fill="transparent"
-              strokeDasharray={circumference}
-              style={{ strokeDashoffset: voiceStrokeDashoffset, transition: 'stroke-dashoffset 0.1s linear' }}
-              strokeLinecap="round"
-              className="text-orange-500"
-            />
-          </svg>
-          <Button
-            onClick={toggleVoiceNote}
-            variant="ghost"
-            className={cn(
-              "rounded-full w-11 h-11 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-sm bg-orange-500/10 text-orange-500 relative z-10",
-              isPlayingVoice && "bg-orange-500 text-white"
-            )}
-            title={isPlayingVoice ? "Pause Message" : "Play Creator Message"}
-          >
-            {isPlayingVoice ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-          </Button>
+        <div 
+          className="relative flex items-center gap-3 group/voice"
+          onWheel={handleVoiceWheel}
+          onMouseEnter={() => setIsHoveringVoice(true)}
+          onMouseLeave={() => setIsHoveringVoice(false)}
+        >
+          {/* Vertical Volume Bar - Only visible on hover */}
+          <div className={cn(
+            "flex flex-col items-center gap-2 transition-all duration-300 overflow-hidden",
+            isHoveringVoice ? "w-6 opacity-100" : "w-0 opacity-0"
+          )}>
+            <div className="h-24 w-1.5 bg-white/20 rounded-full relative overflow-hidden flex flex-col justify-end">
+              <div 
+                className="w-full bg-orange-500 transition-all duration-200"
+                style={{ height: `${voiceVolume * 100}%` }}
+              />
+            </div>
+            <span className="text-[10px] font-bold text-orange-500">{Math.round(voiceVolume * 100)}%</span>
+          </div>
+
+          <div className="relative w-14 h-14 flex items-center justify-center">
+            <svg className="absolute inset-0 w-full h-full -rotate-90 transform pointer-events-none" viewBox="0 0 60 60">
+              <circle cx="30" cy="30" r={radius} stroke="currentColor" strokeWidth="4" fill="transparent" className="text-orange-500/20" />
+              <circle
+                cx="30"
+                cy="30"
+                r={radius}
+                stroke="currentColor"
+                strokeWidth="4"
+                fill="transparent"
+                strokeDasharray={circumference}
+                style={{ strokeDashoffset: voiceStrokeDashoffset, transition: 'stroke-dashoffset 0.1s linear' }}
+                strokeLinecap="round"
+                className="text-orange-500"
+              />
+            </svg>
+            <Button
+              onClick={toggleVoiceNote}
+              variant="ghost"
+              className={cn(
+                "rounded-full w-11 h-11 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-sm bg-orange-500/10 text-orange-500 relative z-10",
+                isPlayingVoice && "bg-orange-500 text-white"
+              )}
+              title={isPlayingVoice ? "Pause Message" : "Play Creator Message"}
+            >
+              {isPlayingVoice ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+            </Button>
+          </div>
         </div>
       )}
     </div>

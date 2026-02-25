@@ -21,7 +21,8 @@ export function TimelineLayout({ events, scrollProgress, theme }: TimelineLayout
     <div className="relative z-10">
       <div className="space-y-16 sm:space-y-32 relative z-10 pt-10 sm:pt-20">
         {events.map((event, index) => {
-          const isActive = scrollProgress > (index / (events.length + 1)) * 100;
+          // Calculate if the spine line has reached this specific point
+          const isActive = scrollProgress > (index / (events.length)) * 100;
 
           return (
             <div 
@@ -46,21 +47,23 @@ export function TimelineLayout({ events, scrollProgress, theme }: TimelineLayout
 
               {/* Timeline Dot/Heart - Perfectly centered on the same axis */}
               <div className={cn(
-                "hidden md:flex absolute left-1/2 -translate-x-1/2 items-center justify-center w-10 h-10 sm:w-14 sm:h-14 rounded-full border-[3px] transition-all duration-500 z-20 shadow-sm",
+                "hidden md:flex absolute left-1/2 -translate-x-1/2 items-center justify-center w-10 h-10 sm:w-14 sm:h-14 rounded-full border-[3px] transition-all duration-700 z-20 shadow-sm overflow-hidden",
                 isCandle ? "bg-black" : "bg-background",
                 isActive 
                   ? (isCandle ? "border-primary scale-125 shadow-[0_0_25px_rgba(255,215,0,0.6)]" : "border-secondary scale-110 shadow-[0_0_15px_rgba(255,182,193,0.4)]")
-                  : (isCandle ? "border-primary/40" : "border-primary/40")
+                  : (isCandle ? "border-primary/20" : "border-primary/40")
               )}> 
                 {isCandle ? (
                   <Heart className={cn(
-                    "w-6 h-6 sm:w-8 sm:h-8 transition-all duration-500",
-                    isActive ? "text-primary fill-primary animate-heartbeat" : "text-primary/20"
+                    "w-6 h-6 sm:w-8 sm:h-8 transition-all duration-1000 transform",
+                    isActive 
+                      ? "text-primary fill-primary animate-heartbeat opacity-100 scale-100" 
+                      : "opacity-0 scale-50"
                   )} />
                 ) : (
                   <div className={cn(
-                    "w-3 h-3 sm:w-5 sm:h-5 rounded-full transition-colors duration-500",
-                    isActive ? "bg-secondary" : "bg-primary/20"
+                    "w-3 h-3 sm:w-5 sm:h-5 rounded-full transition-all duration-700",
+                    isActive ? "bg-secondary scale-100" : "bg-primary/20 scale-50 opacity-0"
                   )} />
                 )}
               </div>

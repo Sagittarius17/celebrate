@@ -102,7 +102,7 @@ export default {
         'accordion-up': 'accordion-up 0.2s ease-out',
         'fade-in': 'fade-in 0.5s ease-out forwards',
         'float-up': 'float-up 4s ease-in-out infinite',
-        'heartbeat': 'heartbeat 2s ease-in-out infinite',
+        'heartbeat': 'heartbeat 3s ease-in-out infinite',
       },
     },
   },

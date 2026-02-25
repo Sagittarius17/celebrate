@@ -21,8 +21,9 @@ export function TimelineLayout({ events, scrollProgress, theme }: TimelineLayout
     <div className="relative z-10">
       <div className="space-y-16 sm:space-y-32 relative z-10 pt-10 sm:pt-20">
         {events.map((event, index) => {
-          // Calculate if the spine line has reached this specific point
-          const isActive = scrollProgress > (index / (events.length)) * 100;
+          // Precise threshold for when the spine line reaches the circle
+          const threshold = (index / events.length) * 100;
+          const isActive = scrollProgress >= threshold;
 
           return (
             <div 
@@ -45,7 +46,7 @@ export function TimelineLayout({ events, scrollProgress, theme }: TimelineLayout
                 />
               </div>
 
-              {/* Timeline Dot/Heart - Perfectly centered on the same axis */}
+              {/* Timeline Dot/Heart - Centered on axis */}
               <div className={cn(
                 "hidden md:flex absolute left-1/2 -translate-x-1/2 items-center justify-center w-10 h-10 sm:w-14 sm:h-14 rounded-full border-[3px] transition-all duration-700 z-20 shadow-sm overflow-hidden",
                 isCandle ? "bg-black" : "bg-background",

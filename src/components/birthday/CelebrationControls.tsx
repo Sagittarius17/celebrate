@@ -3,7 +3,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Sun, Flame, Sparkles, Play, Pause, Music, Volume2, VolumeX } from 'lucide-react';
+import { Sun, Flame, Sparkles, Play, Pause, Music } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
@@ -29,11 +29,13 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
   const isCandle = theme === 'candle-light';
   const [isPlayingVoice, setIsPlayingVoice] = useState(false);
   const [voiceProgress, setVoiceProgress] = useState(0);
-  const [voiceVolume, setVoiceVolume] = useState(1); // 0 to 1
+  const [voiceVolume, setVoiceVolume] = useState(0.6); // Default 60%
   const [isHoveringVoice, setIsHoveringVoice] = useState(false);
   const [isMusicExpanded, setIsMusicExpanded] = useState(false);
   const [trackImageUrl, setTrackImageUrl] = useState<string | null>(null);
+  
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const volumeAreaRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const startMinimizeTimer = () => {
@@ -60,6 +62,26 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
     }
   }, [spotifyTrackId]);
 
+  // Non-passive wheel listener to block background scroll and adjust volume
+  useEffect(() => {
+    const el = volumeAreaRef.current;
+    if (!el) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      // Always prevent default if hovering to satisfy "background scroll wont work"
+      e.preventDefault(); 
+      const delta = e.deltaY > 0 ? -0.05 : 0.05;
+      setVoiceVolume(v => {
+        const next = Math.min(Math.max(v + delta, 0), 1);
+        if (audioRef.current) audioRef.current.volume = next;
+        return next;
+      });
+    };
+
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => el.removeEventListener('wheel', handleWheel);
+  }, []);
+
   const toggleVoiceNote = () => {
     if (!audioRef.current) return;
     if (isPlayingVoice) {
@@ -69,16 +91,6 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
       audioRef.current.play();
       setIsPlayingVoice(true);
     }
-  };
-
-  // Handle scroll to adjust volume
-  const handleVoiceWheel = (e: React.WheelEvent) => {
-    if (!audioRef.current) return;
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? -0.1 : 0.1;
-    const newVolume = Math.min(Math.max(voiceVolume + delta, 0), 1);
-    setVoiceVolume(newVolume);
-    audioRef.current.volume = newVolume;
   };
 
   useEffect(() => {
@@ -182,35 +194,40 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
           )}
           title={showFireworks ? "Disable Fireworks" : "Enable Fireworks"}
         >
-          <Sparkles className={cn("h-6 w-6", showFireworks && "animate-pulse")} />
+          <div className="relative">
+            <Sparkles className={cn("h-6 w-6", showFireworks && "animate-pulse")} />
+          </div>
         </Button>
       )}
 
-      {/* Voice Note Section */}
+      {/* Voice Note Section - Refined for Scroll Lock & UI */}
       {voiceNoteUrl && (
         <div 
-          className="relative flex items-center gap-3 group/voice"
-          onWheel={handleVoiceWheel}
+          ref={volumeAreaRef}
+          className="relative flex items-center gap-4 group/voice"
           onMouseEnter={() => setIsHoveringVoice(true)}
           onMouseLeave={() => setIsHoveringVoice(false)}
         >
-          {/* Vertical Volume Bar - Only visible on hover */}
+          {/* Vertical Volume Bar - Positioned exactly as in reference */}
           <div className={cn(
-            "flex flex-col items-center gap-2 transition-all duration-300 overflow-hidden",
-            isHoveringVoice ? "w-6 opacity-100" : "w-0 opacity-0"
+            "flex flex-col items-center gap-2 transition-all duration-300 transform",
+            isHoveringVoice ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4 pointer-events-none"
           )}>
-            <div className="h-24 w-1.5 bg-white/20 rounded-full relative overflow-hidden flex flex-col justify-end">
+            <div className="h-28 w-2.5 bg-white/10 rounded-full relative overflow-hidden flex flex-col justify-end backdrop-blur-sm shadow-sm border border-white/5">
               <div 
-                className="w-full bg-orange-500 transition-all duration-200"
+                className="w-full bg-orange-500 transition-all duration-150 rounded-full"
                 style={{ height: `${voiceVolume * 100}%` }}
               />
             </div>
-            <span className="text-[10px] font-bold text-orange-500">{Math.round(voiceVolume * 100)}%</span>
+            <span className="text-[11px] font-bold text-orange-500 drop-shadow-sm">
+              {Math.round(voiceVolume * 100)}%
+            </span>
           </div>
 
+          {/* Voice Note Play Button with Progress Ring */}
           <div className="relative w-14 h-14 flex items-center justify-center">
             <svg className="absolute inset-0 w-full h-full -rotate-90 transform pointer-events-none" viewBox="0 0 60 60">
-              <circle cx="30" cy="30" r={radius} stroke="currentColor" strokeWidth="4" fill="transparent" className="text-orange-500/20" />
+              <circle cx="30" cy="30" r={radius} stroke="currentColor" strokeWidth="4" fill="transparent" className="text-orange-500/10" />
               <circle
                 cx="30"
                 cy="30"
@@ -228,12 +245,19 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
               onClick={toggleVoiceNote}
               variant="ghost"
               className={cn(
-                "rounded-full w-11 h-11 p-0 backdrop-blur-md border-none transition-all hover:scale-110 active:scale-90 shadow-sm bg-orange-500/10 text-orange-500 relative z-10",
-                isPlayingVoice && "bg-orange-500 text-white"
+                "rounded-full w-12 h-12 p-0 backdrop-blur-md border-none transition-all hover:scale-105 active:scale-95 shadow-lg bg-orange-500 text-black font-black flex items-center justify-center relative z-10",
+                !isPlayingVoice && "bg-orange-500/90"
               )}
               title={isPlayingVoice ? "Pause Message" : "Play Creator Message"}
             >
-              {isPlayingVoice ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+              {isPlayingVoice ? (
+                <div className="flex gap-1">
+                  <div className="w-1.5 h-4 bg-black rounded-full" />
+                  <div className="w-1.5 h-4 bg-black rounded-full" />
+                </div>
+              ) : (
+                <Play className="h-5 w-5 fill-black ml-1" />
+              )}
             </Button>
           </div>
         </div>

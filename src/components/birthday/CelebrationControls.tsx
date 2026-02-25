@@ -116,7 +116,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
     };
   }, [voiceNoteUrl]);
 
-  const radius = 28;
+  const radius = 29; // Slightly larger radius for the progress border
   const circumference = 2 * Math.PI * radius;
   const voiceStrokeDashoffset = circumference - (voiceProgress / 100) * circumference;
 
@@ -124,7 +124,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
 
   return (
     <div 
-      className="fixed top-10 right-10 z-[10000] flex flex-col items-center gap-3 pointer-events-auto"
+      className="fixed top-10 right-10 z-[10000] flex flex-col items-center gap-2 pointer-events-auto"
       onMouseEnter={clearMinimizeTimer}
       onMouseLeave={startMinimizeTimer}
     >
@@ -224,13 +224,13 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
 
           <div className="relative w-16 h-16 flex items-center justify-center shrink-0">
             <svg className="absolute inset-0 w-full h-full -rotate-90 transform pointer-events-none z-20" viewBox="0 0 64 64">
-              <circle cx="32" cy="32" r={radius} stroke="currentColor" strokeWidth="4" fill="transparent" className="text-orange-500/10" />
+              <circle cx="32" cy="32" r={radius} stroke="currentColor" strokeWidth="3" fill="transparent" className="text-orange-500/10" />
               <circle
                 cx="32"
                 cy="32"
                 r={radius}
                 stroke="currentColor"
-                strokeWidth="4"
+                strokeWidth="3"
                 fill="transparent"
                 strokeDasharray={circumference}
                 style={{ strokeDashoffset: voiceStrokeDashoffset, transition: 'stroke-dashoffset 0.1s linear' }}
@@ -242,7 +242,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
               onClick={toggleVoiceNote}
               variant="ghost"
               className={cn(
-                standardButtonStyle,
+                "rounded-full w-[54px] h-[54px] p-0 backdrop-blur-md border-none transition-all hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center shrink-0",
                 "bg-orange-500 text-black border-none hover:bg-orange-600 z-10",
                 !isPlayingVoice && "bg-orange-500"
               )}
@@ -250,11 +250,11 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
             >
               {isPlayingVoice ? (
                 <div className="flex gap-1.5 items-center justify-center">
-                  <div className="w-2 h-6 bg-black rounded-full" />
-                  <div className="w-2 h-6 bg-black rounded-full" />
+                  <div className="w-2.5 h-8 bg-black rounded-full" />
+                  <div className="w-2.5 h-8 bg-black rounded-full" />
                 </div>
               ) : (
-                <Play className="h-10 w-10 fill-black ml-1" />
+                <Play className="fill-black ml-1" style={{ width: '40px', height: '40px' }} />
               )}
             </Button>
           </div>

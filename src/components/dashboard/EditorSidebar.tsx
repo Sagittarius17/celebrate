@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -181,7 +180,7 @@ export function EditorSidebar({
           <CardContent className="space-y-4 pt-6">
             <div className="space-y-2">
               <Label>Choose Layout</Label>
-              <40Select 
+              <Select 
                 value={page.layout || 'Timeline'} 
                 onValueChange={(val) => {
                   handleUpdatePage({ layout: val });

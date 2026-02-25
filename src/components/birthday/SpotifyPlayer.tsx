@@ -56,10 +56,10 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
   const strokeDashoffset = circumference - (progress / 100) * circumference;
 
   return (
-    <div className="relative group/spotify-hub flex items-center justify-end">
+    <div className="relative group/spotify-hub flex items-center justify-end p-2 -m-2">
       {/* Animated Spotify Box Hub - Slides out from behind the button */}
-      <div className="absolute right-[calc(100%+12px)] top-1/2 -translate-y-1/2 w-0 overflow-hidden transition-all duration-500 group-hover/spotify-hub:w-[320px] pointer-events-none group-hover/spotify-hub:pointer-events-auto">
-        <div className="w-[320px] h-[80px] bg-[#191414] rounded-2xl shadow-2xl border border-white/10 overflow-hidden transition-all duration-500">
+      <div className="absolute right-[calc(100%-8px)] top-1/2 -translate-y-1/2 w-0 overflow-hidden transition-all duration-500 delay-75 group-hover/spotify-hub:w-[320px] group-hover/spotify-hub:delay-0 pointer-events-none group-hover/spotify-hub:pointer-events-auto z-50">
+        <div className="w-[320px] h-[80px] bg-[#191414] rounded-2xl shadow-2xl border border-white/10 overflow-hidden ml-auto">
           {isEnabled && trackId && (
             <iframe 
               src={`https://open.spotify.com/embed/track/${trackId}?utm_source=generator&theme=0&autoplay=1`} 
@@ -80,7 +80,7 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
         </div>
       </div>
 
-      <div className="relative w-14 h-14 flex items-center justify-center">
+      <div className="relative w-14 h-14 flex items-center justify-center z-[60]">
         <svg className="absolute inset-0 w-full h-full -rotate-90 transform pointer-events-none" viewBox="0 0 60 60">
           <circle cx="30" cy="30" r={radius} stroke="currentColor" strokeWidth="3" fill="transparent" className="text-orange-500/10" />
           <circle

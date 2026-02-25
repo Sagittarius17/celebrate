@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -128,7 +129,15 @@ export function EditorSidebar({
         reader.onloadend = () => {
           const base64String = reader.result as string;
           setAudioUrl(base64String);
-          handleUpdatePage({ voiceNoteDataUri: base64String });
+          
+          // Use the final recorded time
+          const finalDuration = recordingTime;
+          setRecordedDuration(finalDuration);
+
+          handleUpdatePage({ 
+            voiceNoteDataUri: base64String,
+            voiceNoteDuration: finalDuration
+          });
           toast({ title: "Voice Note Recorded", description: "Your message has been saved." });
         };
       };
@@ -157,16 +166,21 @@ export function EditorSidebar({
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
-      setRecordedDuration(recordingTime);
     }
   };
 
   const deleteVoiceNote = () => {
     setAudioUrl(null);
     setRecordedDuration(null);
-    handleUpdatePage({ voiceNoteDataUri: null });
+    handleUpdatePage({ 
+      voiceNoteDataUri: null,
+      voiceNoteDuration: null 
+    });
     toast({ title: "Voice Note Removed" });
   };
+
+  // Get duration to display - check local state first then the saved page data
+  const displayDuration = recordedDuration !== null ? recordedDuration : page.voiceNoteDuration;
 
   return (
     <ScrollArea className="h-[calc(100vh-320px)] -mx-4 px-4">
@@ -333,14 +347,14 @@ export function EditorSidebar({
               )}
 
               {audioUrl && !isRecording && (
-                <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-2xl border border-dashed">
-                  <div className="flex-1 flex items-center gap-2 pl-2">
-                    <Play className="h-4 w-4 text-orange-500" />
-                    <div className="flex flex-col">
+                <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-2xl border border-dashed">
+                  <div className="flex-1 flex flex-col gap-1 pl-1">
+                    <div className="flex items-center gap-2">
+                      <Play className="h-3 w-3 text-orange-500" />
                       <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Message Saved</span>
-                      {recordedDuration !== null && (
-                        <span className="text-[10px] flex items-center gap-1 text-orange-600 font-medium">
-                          <Clock className="h-3 w-3" /> {formatTime(recordedDuration)}
+                      {displayDuration !== undefined && displayDuration !== null && (
+                        <span className="text-[10px] flex items-center gap-1 bg-orange-500/10 text-orange-600 font-bold px-2 py-0.5 rounded-full">
+                          <Clock className="h-3 w-3" /> {formatTime(displayDuration)}
                         </span>
                       )}
                     </div>
@@ -349,7 +363,7 @@ export function EditorSidebar({
                     variant="ghost" 
                     size="icon" 
                     onClick={deleteVoiceNote}
-                    className="rounded-full hover:bg-destructive/10 hover:text-destructive"
+                    className="rounded-full h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

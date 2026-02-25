@@ -54,6 +54,10 @@
           "type": "string",
           "description": "A Base64 data URI of a recorded voice message."
         },
+        "voiceNoteDuration": {
+          "type": "number",
+          "description": "The duration of the voice note in seconds."
+        },
         "ownerId": {
           "type": "string",
           "description": "UID of the creator."

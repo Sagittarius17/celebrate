@@ -16,6 +16,7 @@ import { MemoryEditorList } from '@/components/dashboard/MemoryEditorList';
 import { LivePreviewFrame } from '@/components/dashboard/LivePreviewFrame';
 import { useDashboardTheme } from '../layout';
 import { SidebarProvider, SidebarInset, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
+import { cn } from '@/lib/utils';
 
 const slugify = (text: string) => {
   return text
@@ -179,9 +180,13 @@ function DashboardEditorContent({ id }: { id: string }) {
         <div className="flex flex-col min-h-screen">
           {/* Top Navbar */}
           <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/95 px-4 lg:px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            {/* Show trigger ONLY on mobile since it's in the sidebar header for desktop */}
             <div className="flex items-center gap-2">
-              <SidebarTrigger className="-ml-1 h-10 w-10 rounded-full md:hidden" />
+              <SidebarTrigger 
+                className={cn(
+                  "-ml-1 h-10 w-10 rounded-full",
+                  state === "expanded" && "md:hidden"
+                )} 
+              />
               <Link href="/dashboard">
                 <Button className={headerButtonStyle} title="Back to Dashboard">
                   <ArrowLeft className="h-5 w-5" />

@@ -71,6 +71,40 @@ function MemoryItemEditor({
     });
   }, [db, pageId, event.id]);
 
+  const isPlaceholder = event.imageUrl?.includes('picsum.photos/seed/placeholder');
+
+  // Use a native wheel listener to block page scrolling
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || isPlaceholder) return;
+
+    const handleWheelNative = (e: WheelEvent) => {
+      // Prevent page from scrolling
+      e.preventDefault();
+      
+      const zoomStep = 0.1;
+      const delta = e.deltaY > 0 ? -zoomStep : zoomStep;
+      
+      setLocalFraming(prev => {
+        const nextZoom = Math.min(Math.max(prev.zoom + delta, 1), 5);
+        return { ...prev, zoom: nextZoom };
+      });
+    };
+
+    el.addEventListener('wheel', handleWheelNative, { passive: false });
+    return () => el.removeEventListener('wheel', handleWheelNative);
+  }, [isPlaceholder]);
+
+  // Sync zoom to DB with a slight debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localFraming.zoom !== event.imageZoom) {
+        handleUpdateEvent({ imageZoom: localFraming.zoom });
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [localFraming.zoom, event.imageZoom, handleUpdateEvent]);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -99,7 +133,7 @@ function MemoryItemEditor({
   };
 
   const handlePointerDown = (e: React.PointerEvent) => {
-    if (event.imageUrl?.includes('picsum.photos/seed/placeholder')) return;
+    if (isPlaceholder) return;
     setIsInteracting(true);
     interactionRef.current.lastX = e.clientX;
     interactionRef.current.lastY = e.clientY;
@@ -140,17 +174,10 @@ function MemoryItemEditor({
     });
   };
 
-  const handleWheel = (e: React.WheelEvent) => {
-    if (event.imageUrl?.includes('picsum.photos/seed/placeholder')) return;
-    const zoomStep = 0.1;
-    const delta = e.deltaY > 0 ? -zoomStep : zoomStep;
-    const nextZoom = Math.min(Math.max(localFraming.zoom + delta, 1), 5);
-    setLocalFraming(prev => ({ ...prev, zoom: nextZoom }));
-    handleUpdateEvent({ imageZoom: nextZoom });
-  };
-
   const handleTouchMove = (e: React.TouchEvent) => {
     if (e.touches.length === 2) {
+      // Prevent the page from scrolling/zooming while pinching
+      e.preventDefault();
       interactionRef.current.isPinching = true;
       const dist = Math.hypot(
         e.touches[0].clientX - e.touches[1].clientX,
@@ -174,8 +201,6 @@ function MemoryItemEditor({
     }
   };
 
-  const isPlaceholder = event.imageUrl?.includes('picsum.photos/seed/placeholder');
-
   return (
     <Card className="rounded-[1.5rem] overflow-hidden border-none shadow-sm hover:shadow-md transition-all duration-300 group bg-card">
       <div className="flex flex-col md:flex-row h-full">
@@ -186,7 +211,6 @@ function MemoryItemEditor({
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
-          onWheel={handleWheel}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >

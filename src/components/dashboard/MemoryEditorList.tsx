@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Slider } from '@/components/ui/slider';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar, Trash2, Upload, Image as ImageIcon, Settings2, ZoomIn, Move } from 'lucide-react';
+import { Calendar, Trash2, Upload, Image as ImageIcon, Settings2, ZoomIn, Move, RotateCcw } from 'lucide-react';
 import Image from 'next/image';
 import { Firestore, doc } from 'firebase/firestore';
 import { updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -23,6 +23,70 @@ interface MemoryEditorListProps {
   pageId: string;
   db: Firestore | null;
   onFieldFocus?: (eventId: string, field: 'title' | 'message') => void;
+}
+
+function FramingControls({ event, onUpdate }: { event: any, onUpdate: (updates: any) => void }) {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h4 className="font-bold text-[10px] uppercase tracking-widest text-primary flex items-center gap-2">
+          <Settings2 className="h-3 w-3" /> Photo Framing
+        </h4>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="h-6 px-2 text-[10px] flex items-center gap-1" 
+          onClick={() => onUpdate({ imageZoom: 1, imageX: 0, imageY: 0 })}
+        >
+          <RotateCcw className="h-2.5 w-2.5" /> Reset
+        </Button>
+      </div>
+      
+      <div className="space-y-3">
+        <div className="space-y-1.5">
+          <div className="flex justify-between text-[10px] font-bold opacity-60">
+            <Label className="text-[10px]">Zoom</Label>
+            <span>{Math.round((event.imageZoom || 1) * 100)}%</span>
+          </div>
+          <Slider 
+            value={[event.imageZoom || 1]} 
+            min={1} 
+            max={3} 
+            step={0.05} 
+            onValueChange={([val]) => onUpdate({ imageZoom: val })} 
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <div className="flex justify-between text-[10px] font-bold opacity-60">
+            <Label className="text-[10px]">Horizontal Pan</Label>
+            <span>{event.imageX || 0}%</span>
+          </div>
+          <Slider 
+            value={[event.imageX || 0]} 
+            min={-50} 
+            max={50} 
+            step={1} 
+            onValueChange={([val]) => onUpdate({ imageX: val })} 
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <div className="flex justify-between text-[10px] font-bold opacity-60">
+            <Label className="text-[10px]">Vertical Pan</Label>
+            <span>{event.imageY || 0}%</span>
+          </div>
+          <Slider 
+            value={[event.imageY || 0]} 
+            min={-50} 
+            max={50} 
+            step={1} 
+            onValueChange={([val]) => onUpdate({ imageY: val })} 
+          />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function MemoryItemEditor({ 
@@ -83,9 +147,10 @@ function MemoryItemEditor({
   return (
     <Card className="rounded-[1.5rem] overflow-hidden border-none shadow-sm hover:shadow-md transition-all duration-300 group bg-card">
       <div className="flex flex-col md:flex-row h-full">
+        {/* Image Section */}
         <div className="relative w-full md:w-48 h-48 md:h-auto overflow-hidden bg-muted">
           <div 
-            className="relative w-full h-full cursor-pointer group"
+            className="relative w-full h-full cursor-pointer group/img"
             onClick={() => fileInputRef.current?.click()}
           >
             {event.imageUrl ? (
@@ -109,7 +174,7 @@ function MemoryItemEditor({
             
             <div className={cn(
               "absolute inset-0 bg-black/40 flex flex-col items-center justify-center transition-opacity",
-              isPlaceholder ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+              isPlaceholder ? "opacity-100" : "opacity-0 group-hover/img:opacity-100"
             )}>
               <Upload className="h-5 w-5 text-white mb-1" />
               <span className="text-white text-[9px] font-bold uppercase tracking-widest">
@@ -118,77 +183,50 @@ function MemoryItemEditor({
             </div>
           </div>
 
+          {/* Edit Photo Trigger - Mobile uses local state toggle, Desktop uses Popover */}
           {event.imageUrl && !isPlaceholder && (
-            <Popover open={isEditingPhoto} onOpenChange={setIsEditingPhoto}>
-              <PopoverTrigger asChild>
+            <>
+              {/* Desktop Popover Trigger */}
+              <div className="hidden md:block">
+                <Popover open={isEditingPhoto} onOpenChange={setIsEditingPhoto}>
+                  <PopoverTrigger asChild>
+                    <Button 
+                      variant="secondary" 
+                      size="icon" 
+                      className="absolute bottom-2 right-2 h-8 w-8 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 hover:bg-white text-primary border-none"
+                      title="Edit Photo Framing"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsEditingPhoto(true);
+                      }}
+                    >
+                      <Settings2 className="h-4 w-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64 p-4 rounded-2xl shadow-2xl" side="right" align="end">
+                    <FramingControls event={event} onUpdate={handleUpdateEvent} />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Mobile Toggle Trigger */}
+              <div className="md:hidden">
                 <Button 
                   variant="secondary" 
                   size="icon" 
-                  className="absolute bottom-2 right-2 h-8 w-8 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 hover:bg-white text-primary border-none"
-                  title="Edit Photo Framing"
+                  className={cn(
+                    "absolute bottom-2 right-2 h-8 w-8 rounded-full shadow-lg transition-all border-none",
+                    isEditingPhoto ? "bg-primary text-primary-foreground" : "bg-white/90 text-primary"
+                  )}
                   onClick={(e) => {
                     e.stopPropagation();
-                    setIsEditingPhoto(true);
+                    setIsEditingPhoto(!isEditingPhoto);
                   }}
                 >
                   <Settings2 className="h-4 w-4" />
                 </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-64 p-4 rounded-2xl shadow-2xl" side="right" align="end">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-xs uppercase tracking-widest text-primary flex items-center gap-2">
-                      <Settings2 className="h-3 w-3" /> Photo Framing
-                    </h4>
-                    <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px]" onClick={() => handleUpdateEvent({ imageZoom: 1, imageX: 0, imageY: 0 })}>Reset</Button>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <div className="space-y-1.5">
-                      <div className="flex justify-between text-[10px] font-bold opacity-60">
-                        <Label className="text-[10px]">Zoom</Label>
-                        <span>{Math.round((event.imageZoom || 1) * 100)}%</span>
-                      </div>
-                      <Slider 
-                        value={[event.imageZoom || 1]} 
-                        min={1} 
-                        max={3} 
-                        step={0.05} 
-                        onValueChange={([val]) => handleUpdateEvent({ imageZoom: val })} 
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <div className="flex justify-between text-[10px] font-bold opacity-60">
-                        <Label className="text-[10px]">Horizontal Pan</Label>
-                        <span>{event.imageX || 0}%</span>
-                      </div>
-                      <Slider 
-                        value={[event.imageX || 0]} 
-                        min={-50} 
-                        max={50} 
-                        step={1} 
-                        onValueChange={([val]) => handleUpdateEvent({ imageX: val })} 
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <div className="flex justify-between text-[10px] font-bold opacity-60">
-                        <Label className="text-[10px]">Vertical Pan</Label>
-                        <span>{event.imageY || 0}%</span>
-                      </div>
-                      <Slider 
-                        value={[event.imageY || 0]} 
-                        min={-50} 
-                        max={50} 
-                        step={1} 
-                        onValueChange={([val]) => handleUpdateEvent({ imageY: val })} 
-                      />
-                    </div>
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
+              </div>
+            </>
           )}
 
           <input 
@@ -199,6 +237,15 @@ function MemoryItemEditor({
             onChange={handleFileChange} 
           />
         </div>
+
+        {/* Mobile-Only Framing Area (Shown BELOW photo on mobile) */}
+        {isEditingPhoto && (
+          <div className="md:hidden p-4 bg-muted/20 border-b animate-in slide-in-from-top-2">
+            <FramingControls event={event} onUpdate={handleUpdateEvent} />
+          </div>
+        )}
+
+        {/* Content Section */}
         <CardContent className="p-4 md:p-5 flex-1 space-y-3 relative">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-2">

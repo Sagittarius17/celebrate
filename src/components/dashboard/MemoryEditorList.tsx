@@ -1,16 +1,14 @@
 
 "use client";
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Slider } from '@/components/ui/slider';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar, Trash2, Upload, Image as ImageIcon, Settings2, ZoomIn, Move, RotateCcw } from 'lucide-react';
+import { Calendar, Trash2, Upload, Image as ImageIcon, Move, ZoomIn } from 'lucide-react';
 import Image from 'next/image';
 import { Firestore, doc } from 'firebase/firestore';
 import { updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -23,70 +21,6 @@ interface MemoryEditorListProps {
   pageId: string;
   db: Firestore | null;
   onFieldFocus?: (eventId: string, field: 'title' | 'message') => void;
-}
-
-function FramingControls({ event, onUpdate }: { event: any, onUpdate: (updates: any) => void }) {
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h4 className="font-bold text-[10px] uppercase tracking-widest text-primary flex items-center gap-2">
-          <Settings2 className="h-3 w-3" /> Photo Framing
-        </h4>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="h-6 px-2 text-[10px] flex items-center gap-1" 
-          onClick={() => onUpdate({ imageZoom: 1, imageX: 0, imageY: 0 })}
-        >
-          <RotateCcw className="h-2.5 w-2.5" /> Reset
-        </Button>
-      </div>
-      
-      <div className="space-y-3">
-        <div className="space-y-1.5">
-          <div className="flex justify-between text-[10px] font-bold opacity-60">
-            <Label className="text-[10px]">Zoom</Label>
-            <span>{Math.round((event.imageZoom || 1) * 100)}%</span>
-          </div>
-          <Slider 
-            value={[event.imageZoom || 1]} 
-            min={1} 
-            max={3} 
-            step={0.05} 
-            onValueChange={([val]) => onUpdate({ imageZoom: val })} 
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <div className="flex justify-between text-[10px] font-bold opacity-60">
-            <Label className="text-[10px]">Horizontal Pan</Label>
-            <span>{event.imageX || 0}%</span>
-          </div>
-          <Slider 
-            value={[event.imageX || 0]} 
-            min={-50} 
-            max={50} 
-            step={1} 
-            onValueChange={([val]) => onUpdate({ imageX: val })} 
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <div className="flex justify-between text-[10px] font-bold opacity-60">
-            <Label className="text-[10px]">Vertical Pan</Label>
-            <span>{event.imageY || 0}%</span>
-          </div>
-          <Slider 
-            value={[event.imageY || 0]} 
-            min={-50} 
-            max={50} 
-            step={1} 
-            onValueChange={([val]) => onUpdate({ imageY: val })} 
-          />
-        </div>
-      </div>
-    </div>
-  );
 }
 
 function MemoryItemEditor({ 
@@ -103,17 +37,39 @@ function MemoryItemEditor({
   onFieldFocus?: (eventId: string, field: 'title' | 'message') => void;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-  const [isEditingPhoto, setIsEditingPhoto] = useState(false);
 
-  const handleUpdateEvent = (updates: any) => {
+  const [localFraming, setLocalFraming] = useState({
+    zoom: event.imageZoom || 1,
+    x: event.imageX || 0,
+    y: event.imageY || 0
+  });
+
+  const [isInteracting, setIsInteracting] = useState(false);
+  const interactionRef = useRef({ 
+    lastX: 0, 
+    lastY: 0, 
+    lastDist: 0,
+    isPinching: false 
+  });
+
+  useEffect(() => {
+    setLocalFraming({
+      zoom: event.imageZoom || 1,
+      x: event.imageX || 0,
+      y: event.imageY || 0
+    });
+  }, [event.imageZoom, event.imageX, event.imageY]);
+
+  const handleUpdateEvent = useCallback((updates: any) => {
     if (!db) return;
     const eventRef = doc(db, 'celebrationPages', pageId, 'birthdayEvents', event.id);
     updateDocumentNonBlocking(eventRef, {
       ...updates,
       updatedAt: new Date().toISOString(),
     });
-  };
+  }, [db, pageId, event.id]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -142,91 +98,161 @@ function MemoryItemEditor({
     toast({ title: "Memory Removed", description: "The memory has been deleted." });
   };
 
+  // Interaction Handlers
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (event.imageUrl?.includes('picsum.photos/seed/placeholder')) return;
+    setIsInteracting(true);
+    interactionRef.current.lastX = e.clientX;
+    interactionRef.current.lastY = e.clientY;
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isInteracting || interactionRef.current.isPinching) return;
+    
+    const dx = e.clientX - interactionRef.current.lastX;
+    const dy = e.clientY - interactionRef.current.lastY;
+    
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (rect) {
+      const sensitivity = 1 / (localFraming.zoom || 1);
+      const pctX = (dx / rect.width) * 100 * sensitivity;
+      const pctY = (dy / rect.height) * 100 * sensitivity;
+      
+      setLocalFraming(prev => ({
+        ...prev,
+        x: Math.min(Math.max(prev.x + pctX, -100), 100),
+        y: Math.min(Math.max(prev.y + pctY, -100), 100)
+      }));
+    }
+    
+    interactionRef.current.lastX = e.clientX;
+    interactionRef.current.lastY = e.clientY;
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (!isInteracting) return;
+    setIsInteracting(false);
+    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+    handleUpdateEvent({ 
+      imageX: localFraming.x, 
+      imageY: localFraming.y,
+      imageZoom: localFraming.zoom 
+    });
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    if (event.imageUrl?.includes('picsum.photos/seed/placeholder')) return;
+    const zoomStep = 0.1;
+    const delta = e.deltaY > 0 ? -zoomStep : zoomStep;
+    const nextZoom = Math.min(Math.max(localFraming.zoom + delta, 1), 5);
+    setLocalFraming(prev => ({ ...prev, zoom: nextZoom }));
+    handleUpdateEvent({ imageZoom: nextZoom });
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      interactionRef.current.isPinching = true;
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      
+      if (interactionRef.current.lastDist > 0) {
+        const delta = (dist - interactionRef.current.lastDist) / 100;
+        const nextZoom = Math.min(Math.max(localFraming.zoom + delta, 1), 5);
+        setLocalFraming(prev => ({ ...prev, zoom: nextZoom }));
+      }
+      interactionRef.current.lastDist = dist;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (interactionRef.current.isPinching) {
+      interactionRef.current.isPinching = false;
+      interactionRef.current.lastDist = 0;
+      handleUpdateEvent({ imageZoom: localFraming.zoom });
+    }
+  };
+
   const isPlaceholder = event.imageUrl?.includes('picsum.photos/seed/placeholder');
 
   return (
     <Card className="rounded-[1.5rem] overflow-hidden border-none shadow-sm hover:shadow-md transition-all duration-300 group bg-card">
       <div className="flex flex-col md:flex-row h-full">
         {/* Image Section */}
-        <div className="relative w-full md:w-48 h-48 md:h-auto overflow-hidden bg-muted">
-          <div 
-            className="relative w-full h-full cursor-pointer group/img"
-            onClick={() => fileInputRef.current?.click()}
-          >
+        <div 
+          ref={containerRef}
+          className="relative w-full md:w-48 h-48 md:h-auto overflow-hidden bg-muted touch-none select-none"
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onWheel={handleWheel}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div className="relative w-full h-full overflow-hidden pointer-events-none">
             {event.imageUrl ? (
-              <div className="relative w-full h-full overflow-hidden">
-                <Image 
-                  src={event.imageUrl} 
-                  alt={event.title} 
-                  fill 
-                  className="object-cover transition-transform duration-300"
-                  style={{
-                    transform: `scale(${event.imageZoom || 1}) translate(${event.imageX || 0}%, ${event.imageY || 0}%)`
-                  }}
-                />
-              </div>
+              <Image 
+                src={event.imageUrl} 
+                alt={event.title} 
+                fill 
+                className={cn(
+                  "object-cover",
+                  !isInteracting && "transition-transform duration-300"
+                )}
+                style={{
+                  transform: `scale(${localFraming.zoom}) translate(${localFraming.x}%, ${localFraming.y}%)`
+                }}
+              />
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
                 <ImageIcon className="h-6 w-6" />
                 <span className="text-[9px] font-bold uppercase tracking-widest">No Image</span>
               </div>
             )}
-            
-            <div className={cn(
-              "absolute inset-0 bg-black/40 flex flex-col items-center justify-center transition-opacity",
-              isPlaceholder ? "opacity-100" : "opacity-0 group-hover/img:opacity-100"
-            )}>
-              <Upload className="h-5 w-5 text-white mb-1" />
-              <span className="text-white text-[9px] font-bold uppercase tracking-widest">
-                {isPlaceholder ? "Upload Photo" : "Change Photo"}
-              </span>
-            </div>
           </div>
 
-          {/* Edit Photo Trigger - Mobile uses local state toggle, Desktop uses Popover */}
-          {event.imageUrl && !isPlaceholder && (
-            <>
-              {/* Desktop Popover Trigger */}
-              <div className="hidden md:block">
-                <Popover open={isEditingPhoto} onOpenChange={setIsEditingPhoto}>
-                  <PopoverTrigger asChild>
-                    <Button 
-                      variant="secondary" 
-                      size="icon" 
-                      className="absolute bottom-2 right-2 h-8 w-8 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 hover:bg-white text-primary border-none"
-                      title="Edit Photo Framing"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsEditingPhoto(true);
-                      }}
-                    >
-                      <Settings2 className="h-4 w-4" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-64 p-4 rounded-2xl shadow-2xl" side="right" align="end">
-                    <FramingControls event={event} onUpdate={handleUpdateEvent} />
-                  </PopoverContent>
-                </Popover>
-              </div>
+          {/* Overlay Instructions */}
+          <div className={cn(
+            "absolute inset-0 bg-black/40 flex flex-col items-center justify-center transition-opacity pointer-events-none",
+            isPlaceholder ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+          )}>
+            <div className="flex flex-col items-center gap-2 text-white">
+              {isPlaceholder ? (
+                <>
+                  <Upload className="h-6 w-6" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest">Click to Upload</span>
+                </>
+              ) : (
+                <>
+                  <div className="flex gap-4">
+                    <Move className="h-5 w-5 opacity-80" />
+                    <ZoomIn className="h-5 w-5 opacity-80" />
+                  </div>
+                  <span className="text-[9px] font-bold uppercase tracking-widest opacity-80">Drag to Pan • Scroll to Zoom</span>
+                </>
+              )}
+            </div>
+            {/* Real Upload Button Overlay */}
+            <Button 
+              className="absolute inset-0 opacity-0 cursor-pointer pointer-events-auto"
+              onClick={() => isPlaceholder && fileInputRef.current?.click()}
+            />
+          </div>
 
-              {/* Mobile Toggle Trigger */}
-              <div className="md:hidden">
-                <Button 
-                  variant="secondary" 
-                  size="icon" 
-                  className={cn(
-                    "absolute bottom-2 right-2 h-8 w-8 rounded-full shadow-lg transition-all border-none",
-                    isEditingPhoto ? "bg-primary text-primary-foreground" : "bg-white/90 text-primary"
-                  )}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsEditingPhoto(!isEditingPhoto);
-                  }}
-                >
-                  <Settings2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </>
+          {!isPlaceholder && (
+             <Button 
+                variant="secondary" 
+                size="sm" 
+                className="absolute top-2 right-2 h-7 rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 hover:bg-white text-xs font-bold pointer-events-auto"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  fileInputRef.current?.click();
+                }}
+             >
+               Change Photo
+             </Button>
           )}
 
           <input 
@@ -237,13 +263,6 @@ function MemoryItemEditor({
             onChange={handleFileChange} 
           />
         </div>
-
-        {/* Mobile-Only Framing Area (Shown BELOW photo on mobile) */}
-        {isEditingPhoto && (
-          <div className="md:hidden p-4 bg-muted/20 border-b animate-in slide-in-from-top-2">
-            <FramingControls event={event} onUpdate={handleUpdateEvent} />
-          </div>
-        )}
 
         {/* Content Section */}
         <CardContent className="p-4 md:p-5 flex-1 space-y-3 relative">

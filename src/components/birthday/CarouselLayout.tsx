@@ -20,7 +20,7 @@ const icons = [<Star />, <Camera />, <Gift />, <PartyPopper />, <Cake />, <Heart
 
 export function CarouselLayout({ events }: CarouselLayoutProps) {
   return (
-    <div className="max-w-[1400px] mx-auto px-6 py-12">
+    <div className="max-w-[1600px] mx-auto px-6 py-20">
       <Carousel 
         opts={{
           align: "start",
@@ -28,10 +28,10 @@ export function CarouselLayout({ events }: CarouselLayoutProps) {
         }}
         className="w-full"
       >
-        <CarouselContent className="-ml-10">
+        <CarouselContent className="-ml-8 sm:-ml-10">
           {events.map((event, index) => (
-            <CarouselItem key={event.id} className="pl-10 md:basis-3/4 lg:basis-1/2 xl:basis-[45%]">
-              <div className="py-8">
+            <CarouselItem key={event.id} className="pl-8 sm:pl-10 basis-full md:basis-1/2 lg:basis-1/3">
+              <div className="py-12 px-2">
                 <EventCard 
                   title={event.title}
                   date={new Date(event.eventDate).toLocaleDateString()}
@@ -48,9 +48,9 @@ export function CarouselLayout({ events }: CarouselLayoutProps) {
             </CarouselItem>
           ))}
         </CarouselContent>
-        <div className="flex justify-center gap-6 mt-4">
-          <CarouselPrevious className="static translate-y-0 h-12 w-12 border-none bg-white/20 hover:bg-white/40 backdrop-blur-md" />
-          <CarouselNext className="static translate-y-0 h-12 w-12 border-none bg-white/20 hover:bg-white/40 backdrop-blur-md" />
+        <div className="flex justify-center gap-6 mt-12">
+          <CarouselPrevious className="static translate-y-0 h-12 w-12 border-none bg-white/20 hover:bg-white/40 backdrop-blur-md shadow-lg" />
+          <CarouselNext className="static translate-y-0 h-12 w-12 border-none bg-white/20 hover:bg-white/40 backdrop-blur-md shadow-lg" />
         </div>
       </Carousel>
     </div>

@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -258,7 +257,7 @@ export function EditorSidebar({
             </SidebarGroupLabel>
             <SidebarGroupContent className="px-6 space-y-4">
                <div className="p-3 bg-primary/5 rounded-2xl border border-dashed border-primary/20 space-y-3">
-                 <p className="text-[10px] font-bold uppercase tracking-widest opacity-60">
+                 <p className="text-[10px] font-bold uppercase tracking-widest opacity-80 text-primary">
                    Styling {selectionContext.field === 'title' ? 'Memory Title' : 'Story Content'}
                  </p>
                  <div className="space-y-2">
@@ -283,7 +282,7 @@ export function EditorSidebar({
         )}
 
         <SidebarGroup>
-          <SidebarGroupLabel className="px-6 mb-2">Layout & Style</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-6 mb-2 font-bold text-primary">Layout & Style</SidebarGroupLabel>
           <SidebarGroupContent className="px-6 space-y-4">
             <div className="space-y-2">
               <Label className="text-xs">Choose Layout</Label>
@@ -303,7 +302,7 @@ export function EditorSidebar({
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="px-6 mb-2">Soundtrack</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-6 mb-2 font-bold text-primary">Soundtrack</SidebarGroupLabel>
           <SidebarGroupContent className="px-6 space-y-4">
             <div className="space-y-2">
               <Label className="text-xs">Spotify Track ID or URL</Label>
@@ -319,7 +318,7 @@ export function EditorSidebar({
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="px-6 mb-2">Personal Touch</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-6 mb-2 font-bold text-primary">Personal Touch</SidebarGroupLabel>
           <SidebarGroupContent className="px-6 space-y-4">
             <div className="flex flex-col gap-3">
               {!isRecording ? (
@@ -347,7 +346,7 @@ export function EditorSidebar({
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="px-6 mb-2">Final Quote</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-6 mb-2 font-bold text-primary">Final Quote</SidebarGroupLabel>
           <SidebarGroupContent className="px-6 space-y-4">
             <Textarea 
               placeholder="A final heart-warming message..." 

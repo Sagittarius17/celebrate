@@ -333,7 +333,9 @@ export function EditorSidebar({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 overflow-hidden">
                       <Play className="h-3 w-3 text-orange-500 shrink-0" />
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest truncate">Message Saved</span>
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest truncate">
+                        {displayDuration ? `${formatTime(displayDuration)} • ` : ""}Message Saved
+                      </span>
                     </div>
                   </div>
                   <Button variant="ghost" size="icon" onClick={deleteVoiceNote} className="rounded-full h-7 w-7 shrink-0"><Trash2 className="h-3.5 w-3.5" /></Button>

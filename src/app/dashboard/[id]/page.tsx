@@ -15,7 +15,7 @@ import { EditorSidebar } from '@/components/dashboard/EditorSidebar';
 import { MemoryEditorList } from '@/components/dashboard/MemoryEditorList';
 import { LivePreviewFrame } from '@/components/dashboard/LivePreviewFrame';
 import { useDashboardTheme } from '../layout';
-import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarInset, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 
 const slugify = (text: string) => {
   return text
@@ -31,12 +31,12 @@ export type SelectionContext = {
   field: 'title' | 'message' | null;
 } | null;
 
-export default function SurpriseEditor({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+function DashboardEditorContent({ id }: { id: string }) {
   const { user } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
   const { isDark, toggleTheme } = useDashboardTheme();
+  const { state } = useSidebar();
   
   const [isCopied, setIsCopied] = useState(false);
   const [isCodeCopied, setIsCodeCopied] = useState(false);
@@ -160,11 +160,10 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
   if (page.ownerId !== user?.uid) return <div className="p-20 text-center text-destructive">Unauthorized access.</div>;
 
   const livePreviewUrl = getShareUrl();
-
   const headerButtonStyle = "rounded-full h-10 w-10 p-0 flex items-center justify-center border-none bg-secondary hover:bg-secondary/80 text-secondary-foreground transition-all shadow-sm";
 
   return (
-    <SidebarProvider>
+    <>
       <EditorSidebar 
         page={page}
         pageRef={pageRef}
@@ -178,11 +177,11 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
       />
       <SidebarInset>
         <div className="flex flex-col min-h-screen">
-          {/* Top Navbar */}
+          {/* Top Navbar aligned with Sidebar Header */}
           <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <SidebarTrigger className="-ml-1" />
+            {state === 'collapsed' && <SidebarTrigger className="-ml-1" />}
             
-            <Link href="/dashboard" className="hidden sm:block">
+            <Link href="/dashboard">
               <Button variant="ghost" size="sm" className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
                 <ArrowLeft className="h-4 w-4" />
                 <span className="font-bold">Dashboard</span>
@@ -273,6 +272,15 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
           </main>
         </div>
       </SidebarInset>
+    </>
+  );
+}
+
+export default function SurpriseEditor({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  return (
+    <SidebarProvider>
+      <DashboardEditorContent id={id} />
     </SidebarProvider>
   );
 }

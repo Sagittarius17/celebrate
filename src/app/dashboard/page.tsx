@@ -249,8 +249,7 @@ export default function Dashboard() {
     reader.onloadend = async () => {
       const base64 = reader.result as string;
       try {
-        await updateProfile(user, { photoURL: base64 });
-        // Also update Firestore if profile exists
+        // Only update Firestore to avoid the Firebase Auth "Photo URL too long" error
         if (db && user.uid) {
           const userRef = doc(db, 'users', user.uid);
           updateDocumentNonBlocking(userRef, { photoURL: base64, updatedAt: new Date().toISOString() });
@@ -305,7 +304,7 @@ export default function Dashboard() {
               <SheetTrigger asChild>
                 <Button variant="outline" className={`${headerButtonStyle} overflow-hidden hover:ring-2 hover:ring-primary/50`}>
                   <Avatar className="h-12 w-12 border-none">
-                    <AvatarImage src={user.photoURL || undefined} />
+                    <AvatarImage src={userProfile?.photoURL || user.photoURL || undefined} />
                     <AvatarFallback className="bg-primary text-primary-foreground font-bold">
                       {user.email?.charAt(0).toUpperCase() || <User />}
                     </AvatarFallback>
@@ -321,7 +320,7 @@ export default function Dashboard() {
                 <div className="flex flex-col items-center gap-6 py-6">
                   <div className="relative group cursor-pointer" onClick={() => pfpInputRef.current?.click()}>
                     <Avatar className="h-24 w-24 border-4 border-primary/20 shadow-xl transition-transform group-hover:scale-105">
-                      <AvatarImage src={user.photoURL || undefined} />
+                      <AvatarImage src={userProfile?.photoURL || user.photoURL || undefined} />
                       <AvatarFallback className="bg-primary text-primary-foreground text-3xl font-bold">
                         {user.email?.charAt(0).toUpperCase()}
                       </AvatarFallback>

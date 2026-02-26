@@ -69,7 +69,7 @@
         "layout": {
           "type": "string",
           "description": "The visual layout style for the memories.",
-          "enum": ["Timeline", "Carousel", "Grid"],
+          "enum": ["Timeline", "Carousel", "Grid", "Collage"],
           "default": "Timeline"
         },
         "font": {

@@ -51,7 +51,7 @@ const FONTS = [
   "Lobster", "Cinzel", "Comfortaa", "Great Vibes", "Sacramento"
 ];
 
-const LAYOUTS = ["Timeline", "Carousel", "Grid"];
+const LAYOUTS = ["Timeline", "Carousel", "Grid", "Collage"];
 
 interface EditorSidebarProps {
   page: any;
@@ -80,6 +80,7 @@ function TrackMetadataDisplay({ trackId }: { trackId: string }) {
 
   useEffect(() => {
     if (trackId && trackId.length === 22) {
+      setMetadata(null);
       setLoading(true);
       fetch(`https://open.spotify.com/oembed?url=spotify:track:${trackId}`)
         .then(r => r.json())

@@ -8,6 +8,7 @@ import { Header } from '@/components/birthday/Header';
 import { TimelineLayout } from '@/components/birthday/TimelineLayout';
 import { GridLayout } from '@/components/birthday/GridLayout';
 import { CarouselLayout } from '@/components/birthday/CarouselLayout';
+import { CollageLayout } from '@/components/birthday/CollageLayout';
 import { FinalMessage } from '@/components/birthday/FinalMessage';
 import { ButterflySwarm } from '@/components/birthday/ButterflySwarm';
 import { FireworkEffect } from '@/components/birthday/FireworkEffect';
@@ -280,8 +281,10 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
               <div className="relative z-10">
                 {layout === 'Carousel' ? (
                   <CarouselLayout events={events} />
-                ) : (
+                ) : layout === 'Grid' ? (
                   <GridLayout events={events} />
+                ) : (
+                  <CollageLayout events={events} />
                 )}
               </div>
             )}

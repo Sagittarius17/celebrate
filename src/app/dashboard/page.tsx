@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -361,7 +362,11 @@ export default function Dashboard() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {surprises?.map((surprise) => (
-              <Card key={surprise.id} className="group hover:shadow-xl transition-all duration-300 rounded-[2.5rem] overflow-hidden border-none shadow-md relative bg-card">
+              <Card 
+                key={surprise.id} 
+                className="group hover:shadow-xl transition-all duration-300 rounded-[2.5rem] overflow-hidden border-none shadow-md relative bg-card cursor-pointer"
+                onClick={() => router.push(`/dashboard/${surprise.id}`)}
+              >
                 <CardHeader className="bg-primary/10">
                   <div className="flex justify-between items-start">
                     <CardTitle className="font-headline text-2xl truncate pr-4">{surprise.title}</CardTitle>
@@ -372,17 +377,72 @@ export default function Dashboard() {
                 <CardContent className="p-6 space-y-4">
                   <div className="flex items-center justify-between text-sm text-muted-foreground">
                     <div className="flex items-center"><Key className="h-4 w-4 mr-2" /> Code: <code className="bg-muted px-2 py-0.5 rounded ml-2 font-bold">{surprise.accessCode}</code></div>
-                    <Button variant="ghost" size="sm" className="h-10 w-10 p-0 rounded-full" onClick={() => copyAccessCode(surprise)}>{copiedCodeId === surprise.id ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}</Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-10 w-10 p-0 rounded-full" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        copyAccessCode(surprise);
+                      }}
+                    >
+                      {copiedCodeId === surprise.id ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                    </Button>
                   </div>
                   <div className="flex gap-2 pt-2">
-                    <Link href={`/dashboard/${surprise.id}`} className="flex-1"><Button className="w-full rounded-full h-11">Edit Timeline <ArrowRight className="ml-2 h-4 w-4" /></Button></Link>
-                    <Button variant="outline" size="icon" className="rounded-full h-11 w-11" onClick={() => copyShareLink(surprise)}>{copiedLinkId === surprise.id ? <Check className="h-4 w-4 text-green-500" /> : <Share2 className="h-4 w-4" />}</Button>
-                    <Button variant="outline" size="icon" className="rounded-full h-11 w-11" onClick={() => handleOpenEdit(surprise)}><Edit2 className="h-4 w-4 text-muted-foreground" /></Button>
+                    <Link 
+                      href={`/dashboard/${surprise.id}`} 
+                      className="flex-1"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Button className="w-full rounded-full h-11">
+                        Edit Timeline <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="rounded-full h-11 w-11" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        copyShareLink(surprise);
+                      }}
+                    >
+                      {copiedLinkId === surprise.id ? <Check className="h-4 w-4 text-green-500" /> : <Share2 className="h-4 w-4" />}
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="rounded-full h-11 w-11" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenEdit(surprise);
+                      }}
+                    >
+                      <Edit2 className="h-4 w-4 text-muted-foreground" />
+                    </Button>
                     <AlertDialog>
-                      <AlertDialogTrigger asChild><Button variant="outline" size="icon" className="rounded-full h-11 w-11"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
-                      <AlertDialogContent className="rounded-[2rem]">
+                      <AlertDialogTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          size="icon" 
+                          className="rounded-full h-11 w-11"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="rounded-[2rem]" onClick={(e) => e.stopPropagation()}>
                         <AlertDialogHeader><AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle><AlertDialogDescription>This will permanently delete "{surprise.title}" and remove all memory events from the timeline.</AlertDialogDescription></AlertDialogHeader>
-                        <AlertDialogFooter><AlertDialogCancel className="rounded-full">Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(surprise.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-full">Delete</AlertDialogAction></AlertDialogFooter>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className="rounded-full">Cancel</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={() => handleDelete(surprise.id)} 
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-full"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
                   </div>

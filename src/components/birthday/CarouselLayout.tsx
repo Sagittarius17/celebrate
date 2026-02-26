@@ -20,12 +20,18 @@ const icons = [<Star />, <Camera />, <Gift />, <PartyPopper />, <Cake />, <Heart
 
 export function CarouselLayout({ events }: CarouselLayoutProps) {
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
-      <Carousel className="w-full">
-        <CarouselContent className="-ml-4">
+    <div className="max-w-[1400px] mx-auto px-6 py-12">
+      <Carousel 
+        opts={{
+          align: "start",
+          loop: true,
+        }}
+        className="w-full"
+      >
+        <CarouselContent className="-ml-10">
           {events.map((event, index) => (
-            <CarouselItem key={event.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
-              <div className="p-1">
+            <CarouselItem key={event.id} className="pl-10 md:basis-3/4 lg:basis-1/2 xl:basis-[45%]">
+              <div className="py-8">
                 <EventCard 
                   title={event.title}
                   date={new Date(event.eventDate).toLocaleDateString()}
@@ -36,15 +42,15 @@ export function CarouselLayout({ events }: CarouselLayoutProps) {
                   imageZoom={event.imageZoom}
                   imageX={event.imageX}
                   imageY={event.imageY}
-                  icon={React.cloneElement(icons[index % icons.length] as React.ReactElement, { className: "w-5 h-5 text-primary-foreground" })}
+                  icon={React.cloneElement(icons[index % icons.length] as React.ReactElement, { className: "w-6 h-6 text-primary-foreground" })}
                 />
               </div>
             </CarouselItem>
           ))}
         </CarouselContent>
-        <div className="flex justify-center gap-4 mt-8">
-          <CarouselPrevious className="static translate-y-0" />
-          <CarouselNext className="static translate-y-0" />
+        <div className="flex justify-center gap-6 mt-4">
+          <CarouselPrevious className="static translate-y-0 h-12 w-12 border-none bg-white/20 hover:bg-white/40 backdrop-blur-md" />
+          <CarouselNext className="static translate-y-0 h-12 w-12 border-none bg-white/20 hover:bg-white/40 backdrop-blur-md" />
         </div>
       </Carousel>
     </div>

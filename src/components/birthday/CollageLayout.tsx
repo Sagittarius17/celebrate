@@ -10,6 +10,7 @@ interface CollageLayoutProps {
   events: any[];
   recipientName?: string;
   creatorName?: string;
+  pattern?: string;
 }
 
 /**
@@ -56,8 +57,11 @@ const Style2 = ({ events }: { events: any[] }) => (
       <p className="font-headline text-xl font-bold leading-none tracking-tighter">LO</p>
       <p className="font-headline text-xl font-bold leading-none tracking-tighter text-primary">VE</p>
     </div>
-    {[...Array(8)].map((_, i) => (
+    {[...Array(Math.min(8, events.length))].map((_, i) => (
       <CollageImage key={i} event={events[i]} />
+    ))}
+    {events.length < 8 && [...Array(8 - events.length)].map((_, i) => (
+      <div key={`empty-${i}`} className="bg-muted/10 w-full h-full" />
     ))}
   </div>
 );
@@ -146,55 +150,74 @@ const Style9 = ({ events }: { events: any[] }) => (
   </div>
 );
 
-export function CollageLayout({ events, recipientName = "Friend", creatorName = "Loved One" }: CollageLayoutProps) {
-  // Adaptive chunking based on the 9 styles
+export function CollageLayout({ 
+  events, 
+  recipientName = "Friend", 
+  creatorName = "Loved One",
+  pattern = "Adaptive"
+}: CollageLayoutProps) {
+  // Adaptive chunking based on the selection
   const chunks = React.useMemo(() => {
     const result = [];
-    let i = 0;
     const evts = [...events];
     
-    // Cycle through patterns based on available counts
+    if (pattern !== "Adaptive") {
+      // Determine how many images per block for the chosen style
+      const counts: Record<string, number> = {
+        "Style 1": 4, "Style 2": 8, "Style 3": 1, "Style 4": 2, 
+        "Style 5": 3, "Style 6": 2, "Style 7": 3, "Style 8": 4, "Style 9": 3
+      };
+      const count = counts[pattern] || 1;
+      
+      for (let i = 0; i < evts.length; i += count) {
+        result.push({ type: pattern, data: evts.slice(i, i + count) });
+      }
+      return result;
+    }
+
+    // Default "Adaptive" logic
+    let i = 0;
     while (i < evts.length) {
       const remaining = evts.length - i;
       
       if (remaining >= 8) {
-        result.push({ type: 'Style2', data: evts.slice(i, i + 8) });
+        result.push({ type: 'Style 2', data: evts.slice(i, i + 8) });
         i += 8;
       } else if (remaining >= 4) {
-        const type = Math.random() > 0.5 ? 'Style1' : 'Style8';
+        const type = Math.random() > 0.5 ? 'Style 1' : 'Style 8';
         result.push({ type, data: evts.slice(i, i + 4) });
         i += 4;
       } else if (remaining >= 3) {
-        const types = ['Style5', 'Style7', 'Style9'];
+        const types = ['Style 5', 'Style 7', 'Style 9'];
         const type = types[Math.floor(Math.random() * types.length)];
         result.push({ type, data: evts.slice(i, i + 3) });
         i += 3;
       } else if (remaining >= 2) {
-        const type = Math.random() > 0.5 ? 'Style4' : 'Style6';
+        const type = Math.random() > 0.5 ? 'Style 4' : 'Style 6';
         result.push({ type, data: evts.slice(i, i + 2) });
         i += 2;
       } else {
-        result.push({ type: 'Style3', data: evts.slice(i, i + 1) });
+        result.push({ type: 'Style 3', data: evts.slice(i, i + 1) });
         i += 1;
       }
     }
     return result;
-  }, [events]);
+  }, [events, pattern]);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-20">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 sm:gap-16">
         {chunks.map((chunk, idx) => (
           <div key={idx} className="reveal-on-scroll opacity-0 translate-y-10 transition-all duration-1000">
-            {chunk.type === 'Style1' && <Style1 events={chunk.data} name={recipientName} />}
-            {chunk.type === 'Style2' && <Style2 events={chunk.data} />}
-            {chunk.type === 'Style3' && <Style3 events={chunk.data} />}
-            {chunk.type === 'Style4' && <Style4 events={chunk.data} name={recipientName} creator={creatorName} />}
-            {chunk.type === 'Style5' && <Style5 events={chunk.data} />}
-            {chunk.type === 'Style6' && <Style6 events={chunk.data} name={recipientName} />}
-            {chunk.type === 'Style7' && <Style7 events={chunk.data} />}
-            {chunk.type === 'Style8' && <Style8 events={chunk.data} />}
-            {chunk.type === 'Style9' && <Style9 events={chunk.data} />}
+            {chunk.type === 'Style 1' && <Style1 events={chunk.data} name={recipientName} />}
+            {chunk.type === 'Style 2' && <Style2 events={chunk.data} />}
+            {chunk.type === 'Style 3' && <Style3 events={chunk.data} />}
+            {chunk.type === 'Style 4' && <Style4 events={chunk.data} name={recipientName} creator={creatorName} />}
+            {chunk.type === 'Style 5' && <Style5 events={chunk.data} />}
+            {chunk.type === 'Style 6' && <Style6 events={chunk.data} name={recipientName} />}
+            {chunk.type === 'Style 7' && <Style7 events={chunk.data} />}
+            {chunk.type === 'Style 8' && <Style8 events={chunk.data} />}
+            {chunk.type === 'Style 9' && <Style9 events={chunk.data} />}
           </div>
         ))}
       </div>

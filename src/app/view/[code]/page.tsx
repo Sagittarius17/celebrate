@@ -301,7 +301,12 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
                 ) : layout === 'Grid' ? (
                   <GridLayout events={events} />
                 ) : (
-                  <CollageLayout events={events} />
+                  <CollageLayout 
+                    events={events} 
+                    recipientName={page?.recipientName} 
+                    creatorName={page?.creatorName} 
+                    pattern={page?.collagePattern}
+                  />
                 )}
               </div>
             )}

@@ -288,6 +288,7 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
                     events={events} 
                     recipientName={page?.recipientName} 
                     creatorName={page?.creatorName} 
+                    pattern={page?.collagePattern}
                   />
                 )}
               </div>

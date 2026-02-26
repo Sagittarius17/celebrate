@@ -120,11 +120,11 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
   const circumference = 2 * Math.PI * radius;
   const voiceStrokeDashoffset = circumference - (voiceProgress / 100) * circumference;
 
-  const standardButtonStyle = "rounded-full w-14 h-14 p-0 backdrop-blur-md border-none transition-all hover:scale-105 active:scale-95 shadow-2xl flex items-center justify-center shrink-0";
+  const standardButtonStyle = "rounded-full w-10 h-10 sm:w-14 sm:h-14 p-0 backdrop-blur-md border-none transition-all hover:scale-105 active:scale-95 shadow-2xl flex items-center justify-center shrink-0";
 
   return (
     <div 
-      className="fixed top-10 right-10 z-[10000] flex flex-col items-center gap-2 pointer-events-auto"
+      className="fixed top-4 right-4 sm:top-10 sm:right-10 z-[10000] flex flex-col items-center gap-2 pointer-events-auto"
       onMouseEnter={clearMinimizeTimer}
       onMouseLeave={startMinimizeTimer}
     >
@@ -139,7 +139,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
         <div className="relative flex flex-col items-center">
           <button 
             className={cn(
-              "relative w-14 h-14 rounded-full overflow-hidden shadow-2xl border-2 transition-all duration-300 bg-black shrink-0 flex items-center justify-center cursor-pointer",
+              "relative w-10 h-10 sm:w-14 sm:h-14 rounded-full overflow-hidden shadow-2xl border-2 transition-all duration-300 bg-black shrink-0 flex items-center justify-center cursor-pointer",
               isMusicExpanded ? "border-primary scale-105" : "border-white/20 hover:scale-105"
             )}
             onClick={() => setIsMusicExpanded(!isMusicExpanded)}
@@ -147,13 +147,13 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
             {trackImageUrl ? (
               <Image src={trackImageUrl} alt="Track Art" fill className="object-cover" />
             ) : (
-              <Music className="h-6 w-6 text-primary" />
+              <Music className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
             )}
           </button>
           
           <div className={cn(
-            "absolute top-0 right-[calc(100%+24px)] transition-all duration-500 ease-in-out overflow-hidden h-20 flex items-center",
-            isMusicExpanded ? "w-[300px] md:w-[350px] opacity-100" : "w-0 opacity-0 pointer-events-none"
+            "absolute top-0 right-[calc(100%+16px)] sm:right-[calc(100%+24px)] transition-all duration-500 ease-in-out overflow-hidden h-20 flex items-center",
+            isMusicExpanded ? "w-[240px] sm:w-[350px] opacity-100" : "w-0 opacity-0 pointer-events-none"
           )}>
             <div className="w-full h-full bg-black/80 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md border border-white/10">
               <iframe 
@@ -178,7 +178,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
           className={cn(standardButtonStyle, "bg-white/10 hover:bg-white/20 text-foreground")}
           title={isCandle ? "Return to Light Mode" : "Enter Candle-Light Mode"}
         >
-          {isCandle ? <Sun className="h-6 w-6 text-yellow-400" /> : <Flame className="h-6 w-6 text-orange-500 fill-orange-500" />}
+          {isCandle ? <Sun className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-400" /> : <Flame className="h-5 w-5 sm:h-6 sm:w-6 text-orange-500 fill-orange-500" />}
         </Button>
       )}
 
@@ -195,11 +195,11 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
           )}
           title={showFireworks ? "Disable Fireworks" : "Enable Fireworks"}
         >
-          <Sparkles className={cn("h-6 w-6", showFireworks && "animate-pulse")} />
+          <Sparkles className={cn("h-5 w-5 sm:h-6 sm:w-6", showFireworks && "animate-pulse")} />
         </Button>
       )}
 
-      {/* Voice Note Section - Kept at w-16 h-16 as requested */}
+      {/* Voice Note Section */}
       {voiceNoteUrl && (
         <div 
           ref={volumeAreaRef}
@@ -208,21 +208,21 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
           onMouseLeave={() => setIsHoveringVoice(false)}
         >
           <div className={cn(
-            "absolute right-[calc(100%+16px)] top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 transition-all duration-300 transform",
+            "absolute right-[calc(100%+12px)] sm:right-[calc(100%+16px)] top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 transition-all duration-300 transform",
             isHoveringVoice ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4 pointer-events-none"
           )}>
-            <div className="h-28 w-2.5 bg-white/10 rounded-full relative overflow-hidden flex flex-col justify-end backdrop-blur-sm border border-white/5">
+            <div className="h-20 sm:h-28 w-2 bg-white/10 rounded-full relative overflow-hidden flex flex-col justify-end backdrop-blur-sm border border-white/5">
               <div 
                 className="w-full bg-orange-500 transition-all duration-150 rounded-full"
                 style={{ height: `${voiceVolume * 100}%` }}
               />
             </div>
-            <span className="text-[11px] font-bold text-orange-500 whitespace-nowrap">
+            <span className="text-[10px] font-bold text-orange-500 whitespace-nowrap">
               {Math.round(voiceVolume * 100)}%
             </span>
           </div>
 
-          <div className="relative w-16 h-16 flex items-center justify-center shrink-0">
+          <div className="relative w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center shrink-0">
             <svg className="absolute inset-0 w-full h-full -rotate-90 transform pointer-events-none z-20" viewBox="0 0 64 64">
               <circle cx="32" cy="32" r={radius} stroke="currentColor" strokeWidth="3" fill="transparent" className="text-orange-500/10" />
               <circle
@@ -242,19 +242,20 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
               onClick={toggleVoiceNote}
               variant="ghost"
               className={cn(
-                "rounded-full w-[54px] h-[54px] p-0 backdrop-blur-md border-none transition-all hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center shrink-0",
+                "rounded-full p-0 backdrop-blur-md border-none transition-all hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center shrink-0",
                 "bg-orange-500 text-black border-none hover:bg-orange-600 z-10",
+                "w-9 h-9 sm:w-[54px] sm:h-[54px]",
                 !isPlayingVoice && "bg-orange-500"
               )}
               title={isPlayingVoice ? "Pause Message" : "Play Creator Message"}
             >
               {isPlayingVoice ? (
-                <div className="flex gap-1.5 items-center justify-center">
-                  <div className="w-2.5 h-8 bg-black rounded-full" />
-                  <div className="w-2.5 h-8 bg-black rounded-full" />
+                <div className="flex gap-1 sm:gap-1.5 items-center justify-center">
+                  <div className="w-1.5 h-5 sm:w-2.5 sm:h-8 bg-black rounded-full" />
+                  <div className="w-1.5 h-5 sm:w-2.5 sm:h-8 bg-black rounded-full" />
                 </div>
               ) : (
-                <Play className="fill-black ml-1" style={{ width: '40px', height: '40px' }} />
+                <Play className="fill-black ml-0.5 sm:ml-1 w-6 h-6 sm:w-10 sm:h-10" />
               )}
             </Button>
           </div>

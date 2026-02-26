@@ -239,12 +239,12 @@ export function EditorSidebar({
 
   return (
     <Sidebar className="border-r">
-      <SidebarHeader className="h-16 flex flex-row items-center px-4 border-b shrink-0">
-        <SidebarTrigger className="-ml-1 mr-3" />
+      <SidebarHeader className="h-16 flex flex-row items-center justify-between px-4 border-b shrink-0">
         <div className="flex items-center gap-2">
           <Settings2 className="h-5 w-5 text-[#FFD700]" />
           <h2 className="text-xl font-bold font-headline text-[#FFD700]">Customize</h2>
         </div>
+        <SidebarTrigger className="-mr-1" />
       </SidebarHeader>
       
       <SidebarContent>

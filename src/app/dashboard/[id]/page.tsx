@@ -178,7 +178,7 @@ function DashboardEditorContent({ id }: { id: string }) {
       <SidebarInset>
         <div className="flex flex-col min-h-screen">
           {/* Top Navbar aligned with Sidebar Header */}
-          <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/95 px-4 lg:px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             {state === 'collapsed' && <SidebarTrigger className="-ml-1" />}
             
             <Link href="/dashboard">
@@ -188,7 +188,7 @@ function DashboardEditorContent({ id }: { id: string }) {
             </Link>
 
             <div className="flex-1">
-               <h1 className="text-xl font-bold font-headline truncate max-w-[200px] md:max-w-md">{page.title}</h1>
+               <h1 className="text-xl font-bold font-headline truncate max-w-[150px] md:max-w-md">{page.title}</h1>
             </div>
             
             <div className="flex items-center gap-2">
@@ -233,15 +233,15 @@ function DashboardEditorContent({ id }: { id: string }) {
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto p-6 lg:p-10">
-            <div className="max-w-5xl mx-auto space-y-8">
+          <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+            <div className="max-w-[1600px] mx-auto space-y-4">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <h2 className="text-2xl font-bold flex items-center gap-2">
-                    <Calendar className="h-6 w-6 text-primary" /> {showLivePreview ? "Miniature Preview" : "Memory Editor"}
+                  <h2 className="text-xl font-bold flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-primary" /> {showLivePreview ? "Preview" : "Memory Editor"}
                   </h2>
                   {!isEventsLoading && events && (
-                    <Badge variant="secondary" className="rounded-full px-4 py-1.5 font-bold bg-primary text-primary-foreground border-none shadow-sm">
+                    <Badge variant="secondary" className="rounded-full px-3 py-0.5 text-[10px] font-bold bg-primary text-primary-foreground border-none shadow-sm">
                       {events.length} {events.length === 1 ? 'Card' : 'Cards'}
                     </Badge>
                   )}
@@ -249,9 +249,9 @@ function DashboardEditorContent({ id }: { id: string }) {
                 {!showLivePreview && (
                   <Button 
                     onClick={handleAddEmptyCard} 
-                    className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 font-bold"
+                    className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-4 text-xs font-bold"
                   >
-                    <Plus className="mr-2 h-4 w-4" /> Add Card
+                    <Plus className="mr-1 h-3 w-3" /> Add Card
                   </Button>
                 )}
               </div>

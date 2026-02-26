@@ -95,11 +95,11 @@ function TrackMetadataDisplay({ trackId }: { trackId: string }) {
     }
   }, [trackId]);
 
-  if (loading) return <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground"><Music2 className="h-3 w-3 animate-pulse" /> Loading info...</div>;
+  if (loading) return <div className="flex items-center gap-2 mt-2 text-xs text-[#FFD700]"><Music2 className="h-3 w-3 animate-pulse" /> Loading info...</div>;
   if (!metadata) return null;
 
   return (
-    <div className="flex items-center gap-3 mt-4 p-2 bg-muted/30 rounded-xl border border-dashed animate-in fade-in slide-in-from-top-2">
+    <div className="flex items-center gap-3 mt-4 p-2 bg-muted/30 rounded-xl border border-dashed border-[#FFD700]/30 animate-in fade-in slide-in-from-top-2">
       <div className="relative h-10 w-10 shrink-0 rounded-lg overflow-hidden bg-muted">
         <Image src={metadata.imageUrl} alt="" fill className="object-cover" />
       </div>
@@ -242,8 +242,8 @@ export function EditorSidebar({
           <ArrowLeft className="h-4 w-4" /> Back to Dashboard
         </Link>
         <div className="flex items-center gap-2">
-          <Settings2 className="h-6 w-6 text-primary" />
-          <h2 className="text-2xl font-bold font-headline">Customize</h2>
+          <Settings2 className="h-6 w-6 text-[#FFD700]" />
+          <h2 className="text-2xl font-bold font-headline text-[#FFD700]">Customize</h2>
         </div>
       </SidebarHeader>
       
@@ -252,16 +252,16 @@ export function EditorSidebar({
       <SidebarContent>
         {selectionContext && selectionContext.field && (
           <SidebarGroup className="animate-in slide-in-from-top-2">
-            <SidebarGroupLabel className="px-6 mb-2 flex items-center gap-2 text-primary font-bold">
+            <SidebarGroupLabel className="px-6 mb-2 flex items-center gap-2 text-[#FFD700] font-bold">
               <Type className="h-3 w-3" /> Selected Text Style
             </SidebarGroupLabel>
             <SidebarGroupContent className="px-6 space-y-4">
-               <div className="p-3 bg-primary/5 rounded-2xl border border-dashed border-primary/20 space-y-3">
-                 <p className="text-[10px] font-bold uppercase tracking-widest opacity-80 text-primary">
+               <div className="p-3 bg-[#FFD700]/5 rounded-2xl border border-dashed border-[#FFD700]/30 space-y-3">
+                 <p className="text-[10px] font-bold uppercase tracking-widest opacity-80 text-[#FFD700]">
                    Styling {selectionContext.field === 'title' ? 'Memory Title' : 'Story Content'}
                  </p>
                  <div className="space-y-2">
-                  <Label className="text-[10px] font-bold">Change Font</Label>
+                  <Label className="text-[10px] font-bold text-[#FFD700]/80">Change Font</Label>
                   <Select value={currentFont} onValueChange={handleUpdateEventFont}>
                     <SelectTrigger className="w-full h-10 rounded-xl bg-background border-none shadow-sm">
                       <SelectValue placeholder="Inherit Page Font" />
@@ -282,17 +282,17 @@ export function EditorSidebar({
         )}
 
         <SidebarGroup>
-          <SidebarGroupLabel className="px-6 mb-2 font-bold text-primary">Layout & Style</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-6 mb-2 font-bold text-[#FFD700]">Layout & Style</SidebarGroupLabel>
           <SidebarGroupContent className="px-6 space-y-4">
             <div className="space-y-2">
-              <Label className="text-xs">Choose Layout</Label>
+              <Label className="text-xs text-[#FFD700]/70">Choose Layout</Label>
               <Select value={page.layout || 'Timeline'} onValueChange={(val) => handleUpdatePage({ layout: val })}>
                 <SelectTrigger className="w-full h-10 rounded-xl"><SelectValue placeholder="Select layout" /></SelectTrigger>
                 <SelectContent>{LAYOUTS.map(layout => <SelectItem key={layout} value={layout}>{layout}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">Global Font</Label>
+              <Label className="text-xs text-[#FFD700]/70">Global Font</Label>
               <Select value={page.font || 'Playfair Display'} onValueChange={(val) => handleUpdatePage({ font: val })}>
                 <SelectTrigger className="w-full h-10 rounded-xl"><SelectValue placeholder="Select font" /></SelectTrigger>
                 <SelectContent>{FONTS.map(font => <SelectItem key={font} value={font}><span style={{ fontFamily: font }} className="text-sm">{font}</span></SelectItem>)}</SelectContent>
@@ -302,10 +302,10 @@ export function EditorSidebar({
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="px-6 mb-2 font-bold text-primary">Soundtrack</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-6 mb-2 font-bold text-[#FFD700]">Soundtrack</SidebarGroupLabel>
           <SidebarGroupContent className="px-6 space-y-4">
             <div className="space-y-2">
-              <Label className="text-xs">Spotify Track ID or URL</Label>
+              <Label className="text-xs text-[#FFD700]/70">Spotify Track ID or URL</Label>
               <Input 
                 placeholder="Paste Link or ID here" 
                 className="rounded-xl h-10 text-sm"
@@ -318,12 +318,12 @@ export function EditorSidebar({
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="px-6 mb-2 font-bold text-primary">Personal Touch</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-6 mb-2 font-bold text-[#FFD700]">Personal Touch</SidebarGroupLabel>
           <SidebarGroupContent className="px-6 space-y-4">
             <div className="flex flex-col gap-3">
               {!isRecording ? (
-                <Button onClick={startRecording} variant="outline" className="w-full rounded-full border-dashed border-orange-200 h-10 text-xs">
-                  <Mic className="mr-2 h-3.5 w-3.5 text-orange-500" /> {audioUrl ? "Record New" : "Voice Note"}
+                <Button onClick={startRecording} variant="outline" className="w-full rounded-full border-dashed border-[#FFD700]/40 h-10 text-xs">
+                  <Mic className="mr-2 h-3.5 w-3.5 text-[#FFD700]" /> {audioUrl ? "Record New" : "Voice Note"}
                 </Button>
               ) : (
                 <Button onClick={stopRecording} variant="destructive" className="w-full rounded-full animate-pulse h-10 text-xs">
@@ -331,7 +331,7 @@ export function EditorSidebar({
                 </Button>
               )}
               {audioUrl && !isRecording && (
-                <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-2xl border border-dashed">
+                <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-2xl border border-dashed border-[#FFD700]/30">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 overflow-hidden">
                       <Play className="h-3 w-3 text-orange-500 shrink-0" />
@@ -346,7 +346,7 @@ export function EditorSidebar({
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="px-6 mb-2 font-bold text-primary">Final Quote</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-6 mb-2 font-bold text-[#FFD700]">Final Quote</SidebarGroupLabel>
           <SidebarGroupContent className="px-6 space-y-4">
             <Textarea 
               placeholder="A final heart-warming message..." 
@@ -354,7 +354,7 @@ export function EditorSidebar({
               onChange={(e) => setCustomQuote(e.target.value)} 
               className="min-h-[80px] text-sm rounded-xl" 
             />
-            <Button variant="secondary" className="w-full rounded-full h-10 text-xs" onClick={onSaveQuote} disabled={isSavingQuote}>
+            <Button variant="secondary" className="w-full rounded-full h-10 text-xs text-[#FFD700]" onClick={onSaveQuote} disabled={isSavingQuote}>
               {isSavingQuote ? "Saving..." : <><Save className="mr-2 h-3.5 w-3.5" /> Save Ending</>}
             </Button>
           </SidebarGroupContent>

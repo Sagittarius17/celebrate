@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useUser, useFirestore, useCollection, useMemoFirebase, useAuth } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase, useAuth, useDoc } from '@/firebase';
 import { collection, doc, query, where } from 'firebase/firestore';
 import { addDocumentNonBlocking, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Button } from '@/components/ui/button';
@@ -23,7 +23,9 @@ import {
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
-import { Plus, User, Key, ArrowRight, Gift, LogOut, Copy, Check, Type, Trash2, Edit2, Sun, Moon, Music, Share2, Music2 } from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from '@/components/ui/sheet';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Plus, User, Key, ArrowRight, Gift, LogOut, Copy, Check, Type, Trash2, Edit2, Sun, Moon, Music, Share2, Music2, Calendar, Mail, BadgeCheck } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -149,6 +151,13 @@ export default function Dashboard() {
 
   const { data: surprises, isLoading: isSurprisesLoading } = useCollection(celebrationPagesQuery);
 
+  const userDocRef = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return doc(db, 'users', user.uid);
+  }, [db, user]);
+
+  const { data: userProfile } = useDoc(userDocRef);
+
   const handleCreate = () => {
     if (!user || !db) return;
     
@@ -255,12 +264,81 @@ export default function Dashboard() {
           </div>
           
           <div className="flex items-center gap-4">
-            <Button 
-              variant="destructive"
-              className={`${headerButtonStyle} bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-lg shadow-destructive/20`}
-              onClick={handleLogout}
-              title="Log Out"
-            ><LogOut className="h-5 w-5" /></Button>
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" className={`${headerButtonStyle} overflow-hidden hover:ring-2 hover:ring-primary/50`}>
+                  <Avatar className="h-12 w-12 border-none">
+                    <AvatarImage src={user.photoURL || undefined} />
+                    <AvatarFallback className="bg-primary text-primary-foreground font-bold">
+                      {user.email?.charAt(0).toUpperCase() || <User />}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="rounded-l-[3rem] sm:max-w-md border-l-0 shadow-2xl">
+                <SheetHeader className="pb-8">
+                  <SheetTitle className="text-2xl font-headline font-bold">Account Profile</SheetTitle>
+                  <SheetDescription>View and manage your account details.</SheetDescription>
+                </SheetHeader>
+                
+                <div className="flex flex-col items-center gap-6 py-6">
+                  <div className="relative group">
+                    <Avatar className="h-24 w-24 border-4 border-primary/20 shadow-xl transition-transform group-hover:scale-105">
+                      <AvatarImage src={user.photoURL || undefined} />
+                      <AvatarFallback className="bg-primary text-primary-foreground text-3xl font-bold">
+                        {user.email?.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                  
+                  <div className="w-full space-y-4">
+                    <div className="p-4 bg-muted/30 rounded-2xl border border-dashed flex items-center gap-4">
+                      <div className="p-2 bg-primary/10 rounded-xl text-primary">
+                        <Mail className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Email Address</p>
+                        <p className="text-sm font-medium truncate">{user.email}</p>
+                      </div>
+                    </div>
+
+                    <div className="p-4 bg-muted/30 rounded-2xl border border-dashed flex items-center gap-4">
+                      <div className="p-2 bg-primary/10 rounded-xl text-primary">
+                        <Calendar className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Joined Since</p>
+                        <p className="text-sm font-medium">
+                          {userProfile?.createdAt ? new Date(userProfile.createdAt).toLocaleDateString() : 'N/A'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="p-4 bg-muted/30 rounded-2xl border border-dashed flex items-center gap-4">
+                      <div className="p-2 bg-primary/10 rounded-xl text-primary">
+                        <BadgeCheck className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Status</p>
+                        <p className="text-sm font-medium text-green-500 flex items-center gap-1.5">
+                          Verified <Check className="h-3 w-3" />
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-8 w-full">
+                    <Button 
+                      variant="destructive" 
+                      className="w-full rounded-full h-12 shadow-lg shadow-destructive/20 flex items-center justify-center gap-2"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="h-4 w-4" /> Sign Out
+                    </Button>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
 
             <Button 
               className={`${headerButtonStyle} bg-secondary hover:bg-secondary/80 text-secondary-foreground`}

@@ -1,9 +1,10 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase, useAuth, useDoc } from '@/firebase';
 import { collection, doc, query, where } from 'firebase/firestore';
+import { updateProfile } from 'firebase/auth';
 import { addDocumentNonBlocking, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,7 +26,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Progress } from '@/components/ui/progress';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Plus, User, Key, ArrowRight, Gift, LogOut, Copy, Check, Type, Trash2, Edit2, Sun, Moon, Music, Share2, Music2, Calendar, Mail, BadgeCheck } from 'lucide-react';
+import { Plus, User, Key, ArrowRight, Gift, LogOut, Copy, Check, Type, Trash2, Edit2, Sun, Moon, Music, Share2, Music2, Calendar, Mail, BadgeCheck, Camera, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -122,6 +123,8 @@ export default function Dashboard() {
   const [copiedCodeId, setCopiedCodeId] = useState<string | null>(null);
   const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null);
   const [loadingProgress, setLoadingProgress] = useState(0);
+  const [isUploadingPfp, setIsUploadingPfp] = useState(false);
+  const pfpInputRef = useRef<HTMLInputElement>(null);
 
   const [newSurprise, setNewSurprise] = useState({
     recipientName: '',
@@ -228,6 +231,40 @@ export default function Dashboard() {
     setTimeout(() => setCopiedLinkId(null), 2000);
   };
 
+  const handlePfpUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    if (file.size > 1 * 1024 * 1024) {
+      toast({
+        variant: "destructive",
+        title: "File too large",
+        description: "Please choose an image under 1MB.",
+      });
+      return;
+    }
+
+    setIsUploadingPfp(true);
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64 = reader.result as string;
+      try {
+        await updateProfile(user, { photoURL: base64 });
+        // Also update Firestore if profile exists
+        if (db && user.uid) {
+          const userRef = doc(db, 'users', user.uid);
+          updateDocumentNonBlocking(userRef, { photoURL: base64, updatedAt: new Date().toISOString() });
+        }
+        toast({ title: "Profile Picture Updated" });
+      } catch (err: any) {
+        toast({ variant: "destructive", title: "Update Failed", description: err.message });
+      } finally {
+        setIsUploadingPfp(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   if (isUserLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-8 space-y-6 max-w-sm mx-auto">
@@ -282,13 +319,17 @@ export default function Dashboard() {
                 </SheetHeader>
                 
                 <div className="flex flex-col items-center gap-6 py-6">
-                  <div className="relative group">
+                  <div className="relative group cursor-pointer" onClick={() => pfpInputRef.current?.click()}>
                     <Avatar className="h-24 w-24 border-4 border-primary/20 shadow-xl transition-transform group-hover:scale-105">
                       <AvatarImage src={user.photoURL || undefined} />
                       <AvatarFallback className="bg-primary text-primary-foreground text-3xl font-bold">
                         {user.email?.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
+                    <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      {isUploadingPfp ? <Loader2 className="h-8 w-8 text-white animate-spin" /> : <Camera className="h-8 w-8 text-white" />}
+                    </div>
+                    <input type="file" ref={pfpInputRef} className="hidden" accept="image/*" onChange={handlePfpUpload} />
                   </div>
                   
                   <div className="w-full space-y-4">

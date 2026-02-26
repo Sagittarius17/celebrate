@@ -162,6 +162,21 @@
           "type": "string",
           "description": "URL for the image associated with this event."
         },
+        "imageZoom": {
+          "type": "number",
+          "description": "Zoom scale for the image (default 1.0).",
+          "default": 1
+        },
+        "imageX": {
+          "type": "number",
+          "description": "X-axis pan offset in percentage.",
+          "default": 0
+        },
+        "imageY": {
+          "type": "number",
+          "description": "Y-axis pan offset in percentage.",
+          "default": 0
+        },
         "ownerId": {
           "type": "string",
           "description": "UID of the creator."

@@ -14,6 +14,9 @@ interface EventCardProps {
   icon?: React.ReactNode;
   titleFont?: string;
   messageFont?: string;
+  imageZoom?: number;
+  imageX?: number;
+  imageY?: number;
 }
 
 export const EventCard: React.FC<EventCardProps> = ({ 
@@ -23,18 +26,26 @@ export const EventCard: React.FC<EventCardProps> = ({
   imageUrl, 
   icon,
   titleFont,
-  messageFont
+  messageFont,
+  imageZoom = 1,
+  imageX = 0,
+  imageY = 0
 }) => {
   return (
     <Card className="overflow-hidden border-none shadow-2xl transition-all duration-1000 hover:scale-[1.02] bg-white/80 dark:bg-card/80 candle-light:bg-black/60 candle-light:shadow-[0_0_40px_rgba(255,215,0,0.15)] backdrop-blur-md rounded-[1.5rem] sm:rounded-[2rem]">
-      <div className="relative h-48 sm:h-64 w-full">
-        <Image 
-          src={imageUrl} 
-          alt={title}
-          fill
-          className="object-cover"
-          data-ai-hint="celebration photo"
-        />
+      <div className="relative h-48 sm:h-64 w-full overflow-hidden">
+        <div className="relative w-full h-full overflow-hidden">
+          <Image 
+            src={imageUrl} 
+            alt={title}
+            fill
+            className="object-cover transition-transform duration-300"
+            style={{
+              transform: `scale(${imageZoom}) translate(${imageX}%, ${imageY}%)`
+            }}
+            data-ai-hint="celebration photo"
+          />
+        </div>
         <div className="absolute top-4 left-4">
           <Badge variant="secondary" className="px-3 sm:px-4 py-1 text-xs sm:text-sm font-semibold backdrop-blur-md bg-white/40 dark:bg-black/40 border-none">
             {date}

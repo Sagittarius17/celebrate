@@ -33,6 +33,9 @@ export function CarouselLayout({ events }: CarouselLayoutProps) {
                   imageUrl={event.imageUrl}
                   titleFont={event.titleFont}
                   messageFont={event.messageFont}
+                  imageZoom={event.imageZoom}
+                  imageX={event.imageX}
+                  imageY={event.imageY}
                   icon={React.cloneElement(icons[index % icons.length] as React.ReactElement, { className: "w-5 h-5 text-primary-foreground" })}
                 />
               </div>

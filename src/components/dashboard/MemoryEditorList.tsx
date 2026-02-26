@@ -1,14 +1,16 @@
 
 "use client";
 
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Calendar, Trash2, Upload, Image as ImageIcon } from 'lucide-react';
+import { Slider } from '@/components/ui/slider';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar, Trash2, Upload, Image as ImageIcon, Settings2, ZoomIn, Move } from 'lucide-react';
 import Image from 'next/image';
 import { Firestore, doc } from 'firebase/firestore';
 import { updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -38,6 +40,7 @@ function MemoryItemEditor({
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const [isEditingPhoto, setIsEditingPhoto] = useState(false);
 
   const handleUpdateEvent = (updates: any) => {
     if (!db) return;
@@ -80,29 +83,114 @@ function MemoryItemEditor({
   return (
     <Card className="rounded-[1.5rem] overflow-hidden border-none shadow-sm hover:shadow-md transition-all duration-300 group bg-card">
       <div className="flex flex-col md:flex-row h-full">
-        <div 
-          className="relative w-full md:w-48 h-48 md:h-auto group cursor-pointer overflow-hidden bg-muted"
-          onClick={() => fileInputRef.current?.click()}
-          title="Click to change photo"
-        >
-          {event.imageUrl ? (
-            <Image src={event.imageUrl} alt={event.title} fill className="object-cover transition-transform duration-500 group-hover:scale-110" />
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
-              <ImageIcon className="h-6 w-6" />
-              <span className="text-[9px] font-bold uppercase tracking-widest">No Image</span>
+        <div className="relative w-full md:w-48 h-48 md:h-auto overflow-hidden bg-muted">
+          <div 
+            className="relative w-full h-full cursor-pointer group"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {event.imageUrl ? (
+              <div className="relative w-full h-full overflow-hidden">
+                <Image 
+                  src={event.imageUrl} 
+                  alt={event.title} 
+                  fill 
+                  className="object-cover transition-transform duration-300"
+                  style={{
+                    transform: `scale(${event.imageZoom || 1}) translate(${event.imageX || 0}%, ${event.imageY || 0}%)`
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
+                <ImageIcon className="h-6 w-6" />
+                <span className="text-[9px] font-bold uppercase tracking-widest">No Image</span>
+              </div>
+            )}
+            
+            <div className={cn(
+              "absolute inset-0 bg-black/40 flex flex-col items-center justify-center transition-opacity",
+              isPlaceholder ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+            )}>
+              <Upload className="h-5 w-5 text-white mb-1" />
+              <span className="text-white text-[9px] font-bold uppercase tracking-widest">
+                {isPlaceholder ? "Upload Photo" : "Change Photo"}
+              </span>
             </div>
-          )}
-          
-          <div className={cn(
-            "absolute inset-0 bg-black/40 flex flex-col items-center justify-center transition-opacity",
-            isPlaceholder ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-          )}>
-            <Upload className="h-5 w-5 text-white mb-1" />
-            <span className="text-white text-[9px] font-bold uppercase tracking-widest">
-              {isPlaceholder ? "Upload Photo" : "Change Photo"}
-            </span>
           </div>
+
+          {event.imageUrl && !isPlaceholder && (
+            <Popover open={isEditingPhoto} onOpenChange={setIsEditingPhoto}>
+              <PopoverTrigger asChild>
+                <Button 
+                  variant="secondary" 
+                  size="icon" 
+                  className="absolute bottom-2 right-2 h-8 w-8 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 hover:bg-white text-primary border-none"
+                  title="Edit Photo Framing"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsEditingPhoto(true);
+                  }}
+                >
+                  <Settings2 className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-4 rounded-2xl shadow-2xl" side="right" align="end">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-bold text-xs uppercase tracking-widest text-primary flex items-center gap-2">
+                      <Settings2 className="h-3 w-3" /> Photo Framing
+                    </h4>
+                    <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px]" onClick={() => handleUpdateEvent({ imageZoom: 1, imageX: 0, imageY: 0 })}>Reset</Button>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between text-[10px] font-bold opacity-60">
+                        <Label className="text-[10px]">Zoom</Label>
+                        <span>{Math.round((event.imageZoom || 1) * 100)}%</span>
+                      </div>
+                      <Slider 
+                        value={[event.imageZoom || 1]} 
+                        min={1} 
+                        max={3} 
+                        step={0.05} 
+                        onValueChange={([val]) => handleUpdateEvent({ imageZoom: val })} 
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between text-[10px] font-bold opacity-60">
+                        <Label className="text-[10px]">Horizontal Pan</Label>
+                        <span>{event.imageX || 0}%</span>
+                      </div>
+                      <Slider 
+                        value={[event.imageX || 0]} 
+                        min={-50} 
+                        max={50} 
+                        step={1} 
+                        onValueChange={([val]) => handleUpdateEvent({ imageX: val })} 
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between text-[10px] font-bold opacity-60">
+                        <Label className="text-[10px]">Vertical Pan</Label>
+                        <span>{event.imageY || 0}%</span>
+                      </div>
+                      <Slider 
+                        value={[event.imageY || 0]} 
+                        min={-50} 
+                        max={50} 
+                        step={1} 
+                        onValueChange={([val]) => handleUpdateEvent({ imageY: val })} 
+                      />
+                    </div>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
+
           <input 
             type="file" 
             ref={fileInputRef} 

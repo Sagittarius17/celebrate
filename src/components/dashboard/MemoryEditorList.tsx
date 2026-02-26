@@ -98,7 +98,6 @@ function MemoryItemEditor({
     toast({ title: "Memory Removed", description: "The memory has been deleted." });
   };
 
-  // Interaction Handlers
   const handlePointerDown = (e: React.PointerEvent) => {
     if (event.imageUrl?.includes('picsum.photos/seed/placeholder')) return;
     setIsInteracting(true);
@@ -245,7 +244,7 @@ function MemoryItemEditor({
              <Button 
                 variant="outline" 
                 size="sm" 
-                className="absolute top-2 right-2 h-7 rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-white text-slate-900 hover:bg-white/90 text-[10px] font-bold pointer-events-auto shadow-sm border-none"
+                className="absolute top-2 right-2 h-7 rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-white text-black hover:bg-white/90 hover:text-black text-[10px] font-bold pointer-events-auto shadow-sm border-none"
                 onClick={(e) => {
                   e.stopPropagation();
                   fileInputRef.current?.click();

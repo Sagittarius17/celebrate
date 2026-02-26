@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -238,9 +239,6 @@ export function EditorSidebar({
   return (
     <Sidebar className="border-r">
       <SidebarHeader className="p-6">
-        <Link href="/dashboard" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4">
-          <ArrowLeft className="h-4 w-4" /> Back to Dashboard
-        </Link>
         <div className="flex items-center gap-2">
           <Settings2 className="h-6 w-6 text-[#FFD700]" />
           <h2 className="text-2xl font-bold font-headline text-[#FFD700]">Customize</h2>

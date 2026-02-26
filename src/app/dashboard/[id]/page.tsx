@@ -181,6 +181,14 @@ export default function SurpriseEditor({ params }: { params: Promise<{ id: strin
           {/* Top Navbar */}
           <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <SidebarTrigger className="-ml-1" />
+            
+            <Link href="/dashboard" className="hidden sm:block">
+              <Button variant="ghost" size="sm" className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
+                <ArrowLeft className="h-4 w-4" />
+                <span className="font-bold">Dashboard</span>
+              </Button>
+            </Link>
+
             <div className="flex-1">
                <h1 className="text-xl font-bold font-headline truncate max-w-[200px] md:max-w-md">{page.title}</h1>
             </div>

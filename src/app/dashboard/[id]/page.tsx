@@ -182,9 +182,8 @@ function DashboardEditorContent({ id }: { id: string }) {
             {state === 'collapsed' && <SidebarTrigger className="-ml-1" />}
             
             <Link href="/dashboard">
-              <Button variant="ghost" size="sm" className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
-                <ArrowLeft className="h-4 w-4" />
-                <span className="font-bold">Dashboard</span>
+              <Button className={headerButtonStyle} title="Back to Dashboard">
+                <ArrowLeft className="h-5 w-5" />
               </Button>
             </Link>
 

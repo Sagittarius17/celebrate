@@ -3,12 +3,23 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Firestore, doc } from 'firebase/firestore';
-import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { Move, ZoomIn, Layers, RotateCw, Trash2, Upload, MousePointer2, ImageIcon, Frame } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface CollageEditorProps {
   events: any[] | null;
@@ -28,6 +39,7 @@ function CollageItem({
   isSelected, 
   onSelect, 
   onUpdate, 
+  onDelete,
   onFileSelect 
 }: { 
   event: any; 
@@ -35,6 +47,7 @@ function CollageItem({
   isSelected: boolean; 
   onSelect: (id: string) => void;
   onUpdate: (id: string, updates: any) => void;
+  onDelete: (id: string) => void;
   onFileSelect: () => void;
 }) {
   const itemRef = useRef<HTMLDivElement>(null);
@@ -146,7 +159,6 @@ function CollageItem({
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onClick={(e) => {
-        // Essential to stop bubbling so the container's onClick doesn't deselect
         e.stopPropagation();
         onSelect(event.id);
       }}
@@ -173,7 +185,7 @@ function CollageItem({
             "absolute -top-16 left-1/2 -translate-x-1/2 bg-white dark:bg-slate-800 shadow-2xl rounded-2xl p-1.5 flex items-center gap-1.5 transition-all duration-300 z-50",
             isSelected ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
           )}
-          onClick={(e) => e.stopPropagation()} // Keep toolbar clicks from deselecting
+          onClick={(e) => e.stopPropagation()}
         >
           <div className="flex bg-muted rounded-xl p-1 gap-1">
             <Button 
@@ -205,6 +217,36 @@ function CollageItem({
           <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" title="Change Image" onClick={(e) => { e.stopPropagation(); onFileSelect(); }}>
             <Upload className="h-4 w-4" />
           </Button>
+          
+          <div className="w-px h-6 bg-border mx-1" />
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive hover:bg-destructive/10 hover:text-destructive" title="Delete">
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="rounded-[2rem]" onClick={(e) => e.stopPropagation()}>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Remove Memory?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will permanently delete this card from the collage.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className="rounded-full">Cancel</AlertDialogCancel>
+                <AlertDialogAction 
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-full"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(event.id);
+                  }}
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
 
         <div className="mt-4 px-1 pb-2 select-none">
@@ -237,7 +279,6 @@ export function CollageEditor({ events, isLoading, pageId, db, onFieldFocus }: C
   const handleUpdateEvent = useCallback((eventId: string, updates: any) => {
     if (!db) return;
 
-    // Handle bringing to front logic
     if (updates.isBringingToFront) {
       delete updates.isBringingToFront;
       const maxZ = Math.max(...(events?.map(e => e.canvasZIndex || 1) || [1]));
@@ -250,6 +291,14 @@ export function CollageEditor({ events, isLoading, pageId, db, onFieldFocus }: C
       updatedAt: new Date().toISOString(),
     });
   }, [db, pageId, events]);
+
+  const handleDeleteEvent = useCallback((eventId: string) => {
+    if (!db) return;
+    const eventRef = doc(db, 'celebrationPages', pageId, 'birthdayEvents', eventId);
+    deleteDocumentNonBlocking(eventRef);
+    setSelectedId(null);
+    toast({ title: "Memory Deleted" });
+  }, [db, pageId, toast]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -301,6 +350,7 @@ export function CollageEditor({ events, isLoading, pageId, db, onFieldFocus }: C
             isSelected={selectedId === event.id}
             onSelect={setSelectedId}
             onUpdate={handleUpdateEvent}
+            onDelete={handleDeleteEvent}
             onFileSelect={() => fileInputRef.current?.click()}
           />
         ))}

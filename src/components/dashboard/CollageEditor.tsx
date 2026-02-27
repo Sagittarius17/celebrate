@@ -99,7 +99,6 @@ function CollageItem({
         canvasY: Math.min(Math.max(newY, -30), 100),
       });
     } else {
-      // Image panning sensitivity adjusted by zoom
       const sensitivity = 0.5 / (event.imageZoom || 1);
       const newX = dragStartRef.current.initialX + (dx * sensitivity);
       const newY = dragStartRef.current.initialY + (dy * sensitivity);
@@ -146,6 +145,11 @@ function CollageItem({
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
+      onClick={(e) => {
+        // Essential to stop bubbling so the container's onClick doesn't deselect
+        e.stopPropagation();
+        onSelect(event.id);
+      }}
     >
       <div className="relative aspect-square bg-white p-3 shadow-xl rounded-sm group">
         <div className="relative w-full h-full overflow-hidden bg-muted rounded-sm">
@@ -164,10 +168,13 @@ function CollageItem({
         </div>
         
         {/* Selection Toolbar */}
-        <div className={cn(
-          "absolute -top-16 left-1/2 -translate-x-1/2 bg-white dark:bg-slate-800 shadow-2xl rounded-2xl p-1.5 flex items-center gap-1.5 transition-all duration-300 z-50",
-          isSelected ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
-        )}>
+        <div 
+          className={cn(
+            "absolute -top-16 left-1/2 -translate-x-1/2 bg-white dark:bg-slate-800 shadow-2xl rounded-2xl p-1.5 flex items-center gap-1.5 transition-all duration-300 z-50",
+            isSelected ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
+          )}
+          onClick={(e) => e.stopPropagation()} // Keep toolbar clicks from deselecting
+        >
           <div className="flex bg-muted rounded-xl p-1 gap-1">
             <Button 
               variant={editMode === 'card' ? 'default' : 'ghost'} 

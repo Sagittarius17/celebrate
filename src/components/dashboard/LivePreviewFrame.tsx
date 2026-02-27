@@ -15,7 +15,7 @@ export function LivePreviewFrame({ url }: LivePreviewFrameProps) {
     const updateScale = () => {
       if (!previewContainerRef.current) return;
       const containerWidth = previewContainerRef.current.offsetWidth;
-      // Use 1200 as base width for the preview
+      // Use 1200 as base width for the preview simulation
       const newScale = containerWidth / 1200;
       setPreviewScale(newScale);
     };
@@ -25,31 +25,40 @@ export function LivePreviewFrame({ url }: LivePreviewFrameProps) {
     return () => window.removeEventListener('resize', updateScale);
   }, []);
 
-  // Calculate scaled height to prevent extra white space
+  // Calculate scaled height to maintain the 16:10 aspect ratio of the simulation
   const scaledHeight = 800 * previewScale;
 
   return (
-    <div 
-      ref={previewContainerRef}
-      className="w-full bg-white rounded-[2rem] overflow-hidden shadow-2xl border-4 border-primary/20 relative isolate"
-      style={{ 
-        height: `${scaledHeight}px`,
-        // Fix for Webkit clipping bug with scaled content
-        WebkitMaskImage: '-webkit-radial-gradient(white, black)',
-        maskImage: 'radial-gradient(white, black)'
-      }}
-    >
+    <div className="w-full flex flex-col items-center">
+      {/* Simulation Container with "Extra Display Border" */}
       <div 
-        className="absolute top-0 left-0 w-[1200px] h-[800px] origin-top-left"
+        ref={previewContainerRef}
+        className="w-full bg-black rounded-[2.5rem] p-3 shadow-2xl border-[12px] border-primary/20 relative isolate transition-all duration-500 overflow-hidden"
         style={{ 
-          transform: `scale(${previewScale})`,
+          height: `${scaledHeight + 24}px`, // Adjusted for the 12px border on top and bottom
+          // Critical fix for Webkit clipping bug with scaled content in rounded containers
+          WebkitMaskImage: '-webkit-radial-gradient(white, black)',
+          maskImage: 'radial-gradient(white, black)'
         }}
       >
-        <iframe 
-          src={url} 
-          className="w-full h-full border-none"
-          title="Live Preview"
-        />
+        <div 
+          className="absolute top-3 left-3 w-[1200px] h-[800px] origin-top-left bg-white rounded-[1.5rem] overflow-hidden shadow-inner"
+          style={{ 
+            transform: `scale(${previewScale})`,
+          }}
+        >
+          <iframe 
+            src={url} 
+            className="w-full h-full border-none"
+            title="Live Preview"
+          />
+        </div>
+      </div>
+      
+      {/* Small indicator label */}
+      <div className="mt-4 flex items-center gap-2 opacity-40">
+        <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+        <span className="text-[10px] font-bold uppercase tracking-widest">Desktop Preview Mode</span>
       </div>
     </div>
   );

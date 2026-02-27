@@ -31,8 +31,13 @@ export function LivePreviewFrame({ url }: LivePreviewFrameProps) {
   return (
     <div 
       ref={previewContainerRef}
-      className="w-full bg-white rounded-[2rem] overflow-hidden shadow-2xl border-4 border-primary/20 relative"
-      style={{ height: `${scaledHeight}px` }}
+      className="w-full bg-white rounded-[2rem] overflow-hidden shadow-2xl border-4 border-primary/20 relative isolate"
+      style={{ 
+        height: `${scaledHeight}px`,
+        // Fix for Webkit clipping bug with scaled content
+        WebkitMaskImage: '-webkit-radial-gradient(white, black)',
+        maskImage: 'radial-gradient(white, black)'
+      }}
     >
       <div 
         className="absolute top-0 left-0 w-[1200px] h-[800px] origin-top-left"

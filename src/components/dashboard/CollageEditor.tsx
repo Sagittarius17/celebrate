@@ -6,7 +6,7 @@ import { Firestore, doc } from 'firebase/firestore';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
-import { Move, ZoomIn, Layers, RotateCw, Trash2, Upload } from 'lucide-react';
+import { Move, ZoomIn, Layers, RotateCw, Trash2, Upload, MousePointer2, ImageIcon, Frame } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
@@ -21,7 +21,7 @@ interface CollageEditorProps {
 const CANVAS_WIDTH = 1200;
 const CANVAS_HEIGHT = 1600;
 
-// Sub-component for individual collage items to handle non-passive wheel events
+// Sub-component for individual collage items
 function CollageItem({ 
   event, 
   scale, 
@@ -38,58 +38,81 @@ function CollageItem({
   onFileSelect: () => void;
 }) {
   const itemRef = useRef<HTMLDivElement>(null);
+  const [editMode, setEditMode] = useState<'card' | 'photo'>('card');
+  const [isInteracting, setIsInteracting] = useState(false);
+  const dragStartRef = useRef({ x: 0, y: 0, initialX: 0, initialY: 0 });
 
   useEffect(() => {
     const el = itemRef.current;
     if (!el) return;
 
-    // Use a native listener with passive: false to ensure e.preventDefault() works
-    // to stop the main page from scrolling while zooming cards.
     const handleWheelNative = (e: WheelEvent) => {
+      if (!isSelected) return;
+      
       e.preventDefault();
       e.stopPropagation();
 
       const zoomStep = 0.05;
       const delta = e.deltaY > 0 ? -zoomStep : zoomStep;
-      const currentScale = event.canvasScale || 1;
-      const newScale = Math.min(Math.max(currentScale + delta, 0.2), 3);
-      
-      onUpdate(event.id, { canvasScale: newScale });
+
+      if (editMode === 'card') {
+        const currentScale = event.canvasScale || 1;
+        const newScale = Math.min(Math.max(currentScale + delta, 0.2), 3);
+        onUpdate(event.id, { canvasScale: newScale });
+      } else {
+        const currentZoom = event.imageZoom || 1;
+        const newZoom = Math.min(Math.max(currentZoom + delta, 1), 5);
+        onUpdate(event.id, { imageZoom: newZoom });
+      }
     };
 
     el.addEventListener('wheel', handleWheelNative, { passive: false });
     return () => el.removeEventListener('wheel', handleWheelNative);
-  }, [event.id, event.canvasScale, onUpdate]);
+  }, [event.id, event.canvasScale, event.imageZoom, isSelected, editMode, onUpdate]);
 
   const handlePointerDown = (e: React.PointerEvent) => {
     e.stopPropagation();
     onSelect(event.id);
+    setIsInteracting(true);
 
-    const startX = e.clientX;
-    const startY = e.clientY;
-    const initialCanvasX = event.canvasX || 10;
-    const initialCanvasY = event.canvasY || 10;
+    dragStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      initialX: editMode === 'card' ? (event.canvasX || 10) : (event.imageX || 0),
+      initialY: editMode === 'card' ? (event.canvasY || 10) : (event.imageY || 0),
+    };
 
-    const handlePointerMove = (moveEvent: PointerEvent) => {
-      const dx = (moveEvent.clientX - startX) / scale;
-      const dy = (moveEvent.clientY - startY) / scale;
-      
-      const newX = (initialCanvasX * CANVAS_WIDTH / 100 + dx) / CANVAS_WIDTH * 100;
-      const newY = (initialCanvasY * CANVAS_HEIGHT / 100 + dy) / CANVAS_HEIGHT * 100;
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
 
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isInteracting) return;
+
+    const dx = (e.clientX - dragStartRef.current.x) / scale;
+    const dy = (e.clientY - dragStartRef.current.y) / scale;
+
+    if (editMode === 'card') {
+      const newX = dragStartRef.current.initialX + (dx / CANVAS_WIDTH * 100);
+      const newY = dragStartRef.current.initialY + (dy / CANVAS_HEIGHT * 100);
       onUpdate(event.id, {
-        canvasX: Math.min(Math.max(newX, -20), 100),
-        canvasY: Math.min(Math.max(newY, -20), 100),
+        canvasX: Math.min(Math.max(newX, -30), 100),
+        canvasY: Math.min(Math.max(newY, -30), 100),
       });
-    };
+    } else {
+      // Image panning sensitivity adjusted by zoom
+      const sensitivity = 0.5 / (event.imageZoom || 1);
+      const newX = dragStartRef.current.initialX + (dx * sensitivity);
+      const newY = dragStartRef.current.initialY + (dy * sensitivity);
+      onUpdate(event.id, {
+        imageX: Math.min(Math.max(newX, -100), 100),
+        imageY: Math.min(Math.max(newY, -100), 100),
+      });
+    }
+  };
 
-    const handlePointerUp = () => {
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
-    };
-
-    window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', handlePointerUp);
+  const handlePointerUp = (e: React.PointerEvent) => {
+    setIsInteracting(false);
+    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
   };
 
   const bringToFront = () => {
@@ -110,7 +133,7 @@ function CollageItem({
     <div
       ref={itemRef}
       className={cn(
-        "absolute transition-shadow duration-200 cursor-move group",
+        "absolute transition-shadow duration-200 cursor-move group touch-none",
         isSelected && "z-[9999!important] ring-4 ring-primary ring-offset-4 rounded-xl"
       )}
       style={{
@@ -121,37 +144,63 @@ function CollageItem({
         transform: `rotate(${event.canvasRotation || 0}deg)`,
       }}
       onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
     >
       <div className="relative aspect-square bg-white p-3 shadow-xl rounded-sm group">
-        <div className="relative w-full h-full overflow-hidden bg-muted">
+        <div className="relative w-full h-full overflow-hidden bg-muted rounded-sm">
           <Image 
             src={event.imageUrl} 
             alt={event.title} 
             fill 
-            className="object-cover pointer-events-none"
+            className={cn(
+              "object-cover pointer-events-none",
+              !isInteracting && "transition-transform duration-300"
+            )}
             style={{
               transform: `scale(${event.imageZoom || 1}) translate(${event.imageX || 0}%, ${event.imageY || 0}%)`
             }}
           />
         </div>
         
-        {/* Edit Controls */}
+        {/* Selection Toolbar */}
         <div className={cn(
-          "absolute -top-12 left-1/2 -translate-x-1/2 bg-white dark:bg-slate-800 shadow-2xl rounded-full px-2 py-1 flex items-center gap-1 transition-all duration-300",
+          "absolute -top-16 left-1/2 -translate-x-1/2 bg-white dark:bg-slate-800 shadow-2xl rounded-2xl p-1.5 flex items-center gap-1.5 transition-all duration-300 z-50",
           isSelected ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
         )}>
-          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={(e) => { e.stopPropagation(); bringToFront(); }}>
+          <div className="flex bg-muted rounded-xl p-1 gap-1">
+            <Button 
+              variant={editMode === 'card' ? 'default' : 'ghost'} 
+              size="sm" 
+              className="h-8 px-3 rounded-lg text-[10px] font-bold uppercase tracking-wider"
+              onClick={(e) => { e.stopPropagation(); setEditMode('card'); }}
+            >
+              <Frame className="h-3 w-3 mr-1.5" /> Move
+            </Button>
+            <Button 
+              variant={editMode === 'photo' ? 'default' : 'ghost'} 
+              size="sm" 
+              className="h-8 px-3 rounded-lg text-[10px] font-bold uppercase tracking-wider"
+              onClick={(e) => { e.stopPropagation(); setEditMode('photo'); }}
+            >
+              <ImageIcon className="h-3 w-3 mr-1.5" /> Photo
+            </Button>
+          </div>
+          
+          <div className="w-px h-6 bg-border mx-1" />
+
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" title="Bring to Front" onClick={(e) => { e.stopPropagation(); bringToFront(); }}>
             <Layers className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={(e) => { e.stopPropagation(); rotate(); }}>
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" title="Rotate" onClick={(e) => { e.stopPropagation(); rotate(); }}>
             <RotateCw className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={(e) => { e.stopPropagation(); onFileSelect(); }}>
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" title="Change Image" onClick={(e) => { e.stopPropagation(); onFileSelect(); }}>
             <Upload className="h-4 w-4" />
           </Button>
         </div>
 
-        <div className="mt-4 px-1 pb-2">
+        <div className="mt-4 px-1 pb-2 select-none">
           <h4 className="font-bold text-xs truncate font-headline">{event.title}</h4>
           <p className="text-[10px] text-muted-foreground truncate italic opacity-60">"{event.message}"</p>
         </div>
@@ -216,9 +265,15 @@ export function CollageEditor({ events, isLoading, pageId, db, onFieldFocus }: C
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between px-2 text-sm text-muted-foreground">
-        <div className="flex items-center gap-4">
-          <span className="flex items-center gap-1"><Move className="h-3 w-3" /> Drag to move</span>
-          <span className="flex items-center gap-1"><ZoomIn className="h-3 w-3" /> Scroll to resize card</span>
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <MousePointer2 className="h-3.5 w-3.5 text-primary" />
+            <span className="text-[11px] font-medium">Click to select & drag</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <ZoomIn className="h-3.5 w-3.5 text-primary" />
+            <span className="text-[11px] font-medium">Scroll to zoom</span>
+          </div>
         </div>
         <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
       </div>
@@ -229,7 +284,7 @@ export function CollageEditor({ events, isLoading, pageId, db, onFieldFocus }: C
         style={{ height: `${CANVAS_HEIGHT * scale}px` }}
         onClick={() => setSelectedId(null)}
       >
-        <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
+        <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
         {events?.map((event) => (
           <CollageItem 

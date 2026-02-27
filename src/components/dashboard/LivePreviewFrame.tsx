@@ -14,9 +14,12 @@ export function LivePreviewFrame({ url }: LivePreviewFrameProps) {
   useEffect(() => {
     const updateScale = () => {
       if (!previewContainerRef.current) return;
+      // Get the full container width
       const containerWidth = previewContainerRef.current.offsetWidth;
-      // Use 1200 as base width for the preview simulation
-      const newScale = containerWidth / 1200;
+      // Subtract padding (p-3 is 12px on each side = 24px total)
+      const availableWidth = containerWidth - 24;
+      // Base simulation width is 1200px
+      const newScale = availableWidth / 1200;
       setPreviewScale(newScale);
     };
     
@@ -42,9 +45,11 @@ export function LivePreviewFrame({ url }: LivePreviewFrameProps) {
         }}
       >
         <div 
-          className="absolute top-3 left-3 w-[1200px] h-[800px] origin-top-left bg-white rounded-[1.5rem] overflow-hidden shadow-inner"
+          className="absolute top-0 left-0 w-[1200px] h-[800px] origin-top-left bg-white rounded-[1.5rem] overflow-hidden shadow-inner"
           style={{ 
             transform: `scale(${previewScale})`,
+            // Since it is absolute top-0 left-0 inside a container with p-3,
+            // it starts exactly at the inner edge of the black padding.
           }}
         >
           <iframe 

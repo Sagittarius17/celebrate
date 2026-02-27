@@ -112,17 +112,17 @@ function TrackMetadataDisplay({ trackId }: { trackId: string }) {
     }
   }, [trackId]);
 
-  if (loading) return <div className="flex items-center gap-2 mt-2 text-xs text-[#FFD700]"><Music2 className="h-3 w-3 animate-pulse" /> Loading info...</div>;
+  if (loading) return <div className="flex items-center gap-2 mt-2 text-sm text-[#FFD700]"><Music2 className="h-4 w-4 animate-pulse" /> Loading info...</div>;
   if (!metadata) return null;
 
   return (
-    <div className="flex items-center gap-3 mt-4 p-2 bg-muted/30 rounded-xl border border-dashed border-[#FFD700]/30 animate-in fade-in slide-in-from-top-2">
-      <div className="relative h-10 w-10 shrink-0 rounded-lg overflow-hidden bg-muted">
+    <div className="flex items-center gap-3 mt-4 p-3 bg-muted/30 rounded-xl border border-dashed border-[#FFD700]/30 animate-in fade-in slide-in-from-top-2">
+      <div className="relative h-12 w-12 shrink-0 rounded-lg overflow-hidden bg-muted">
         <Image src={metadata.imageUrl} alt="" fill className="object-cover" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-bold truncate leading-tight">{metadata.title}</p>
-        <p className="text-[10px] text-muted-foreground truncate">{metadata.artist}</p>
+        <p className="text-sm font-bold truncate leading-tight">{metadata.title}</p>
+        <p className="text-xs text-muted-foreground truncate">{metadata.artist}</p>
       </div>
     </div>
   );
@@ -256,8 +256,8 @@ export function EditorSidebar({
     <Sidebar className="border-r">
       <SidebarHeader className="h-16 flex flex-row items-center justify-between px-4 border-b shrink-0">
         <div className="flex items-center gap-2">
-          <Settings2 className="h-5 w-5 text-[#FFD700]" />
-          <h2 className="text-xl font-bold font-headline text-[#FFD700]">Customize</h2>
+          <Settings2 className="h-6 w-6 text-[#FFD700]" />
+          <h2 className="text-2xl font-bold font-headline text-[#FFD700]">Customize</h2>
         </div>
         <SidebarTrigger className="-mr-1" />
       </SidebarHeader>
@@ -265,25 +265,25 @@ export function EditorSidebar({
       <SidebarContent>
         {selectionContext && selectionContext.field && (
           <SidebarGroup className="animate-in slide-in-from-top-2">
-            <SidebarGroupLabel className="px-6 mb-2 flex items-center gap-2 text-[#FFD700] font-bold">
-              <Type className="h-3 w-3" /> Selected Text Style
+            <SidebarGroupLabel className="px-3 mb-2 flex items-center gap-2 text-[#FFD700] font-bold text-sm">
+              <Type className="h-4 w-4" /> Selected Style
             </SidebarGroupLabel>
-            <SidebarGroupContent className="px-6 space-y-4">
-               <div className="p-3 bg-[#FFD700]/5 rounded-2xl border border-dashed border-[#FFD700]/30 space-y-3">
-                 <p className="text-[10px] font-bold uppercase tracking-widest opacity-80 text-[#FFD700]">
+            <SidebarGroupContent className="px-3 space-y-4">
+               <div className="p-4 bg-[#FFD700]/5 rounded-2xl border border-dashed border-[#FFD700]/30 space-y-4">
+                 <p className="text-xs font-bold uppercase tracking-widest opacity-80 text-[#FFD700]">
                    Styling {selectionContext.field === 'title' ? 'Memory Title' : 'Story Content'}
                  </p>
-                 <div className="space-y-2">
-                  <Label className="text-[10px] font-bold text-[#FFD700]/80">Change Font</Label>
+                 <div className="space-y-3">
+                  <Label className="text-sm font-bold text-[#FFD700]/80">Change Font</Label>
                   <Select value={currentFont} onValueChange={handleUpdateEventFont}>
-                    <SelectTrigger className="w-full h-10 rounded-xl bg-background border-none shadow-sm">
+                    <SelectTrigger className="w-full h-12 rounded-xl bg-background border-none shadow-sm">
                       <SelectValue placeholder="Inherit Page Font" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="inherit">Use Default Page Font</SelectItem>
                       {FONTS.map(font => (
                         <SelectItem key={font} value={font}>
-                          <span style={{ fontFamily: font }} className="text-sm">{font}</span>
+                          <span style={{ fontFamily: font }} className="text-base">{font}</span>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -295,44 +295,44 @@ export function EditorSidebar({
         )}
 
         <SidebarGroup>
-          <SidebarGroupLabel className="px-6 mb-2 font-bold text-[#FFD700]">Layout & Style</SidebarGroupLabel>
-          <SidebarGroupContent className="px-6 space-y-4">
-            <div className="space-y-2">
-              <Label className="text-xs text-[#FFD700]/70">Choose Layout</Label>
+          <SidebarGroupLabel className="px-3 mb-2 font-bold text-[#FFD700] text-sm">Layout & Style</SidebarGroupLabel>
+          <SidebarGroupContent className="px-3 space-y-5">
+            <div className="space-y-2.5">
+              <Label className="text-sm font-medium text-[#FFD700]/70">Choose Layout</Label>
               <Select value={page.layout || 'Timeline'} onValueChange={(val) => handleUpdatePage({ layout: val })}>
-                <SelectTrigger className="w-full h-10 rounded-xl"><SelectValue placeholder="Select layout" /></SelectTrigger>
+                <SelectTrigger className="w-full h-12 rounded-xl"><SelectValue placeholder="Select layout" /></SelectTrigger>
                 <SelectContent>{LAYOUTS.map(layout => <SelectItem key={layout} value={layout}>{layout}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             {page.layout === 'Collage' && (
-              <div className="space-y-2 animate-in slide-in-from-top-1">
-                <Label className="text-xs text-[#FFD700]/70 flex items-center gap-2">
-                  <Grid className="h-3 w-3" /> Collage Pattern
+              <div className="space-y-2.5 animate-in slide-in-from-top-1">
+                <Label className="text-sm font-medium text-[#FFD700]/70 flex items-center gap-2">
+                  <Grid className="h-4 w-4" /> Collage Pattern
                 </Label>
                 <Select value={page.collagePattern || 'Adaptive'} onValueChange={(val) => handleUpdatePage({ collagePattern: val })}>
-                  <SelectTrigger className="w-full h-10 rounded-xl"><SelectValue placeholder="Select pattern" /></SelectTrigger>
+                  <SelectTrigger className="w-full h-12 rounded-xl"><SelectValue placeholder="Select pattern" /></SelectTrigger>
                   <SelectContent>{COLLAGE_PATTERNS.map(pattern => <SelectItem key={pattern} value={pattern}>{pattern}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             )}
-            <div className="space-y-2">
-              <Label className="text-xs text-[#FFD700]/70">Global Font</Label>
+            <div className="space-y-2.5">
+              <Label className="text-sm font-medium text-[#FFD700]/70">Global Font</Label>
               <Select value={page.font || 'Playfair Display'} onValueChange={(val) => handleUpdatePage({ font: val })}>
-                <SelectTrigger className="w-full h-10 rounded-xl"><SelectValue placeholder="Select font" /></SelectTrigger>
-                <SelectContent>{FONTS.map(font => <SelectItem key={font} value={font}><span style={{ fontFamily: font }} className="text-sm">{font}</span></SelectItem>)}</SelectContent>
+                <SelectTrigger className="w-full h-12 rounded-xl"><SelectValue placeholder="Select font" /></SelectTrigger>
+                <SelectContent>{FONTS.map(font => <SelectItem key={font} value={font}><span style={{ fontFamily: font }} className="text-base">{font}</span></SelectItem>)}</SelectContent>
               </Select>
             </div>
           </SidebarGroupContent>
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="px-6 mb-2 font-bold text-[#FFD700]">Soundtrack</SidebarGroupLabel>
-          <SidebarGroupContent className="px-6 space-y-4">
-            <div className="space-y-2">
-              <Label className="text-xs text-[#FFD700]/70">Spotify Track ID or URL</Label>
+          <SidebarGroupLabel className="px-3 mb-2 font-bold text-[#FFD700] text-sm">Soundtrack</SidebarGroupLabel>
+          <SidebarGroupContent className="px-3 space-y-4">
+            <div className="space-y-2.5">
+              <Label className="text-sm font-medium text-[#FFD700]/70">Spotify Track ID or URL</Label>
               <Input 
                 placeholder="Paste Link or ID here" 
-                className="rounded-xl h-10 text-sm"
+                className="rounded-xl h-12 text-sm"
                 value={page.spotifyTrackId || ''} 
                 onChange={(e) => handleUpdatePage({ spotifyTrackId: extractSpotifyTrackId(e.target.value) })} 
               />
@@ -342,29 +342,29 @@ export function EditorSidebar({
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="px-6 mb-2 font-bold text-[#FFD700]">Personal Touch</SidebarGroupLabel>
-          <SidebarGroupContent className="px-6 space-y-4">
-            <div className="flex flex-col gap-3">
+          <SidebarGroupLabel className="px-3 mb-2 font-bold text-[#FFD700] text-sm">Personal Touch</SidebarGroupLabel>
+          <SidebarGroupContent className="px-3 space-y-4">
+            <div className="flex flex-col gap-4">
               {!isRecording ? (
-                <Button onClick={startRecording} variant="outline" className="w-full rounded-full border-dashed border-[#FFD700]/40 h-10 text-xs">
-                  <Mic className="mr-2 h-3.5 w-3.5 text-[#FFD700]" /> {audioUrl ? "Record New" : "Voice Note"}
+                <Button onClick={startRecording} variant="outline" className="w-full rounded-full border-dashed border-[#FFD700]/40 h-12 text-sm">
+                  <Mic className="mr-2 h-4 w-4 text-[#FFD700]" /> {audioUrl ? "Record New" : "Voice Note"}
                 </Button>
               ) : (
-                <Button onClick={stopRecording} variant="destructive" className="w-full rounded-full animate-pulse h-10 text-xs">
-                  <Square className="mr-2 h-3.5 w-3.5" /> Stop ({formatTime(recordingTime)})
+                <Button onClick={stopRecording} variant="destructive" className="w-full rounded-full animate-pulse h-12 text-sm">
+                  <Square className="mr-2 h-4 w-4" /> Stop ({formatTime(recordingTime)})
                 </Button>
               )}
               {audioUrl && !isRecording && (
-                <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-2xl border border-dashed border-[#FFD700]/30">
+                <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-2xl border border-dashed border-[#FFD700]/30">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 overflow-hidden">
-                      <Play className="h-3 w-3 text-orange-500 shrink-0" />
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest truncate">
-                        {displayDuration ? `${formatTime(displayDuration)} • ` : ""}Message Saved
+                    <div className="flex items-center gap-2 overflow-hidden">
+                      <Play className="h-4 w-4 text-orange-500 shrink-0" />
+                      <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest truncate">
+                        {displayDuration ? `${formatTime(displayDuration)} • ` : ""}Saved
                       </span>
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={deleteVoiceNote} className="rounded-full h-7 w-7 shrink-0"><Trash2 className="h-3.5 w-3.5" /></Button>
+                  <Button variant="ghost" size="icon" onClick={deleteVoiceNote} className="rounded-full h-9 w-9 shrink-0"><Trash2 className="h-4 w-4" /></Button>
                 </div>
               )}
             </div>
@@ -372,16 +372,16 @@ export function EditorSidebar({
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="px-6 mb-2 font-bold text-[#FFD700]">Final Quote</SidebarGroupLabel>
-          <SidebarGroupContent className="px-6 space-y-4">
+          <SidebarGroupLabel className="px-3 mb-2 font-bold text-[#FFD700] text-sm">Final Quote</SidebarGroupLabel>
+          <SidebarGroupContent className="px-3 space-y-4">
             <Textarea 
               placeholder="A final heart-warming message..." 
               value={customQuote} 
               onChange={(e) => setCustomQuote(e.target.value)} 
-              className="min-h-[80px] text-sm rounded-xl" 
+              className="min-h-[100px] text-sm rounded-xl" 
             />
-            <Button variant="secondary" className="w-full rounded-full h-10 text-xs text-[#FFD700]" onClick={onSaveQuote} disabled={isSavingQuote}>
-              {isSavingQuote ? "Saving..." : <><Save className="mr-2 h-3.5 w-3.5" /> Save Ending</>}
+            <Button variant="secondary" className="w-full rounded-full h-12 text-sm text-[#FFD700] font-bold" onClick={onSaveQuote} disabled={isSavingQuote}>
+              {isSavingQuote ? "Saving..." : <><Save className="mr-2 h-4 w-4" /> Save Ending</>}
             </Button>
           </SidebarGroupContent>
         </SidebarGroup>

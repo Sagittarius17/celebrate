@@ -8,11 +8,12 @@ import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/no
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Copy, Check, Eye, EyeOff, Key, Calendar, Sun, Moon, Plus, Share2, Menu } from 'lucide-react';
+import { ArrowLeft, Copy, Check, Eye, EyeOff, Key, Calendar, Sun, Moon, Plus, Share2, Menu, Grid } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { EditorSidebar } from '@/components/dashboard/EditorSidebar';
 import { MemoryEditorList } from '@/components/dashboard/MemoryEditorList';
+import { CollageEditor } from '@/components/dashboard/CollageEditor';
 import { LivePreviewFrame } from '@/components/dashboard/LivePreviewFrame';
 import { useDashboardTheme } from '../layout';
 import { SidebarProvider, SidebarInset, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
@@ -54,7 +55,6 @@ function DashboardEditorContent({ id }: { id: string }) {
 
   const { data: page, isLoading: isPageLoading } = useDoc(pageRef);
 
-  // Simulated progress loader
   useEffect(() => {
     if (isPageLoading) {
       const interval = setInterval(() => {
@@ -99,10 +99,15 @@ function DashboardEditorContent({ id }: { id: string }) {
       ownerId: user.uid,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      canvasX: 20 + (Math.random() * 60),
+      canvasY: 20 + (Math.random() * 60),
+      canvasScale: 1,
+      canvasRotation: (Math.random() - 0.5) * 20,
+      canvasZIndex: (events?.length || 0) + 1
     };
 
     addDocumentNonBlocking(collection(db, 'celebrationPages', id, 'birthdayEvents'), payload);
-    toast({ title: "Card Added", description: "Upload a photo and tell the story." });
+    toast({ title: "Card Added" });
   };
 
   const handleSaveFinalQuote = () => {
@@ -114,7 +119,7 @@ function DashboardEditorContent({ id }: { id: string }) {
     });
     setTimeout(() => {
       setIsSavingQuote(false);
-      toast({ title: "Final Quote Saved", description: "The ending message has been updated." });
+      toast({ title: "Final Quote Saved" });
     }, 500);
   };
 
@@ -130,10 +135,7 @@ function DashboardEditorContent({ id }: { id: string }) {
     if (!url) return;
     navigator.clipboard.writeText(url);
     setIsCopied(true);
-    toast({
-      title: "Link Copied!",
-      description: `Share this unique link for ${page?.recipientName}.`,
-    });
+    toast({ title: "Link Copied!" });
     setTimeout(() => setIsCopied(false), 2000);
   };
 
@@ -141,10 +143,7 @@ function DashboardEditorContent({ id }: { id: string }) {
     if (!page) return;
     navigator.clipboard.writeText(page.accessCode);
     setIsCodeCopied(true);
-    toast({
-      title: "Code Copied!",
-      description: "Secret access code copied to clipboard.",
-    });
+    toast({ title: "Code Copied!" });
     setTimeout(() => setIsCodeCopied(false), 2000);
   };
 
@@ -161,6 +160,7 @@ function DashboardEditorContent({ id }: { id: string }) {
   if (page.ownerId !== user?.uid) return <div className="p-20 text-center text-destructive">Unauthorized access.</div>;
 
   const livePreviewUrl = getShareUrl();
+  const isCollageLayout = page.layout === 'Collage';
   const headerButtonStyle = "rounded-full h-10 w-10 p-0 flex items-center justify-center border-none bg-secondary hover:bg-secondary/80 text-secondary-foreground transition-all shadow-sm";
 
   return (
@@ -178,15 +178,9 @@ function DashboardEditorContent({ id }: { id: string }) {
       />
       <SidebarInset>
         <div className="flex flex-col min-h-screen">
-          {/* Top Navbar */}
           <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/95 px-4 lg:px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex items-center gap-2">
-              <SidebarTrigger 
-                className={cn(
-                  "-ml-1 h-10 w-10 rounded-full",
-                  state === "expanded" && "md:hidden"
-                )} 
-              />
+              <SidebarTrigger className={cn("-ml-1 h-10 w-10 rounded-full", state === "expanded" && "md:hidden")} />
               <Link href="/dashboard">
                 <Button className={headerButtonStyle} title="Back to Dashboard">
                   <ArrowLeft className="h-5 w-5" />
@@ -199,41 +193,15 @@ function DashboardEditorContent({ id }: { id: string }) {
             </div>
             
             <div className="flex items-center gap-2">
-              <div className="hidden sm:flex items-center gap-2 bg-secondary pl-4 pr-1 h-10 rounded-full border-none shadow-sm group" title="Secret Access Code">
-                <div className="flex items-center gap-2">
-                  <Key className="h-4 w-4 text-secondary-foreground opacity-60" />
-                  <span className="text-sm font-bold text-secondary-foreground tracking-wider">{page.accessCode}</span>
-                </div>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8 p-0 rounded-full hover:bg-white/20 ml-1"
-                  onClick={copyAccessCode}
-                >
-                  {isCodeCopied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
-                </Button>
-              </div>
-
-              <Button 
-                className={headerButtonStyle}
-                onClick={toggleTheme}
-                title={isDark ? "Light Mode" : "Dark Mode"}
-              >
+              <Button className={headerButtonStyle} onClick={toggleTheme}>
                 {isDark ? <Sun className="h-4 w-4 text-yellow-400" /> : <Moon className="h-4 w-4 text-slate-700" />}
               </Button>
-
-              <Button 
-                className={headerButtonStyle}
-                onClick={copyShareLink} 
-                title="Copy Link"
-              >
+              <Button className={headerButtonStyle} onClick={copyShareLink}>
                 {isCopied ? <Check className="h-4 w-4 text-green-500" /> : <Share2 className="h-4 w-4" />}
               </Button>
-              
               <Button 
                 className={`${headerButtonStyle} ${showLivePreview ? 'ring-2 ring-primary ring-offset-2' : ''}`}
                 onClick={() => setShowLivePreview(!showLivePreview)}
-                title={showLivePreview ? "Editor" : "Preview"}
               >
                 {showLivePreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </Button>
@@ -243,21 +211,14 @@ function DashboardEditorContent({ id }: { id: string }) {
           <main className="flex-1 overflow-y-auto p-4 lg:p-6">
             <div className="max-w-[1600px] mx-auto space-y-4">
               {!showLivePreview && (
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center mb-4">
                   <div className="flex items-center gap-3">
                     <h2 className="text-xl font-bold flex items-center gap-2">
-                      <Calendar className="h-5 w-5 text-primary" /> Memory Editor
+                      {isCollageLayout ? <Grid className="h-5 w-5 text-primary" /> : <Calendar className="h-5 w-5 text-primary" />}
+                      {isCollageLayout ? 'Collage Editor' : 'Memory Editor'}
                     </h2>
-                    {!isEventsLoading && events && (
-                      <Badge variant="secondary" className="rounded-full px-3 py-0.5 text-[10px] font-bold bg-primary text-primary-foreground border-none shadow-sm">
-                        {events.length} {events.length === 1 ? 'Card' : 'Cards'}
-                      </Badge>
-                    )}
                   </div>
-                  <Button 
-                    onClick={handleAddEmptyCard} 
-                    className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-4 text-xs font-bold"
-                  >
+                  <Button onClick={handleAddEmptyCard} className="rounded-full bg-primary text-primary-foreground h-8 px-4 text-xs font-bold">
                     <Plus className="mr-1 h-3 w-3" /> Add Card
                   </Button>
                 </div>
@@ -265,6 +226,14 @@ function DashboardEditorContent({ id }: { id: string }) {
               
               {showLivePreview ? (
                 <LivePreviewFrame url={livePreviewUrl} />
+              ) : isCollageLayout ? (
+                <CollageEditor 
+                  events={events} 
+                  isLoading={isEventsLoading} 
+                  pageId={id} 
+                  db={db}
+                  onFieldFocus={(eventId, field) => setSelectionContext({ eventId, field })}
+                />
               ) : (
                 <MemoryEditorList 
                   events={events} 

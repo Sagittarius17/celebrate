@@ -54,19 +54,6 @@ const FONTS = [
 
 const LAYOUTS = ["Timeline", "Carousel", "Grid", "Collage"];
 
-const COLLAGE_PATTERNS = [
-  "Adaptive", 
-  "Style 1", 
-  "Style 2", 
-  "Style 3", 
-  "Style 4", 
-  "Style 5", 
-  "Style 6", 
-  "Style 7", 
-  "Style 8", 
-  "Style 9"
-];
-
 interface EditorSidebarProps {
   page: any;
   pageRef: DocumentReference | null;
@@ -142,13 +129,11 @@ export function EditorSidebar({
   const { toast } = useToast();
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
-  const [recordedDuration, setRecordedDuration] = useState<number | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(page.voiceNoteDataUri || null);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const recordingTimeRef = useRef(0);
 
   useEffect(() => {
     return () => {
@@ -199,12 +184,7 @@ export function EditorSidebar({
         reader.onloadend = () => {
           const base64String = reader.result as string;
           setAudioUrl(base64String);
-          const finalDuration = recordingTimeRef.current;
-          setRecordedDuration(finalDuration);
-          handleUpdatePage({ 
-            voiceNoteDataUri: base64String,
-            voiceNoteDuration: finalDuration
-          });
+          handleUpdatePage({ voiceNoteDataUri: base64String, voiceNoteDuration: recordingTime });
           toast({ title: "Voice Note Recorded" });
         };
       };
@@ -212,18 +192,11 @@ export function EditorSidebar({
       mediaRecorder.start();
       setIsRecording(true);
       setRecordingTime(0);
-      recordingTimeRef.current = 0;
-      setRecordedDuration(null);
       timerRef.current = setInterval(() => {
-        recordingTimeRef.current += 1;
-        setRecordingTime(recordingTimeRef.current);
+        setRecordingTime(prev => prev + 1);
       }, 1000);
     } catch (err) {
-      toast({ 
-        variant: "destructive", 
-        title: "Microphone Error", 
-        description: "Could not access microphone." 
-      });
+      toast({ variant: "destructive", title: "Microphone Error" });
     }
   };
 
@@ -231,21 +204,15 @@ export function EditorSidebar({
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
+      if (timerRef.current) clearInterval(timerRef.current);
     }
   };
 
   const deleteVoiceNote = () => {
     setAudioUrl(null);
-    setRecordedDuration(null);
     handleUpdatePage({ voiceNoteDataUri: null, voiceNoteDuration: null });
     toast({ title: "Voice Note Removed" });
   };
-
-  const displayDuration = recordedDuration !== null ? recordedDuration : page.voiceNoteDuration;
 
   const selectedEvent = events?.find(e => e.id === selectionContext?.eventId);
   const currentFont = selectionContext?.field === 'title' 
@@ -271,11 +238,9 @@ export function EditorSidebar({
             <SidebarGroupContent className="px-3 space-y-4">
                <div className="p-4 bg-[#FFD700]/5 rounded-2xl border border-dashed border-[#FFD700]/30 space-y-4">
                  <p className="text-xs font-bold uppercase tracking-widest opacity-80 text-[#FFD700]">
-                   Styling {selectionContext.field === 'title' ? 'Memory Title' : 'Story Content'}
+                   Styling {selectionContext.field === 'title' ? 'Title' : 'Message'}
                  </p>
-                 <div className="space-y-3">
-                  <Label className="text-sm font-bold text-[#FFD700]/80">Change Font</Label>
-                  <Select value={currentFont} onValueChange={handleUpdateEventFont}>
+                 <Select value={currentFont} onValueChange={handleUpdateEventFont}>
                     <SelectTrigger className="w-full h-12 rounded-xl bg-background border-none shadow-sm">
                       <SelectValue placeholder="Inherit Page Font" />
                     </SelectTrigger>
@@ -288,7 +253,6 @@ export function EditorSidebar({
                       ))}
                     </SelectContent>
                   </Select>
-                 </div>
                </div>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -304,17 +268,6 @@ export function EditorSidebar({
                 <SelectContent>{LAYOUTS.map(layout => <SelectItem key={layout} value={layout}>{layout}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            {page.layout === 'Collage' && (
-              <div className="space-y-2.5 animate-in slide-in-from-top-1">
-                <Label className="text-sm font-medium text-[#FFD700]/70 flex items-center gap-2">
-                  <Grid className="h-4 w-4" /> Collage Pattern
-                </Label>
-                <Select value={page.collagePattern || 'Adaptive'} onValueChange={(val) => handleUpdatePage({ collagePattern: val })}>
-                  <SelectTrigger className="w-full h-12 rounded-xl"><SelectValue placeholder="Select pattern" /></SelectTrigger>
-                  <SelectContent>{COLLAGE_PATTERNS.map(pattern => <SelectItem key={pattern} value={pattern}>{pattern}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-            )}
             <div className="space-y-2.5">
               <Label className="text-sm font-medium text-[#FFD700]/70">Global Font</Label>
               <Select value={page.font || 'Playfair Display'} onValueChange={(val) => handleUpdatePage({ font: val })}>
@@ -356,14 +309,8 @@ export function EditorSidebar({
               )}
               {audioUrl && !isRecording && (
                 <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-2xl border border-dashed border-[#FFD700]/30">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 overflow-hidden">
-                      <Play className="h-4 w-4 text-orange-500 shrink-0" />
-                      <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest truncate">
-                        {displayDuration ? `${formatTime(displayDuration)} • ` : ""}Saved
-                      </span>
-                    </div>
-                  </div>
+                  <Play className="h-4 w-4 text-orange-500 shrink-0" />
+                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex-1">Saved Note</span>
                   <Button variant="ghost" size="icon" onClick={deleteVoiceNote} className="rounded-full h-9 w-9 shrink-0"><Trash2 className="h-4 w-4" /></Button>
                 </div>
               )}

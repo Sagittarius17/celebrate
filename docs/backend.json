@@ -72,12 +72,6 @@
           "enum": ["Timeline", "Carousel", "Grid", "Collage"],
           "default": "Timeline"
         },
-        "collagePattern": {
-          "type": "string",
-          "description": "The specific pattern to use for the collage layout.",
-          "enum": ["Adaptive", "Style 1", "Style 2", "Style 3", "Style 4", "Style 5", "Style 6", "Style 7", "Style 8", "Style 9"],
-          "default": "Adaptive"
-        },
         "font": {
           "type": "string",
           "description": "The font family selected for the celebration page.",
@@ -182,6 +176,31 @@
           "type": "number",
           "description": "Y-axis pan offset in percentage.",
           "default": 0
+        },
+        "canvasX": {
+          "type": "number",
+          "description": "X-coordinate on the collage canvas (0-100).",
+          "default": 10
+        },
+        "canvasY": {
+          "type": "number",
+          "description": "Y-coordinate on the collage canvas (0-100).",
+          "default": 10
+        },
+        "canvasScale": {
+          "type": "number",
+          "description": "Scaling of the photo on the collage canvas.",
+          "default": 1
+        },
+        "canvasRotation": {
+          "type": "number",
+          "description": "Rotation of the photo on the collage canvas in degrees.",
+          "default": 0
+        },
+        "canvasZIndex": {
+          "type": "number",
+          "description": "Stacking order on the collage canvas.",
+          "default": 1
         },
         "ownerId": {
           "type": "string",

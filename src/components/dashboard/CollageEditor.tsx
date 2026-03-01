@@ -21,16 +21,15 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-interface CollageEditorProps {
-  events: any[] | null;
-  isLoading: boolean;
-  pageId: string;
-  db: Firestore | null;
-  onFieldFocus?: (eventId: string, field: 'title' | 'message') => void;
+interface CollageItemProps {
+  event: any;
+  scale: number;
+  isSelected: boolean;
+  onSelect: (id: string) => void;
+  onUpdate: (id: string, updates: any) => void;
+  onDelete: (id: string) => void;
+  onFileSelect: () => void;
 }
-
-const CANVAS_WIDTH = 1200;
-const CANVAS_HEIGHT = 1600;
 
 function CollageItem({ 
   event, 
@@ -40,19 +39,14 @@ function CollageItem({
   onUpdate, 
   onDelete,
   onFileSelect 
-}: { 
-  event: any; 
-  scale: number; 
-  isSelected: boolean; 
-  onSelect: (id: string) => void;
-  onUpdate: (id: string, updates: any) => void;
-  onDelete: (id: string) => void;
-  onFileSelect: () => void;
-}) {
+}: CollageItemProps) {
   const itemRef = useRef<HTMLDivElement>(null);
   const [editMode, setEditMode] = useState<'card' | 'photo'>('card');
   const [isInteracting, setIsInteracting] = useState(false);
+  const [isRotating, setIsRotating] = useState(false);
+  
   const dragStartRef = useRef({ x: 0, y: 0, initialX: 0, initialY: 0 });
+  const rotateStartRef = useRef({ x: 0, initialRotation: 0 });
 
   useEffect(() => {
     const el = itemRef.current;
@@ -83,6 +77,7 @@ function CollageItem({
   }, [event.id, event.canvasScale, event.imageZoom, isSelected, editMode, onUpdate]);
 
   const handlePointerDown = (e: React.PointerEvent) => {
+    if (isRotating) return;
     e.stopPropagation();
     onSelect(event.id);
     setIsInteracting(true);
@@ -126,13 +121,35 @@ function CollageItem({
     (e.target as HTMLElement).releasePointerCapture(e.pointerId);
   };
 
-  const bringToFront = () => {
-    onUpdate(event.id, { isBringingToFront: true });
+  const handleRotatePointerDown = (e: React.PointerEvent) => {
+    e.stopPropagation();
+    setIsRotating(true);
+    rotateStartRef.current = {
+      x: e.clientX,
+      initialRotation: event.canvasRotation || 0
+    };
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
 
-  const rotate = () => {
-    const newRot = ((event.canvasRotation || 0) + 5) % 360;
-    onUpdate(event.id, { canvasRotation: newRot });
+  const handleRotatePointerMove = (e: React.PointerEvent) => {
+    if (!isRotating) return;
+    e.stopPropagation();
+    
+    // Calculate rotation based on horizontal drag distance
+    // 1 pixel = 1 degree for intuitive feel
+    const dx = e.clientX - rotateStartRef.current.x;
+    const newRotation = (rotateStartRef.current.initialRotation + dx) % 360;
+    
+    onUpdate(event.id, { canvasRotation: newRotation });
+  };
+
+  const handleRotatePointerUp = (e: React.PointerEvent) => {
+    setIsRotating(false);
+    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+  };
+
+  const bringToFront = () => {
+    onUpdate(event.id, { isBringingToFront: true });
   };
 
   const toggleCorners = () => {
@@ -182,7 +199,7 @@ function CollageItem({
             fill 
             className={cn(
               "object-cover pointer-events-none",
-              !isInteracting && "transition-transform duration-300"
+              (!isInteracting && !isRotating) && "transition-transform duration-300"
             )}
             style={{
               transform: `scale(${event.imageZoom || 1}) translate(${event.imageX || 0}%, ${event.imageY || 0}%)`
@@ -221,8 +238,16 @@ function CollageItem({
           <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" title="Bring to Front" onClick={(e) => { e.stopPropagation(); bringToFront(); }}>
             <Layers className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" title="Rotate" onClick={(e) => { e.stopPropagation(); rotate(); }}>
-            <RotateCw className="h-4 w-4" />
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className={cn("h-8 w-8 rounded-lg cursor-ew-resize transition-colors", isRotating && "text-primary bg-primary/10")} 
+            title="Drag Left/Right to Rotate"
+            onPointerDown={handleRotatePointerDown}
+            onPointerMove={handleRotatePointerMove}
+            onPointerUp={handleRotatePointerUp}
+          >
+            <RotateCw className={cn("h-4 w-4", isRotating && "animate-spin-slow")} />
           </Button>
           <Button 
             variant="ghost" 
@@ -276,6 +301,9 @@ function CollageItem({
     </div>
   );
 }
+
+const CANVAS_WIDTH = 1200;
+const CANVAS_HEIGHT = 1600;
 
 export function CollageEditor({ events, isLoading, pageId, db, onFieldFocus }: CollageEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -374,6 +402,23 @@ export function CollageEditor({ events, isLoading, pageId, db, onFieldFocus }: C
           />
         ))}
       </div>
+      <style jsx global>{`
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+          animation: spin-slow 8s linear infinite;
+        }
+      `}</style>
     </div>
   );
+}
+
+interface CollageEditorProps {
+  events: any[] | null;
+  isLoading: boolean;
+  pageId: string;
+  db: Firestore | null;
+  onFieldFocus?: (eventId: string, field: 'title' | 'message') => void;
 }

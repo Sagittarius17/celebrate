@@ -68,13 +68,23 @@ function CollageItem({
       } else {
         const currentZoom = event.imageZoom || 1;
         const newZoom = Math.min(Math.max(currentZoom + delta, 1), 5);
-        onUpdate(event.id, { imageZoom: newZoom });
+        
+        // Clamp existing pan offsets to new zoom bounds
+        const bound = 50 * (1 - 1 / newZoom);
+        const clampedX = Math.min(Math.max(event.imageX || 0, -bound), bound);
+        const clampedY = Math.min(Math.max(event.imageY || 0, -bound), bound);
+
+        onUpdate(event.id, { 
+          imageZoom: newZoom,
+          imageX: clampedX,
+          imageY: clampedY
+        });
       }
     };
 
     el.addEventListener('wheel', handleWheelNative, { passive: false });
     return () => el.removeEventListener('wheel', handleWheelNative);
-  }, [event.id, event.canvasScale, event.imageZoom, isSelected, editMode, onUpdate]);
+  }, [event.id, event.canvasScale, event.imageZoom, event.imageX, event.imageY, isSelected, editMode, onUpdate]);
 
   const handlePointerDown = (e: React.PointerEvent) => {
     if (isRotating) return;
@@ -109,9 +119,14 @@ function CollageItem({
       const sensitivity = 0.5 / (event.imageZoom || 1);
       const newX = dragStartRef.current.initialX + (dx * sensitivity);
       const newY = dragStartRef.current.initialY + (dy * sensitivity);
+      
+      // Calculate bounds: image must cover frame
+      const zoom = event.imageZoom || 1;
+      const bound = 50 * (1 - 1 / zoom);
+
       onUpdate(event.id, {
-        imageX: Math.min(Math.max(newX, -100), 100),
-        imageY: Math.min(Math.max(newY, -100), 100),
+        imageX: Math.min(Math.max(newX, -bound), bound),
+        imageY: Math.min(Math.max(newY, -bound), bound),
       });
     }
   };
@@ -135,8 +150,6 @@ function CollageItem({
     if (!isRotating) return;
     e.stopPropagation();
     
-    // Calculate rotation based on horizontal drag distance
-    // 1 pixel = 1 degree for intuitive feel
     const dx = e.clientX - rotateStartRef.current.x;
     const newRotation = (rotateStartRef.current.initialRotation + dx) % 360;
     

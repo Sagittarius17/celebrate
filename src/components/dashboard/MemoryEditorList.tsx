@@ -85,7 +85,16 @@ function MemoryItemEditor({
       
       setLocalFraming(prev => {
         const nextZoom = Math.min(Math.max(prev.zoom + delta, 1), 5);
-        return { ...prev, zoom: nextZoom };
+        
+        // Calculate bounds based on new zoom
+        const bound = 50 * (1 - 1 / nextZoom);
+        
+        return { 
+          ...prev, 
+          zoom: nextZoom,
+          x: Math.min(Math.max(prev.x, -bound), bound),
+          y: Math.min(Math.max(prev.y, -bound), bound)
+        };
       });
     };
 
@@ -95,12 +104,16 @@ function MemoryItemEditor({
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (localFraming.zoom !== event.imageZoom) {
-        handleUpdateEvent({ imageZoom: localFraming.zoom });
+      if (localFraming.zoom !== event.imageZoom || localFraming.x !== event.imageX || localFraming.y !== event.imageY) {
+        handleUpdateEvent({ 
+          imageZoom: localFraming.zoom,
+          imageX: localFraming.x,
+          imageY: localFraming.y
+        });
       }
     }, 500);
     return () => clearTimeout(timer);
-  }, [localFraming.zoom, event.imageZoom, handleUpdateEvent]);
+  }, [localFraming, event.imageZoom, event.imageX, event.imageY, handleUpdateEvent]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -145,14 +158,17 @@ function MemoryItemEditor({
     
     const rect = containerRef.current?.getBoundingClientRect();
     if (rect) {
-      const sensitivity = 1 / (localFraming.zoom || 1);
+      const zoom = localFraming.zoom || 1;
+      const sensitivity = 1 / zoom;
       const pctX = (dx / rect.width) * 100 * sensitivity;
       const pctY = (dy / rect.height) * 100 * sensitivity;
       
+      const bound = 50 * (1 - 1 / zoom);
+
       setLocalFraming(prev => ({
         ...prev,
-        x: Math.min(Math.max(prev.x + pctX, -100), 100),
-        y: Math.min(Math.max(prev.y + pctY, -100), 100)
+        x: Math.min(Math.max(prev.x + pctX, -bound), bound),
+        y: Math.min(Math.max(prev.y + pctY, -bound), bound)
       }));
     }
     
@@ -183,7 +199,14 @@ function MemoryItemEditor({
       if (interactionRef.current.lastDist > 0) {
         const delta = (dist - interactionRef.current.lastDist) / 100;
         const nextZoom = Math.min(Math.max(localFraming.zoom + delta, 1), 5);
-        setLocalFraming(prev => ({ ...prev, zoom: nextZoom }));
+        const bound = 50 * (1 - 1 / nextZoom);
+
+        setLocalFraming(prev => ({ 
+          ...prev, 
+          zoom: nextZoom,
+          x: Math.min(Math.max(prev.x, -bound), bound),
+          y: Math.min(Math.max(prev.y, -bound), bound)
+        }));
       }
       interactionRef.current.lastDist = dist;
     }
@@ -193,7 +216,11 @@ function MemoryItemEditor({
     if (interactionRef.current.isPinching) {
       interactionRef.current.isPinching = false;
       interactionRef.current.lastDist = 0;
-      handleUpdateEvent({ imageZoom: localFraming.zoom });
+      handleUpdateEvent({ 
+        imageZoom: localFraming.zoom,
+        imageX: localFraming.x,
+        imageY: localFraming.y
+      });
     }
   };
 

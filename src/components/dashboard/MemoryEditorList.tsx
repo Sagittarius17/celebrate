@@ -85,8 +85,6 @@ function MemoryItemEditor({
       
       setLocalFraming(prev => {
         const nextZoom = Math.min(Math.max(prev.zoom + delta, 1), 5);
-        
-        // Calculate bounds based on new zoom
         const bound = 50 * (1 - 1 / nextZoom);
         
         return { 
@@ -159,9 +157,11 @@ function MemoryItemEditor({
     const rect = containerRef.current?.getBoundingClientRect();
     if (rect) {
       const zoom = localFraming.zoom || 1;
-      const sensitivity = 1 / zoom;
-      const pctX = (dx / rect.width) * 100 * sensitivity;
-      const pctY = (dy / rect.height) * 100 * sensitivity;
+      
+      // Calculate move as % of image size
+      const imageWidthInPixels = rect.width * zoom;
+      const pctX = (dx / imageWidthInPixels) * 100;
+      const pctY = (dy / imageWidthInPixels) * 100;
       
       const bound = 50 * (1 - 1 / zoom);
 

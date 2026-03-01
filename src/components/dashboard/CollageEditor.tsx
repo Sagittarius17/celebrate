@@ -48,6 +48,10 @@ function CollageItem({
   const dragStartRef = useRef({ x: 0, y: 0, initialX: 0, initialY: 0 });
   const rotateStartRef = useRef({ x: 0, initialRotation: 0 });
 
+  const baseSize = 300 * scale;
+  const currentScale = event.canvasScale || 1;
+  const cardWidth = baseSize * currentScale;
+
   useEffect(() => {
     const el = itemRef.current;
     if (!el) return;
@@ -69,7 +73,7 @@ function CollageItem({
         const currentZoom = event.imageZoom || 1;
         const newZoom = Math.min(Math.max(currentZoom + delta, 1), 5);
         
-        // Clamp existing pan offsets to new zoom bounds
+        // When zooming, recalculate bounds and snap if necessary
         const bound = 50 * (1 - 1 / newZoom);
         const clampedX = Math.min(Math.max(event.imageX || 0, -bound), bound);
         const clampedY = Math.min(Math.max(event.imageY || 0, -bound), bound);
@@ -105,23 +109,34 @@ function CollageItem({
   const handlePointerMove = (e: React.PointerEvent) => {
     if (!isInteracting) return;
 
-    const dx = (e.clientX - dragStartRef.current.x) / scale;
-    const dy = (e.clientY - dragStartRef.current.y) / scale;
+    const dxPixels = (e.clientX - dragStartRef.current.x);
+    const dyPixels = (e.clientY - dragStartRef.current.y);
 
     if (editMode === 'card') {
-      const newX = dragStartRef.current.initialX + (dx / CANVAS_WIDTH * 100);
-      const newY = dragStartRef.current.initialY + (dy / CANVAS_HEIGHT * 100);
+      const dxCanvasPct = (dxPixels / scale / CANVAS_WIDTH) * 100;
+      const dyCanvasPct = (dyPixels / scale / CANVAS_HEIGHT) * 100;
+      
+      const newX = dragStartRef.current.initialX + dxCanvasPct;
+      const newY = dragStartRef.current.initialY + dyCanvasPct;
+      
       onUpdate(event.id, {
         canvasX: Math.min(Math.max(newX, -30), 100),
         canvasY: Math.min(Math.max(newY, -30), 100),
       });
     } else {
-      const sensitivity = 0.5 / (event.imageZoom || 1);
-      const newX = dragStartRef.current.initialX + (dx * sensitivity);
-      const newY = dragStartRef.current.initialY + (dy * sensitivity);
-      
-      // Calculate bounds: image must cover frame
+      // Dragging inside the frame
       const zoom = event.imageZoom || 1;
+      const imageWidthInPixels = cardWidth * zoom;
+      
+      // dxPixels / imageWidthInPixels gives us the % of the image width moved
+      // Multiplying by 100 gives the value for translate(X%, Y%)
+      const dxPct = (dxPixels / imageWidthInPixels) * 100;
+      const dyPct = (dyPixels / imageWidthInPixels) * 100;
+
+      const newX = dragStartRef.current.initialX + dxPct;
+      const newY = dragStartRef.current.initialY + dyPct;
+      
+      // Keep edges jointed to the frame
       const bound = 50 * (1 - 1 / zoom);
 
       onUpdate(event.id, {
@@ -172,8 +187,6 @@ function CollageItem({
 
   const left = (event.canvasX || 10) * scale * CANVAS_WIDTH / 100;
   const top = (event.canvasY || 10) * scale * CANVAS_HEIGHT / 100;
-  const baseSize = 300 * scale;
-  const currentScale = event.canvasScale || 1;
   const isAngled = event.cornerStyle === 'angled';
 
   return (
@@ -187,7 +200,7 @@ function CollageItem({
         left: `${left}px`,
         top: `${top}px`,
         zIndex: event.canvasZIndex || 1,
-        width: `${baseSize * currentScale}px`,
+        width: `${cardWidth}px`,
         transform: `rotate(${event.canvasRotation || 0}deg)`,
       }}
       onPointerDown={handlePointerDown}

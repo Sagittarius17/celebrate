@@ -154,6 +154,12 @@
           "type": "string",
           "description": "Custom font for this memory's message."
         },
+        "cornerStyle": {
+          "type": "string",
+          "description": "The corner style of the card frame.",
+          "enum": ["rounded", "angled"],
+          "default": "rounded"
+        },
         "order": {
           "type": "number",
           "description": "An integer representing the display order."

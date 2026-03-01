@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Calendar, Trash2, Upload, Image as ImageIcon, Move, ZoomIn } from 'lucide-react';
+import { Calendar, Trash2, Upload, Image as ImageIcon, Move, ZoomIn, Square, Circle } from 'lucide-react';
 import Image from 'next/image';
 import { Firestore, doc } from 'firebase/firestore';
 import { updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -73,13 +73,11 @@ function MemoryItemEditor({
 
   const isPlaceholder = event.imageUrl?.includes('picsum.photos/seed/placeholder');
 
-  // Use a native wheel listener to block page scrolling
   useEffect(() => {
     const el = containerRef.current;
     if (!el || isPlaceholder) return;
 
     const handleWheelNative = (e: WheelEvent) => {
-      // Prevent page from scrolling
       e.preventDefault();
       
       const zoomStep = 0.1;
@@ -95,7 +93,6 @@ function MemoryItemEditor({
     return () => el.removeEventListener('wheel', handleWheelNative);
   }, [isPlaceholder]);
 
-  // Sync zoom to DB with a slight debounce
   useEffect(() => {
     const timer = setTimeout(() => {
       if (localFraming.zoom !== event.imageZoom) {
@@ -176,7 +173,6 @@ function MemoryItemEditor({
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (e.touches.length === 2) {
-      // Prevent the page from scrolling/zooming while pinching
       e.preventDefault();
       interactionRef.current.isPinching = true;
       const dist = Math.hypot(
@@ -207,10 +203,14 @@ function MemoryItemEditor({
     }
   };
 
+  const toggleCornerStyle = () => {
+    const nextStyle = event.cornerStyle === 'angled' ? 'rounded' : 'angled';
+    handleUpdateEvent({ cornerStyle: nextStyle });
+  };
+
   return (
     <Card className="rounded-[1.5rem] overflow-hidden border-none shadow-sm hover:shadow-md transition-all duration-300 group bg-card">
       <div className="flex flex-col md:flex-row h-full">
-        {/* Image Section */}
         <div 
           ref={containerRef}
           className={cn(
@@ -246,7 +246,6 @@ function MemoryItemEditor({
             )}
           </div>
 
-          {/* Overlay Instructions */}
           <div className={cn(
             "absolute inset-0 bg-black/40 flex flex-col items-center justify-center transition-opacity pointer-events-none",
             isPlaceholder ? "opacity-100" : "opacity-0 group-hover:opacity-100"
@@ -292,7 +291,6 @@ function MemoryItemEditor({
           />
         </div>
 
-        {/* Content Section */}
         <CardContent className="p-4 md:p-5 flex-1 space-y-3 relative">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-2">
@@ -310,15 +308,29 @@ function MemoryItemEditor({
                 </div>
               </div>
             </div>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="text-muted-foreground hover:text-destructive transition-colors h-7 w-7"
-              onClick={handleDeleteEvent}
-              title="Delete Memory"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className={cn(
+                  "h-7 w-7 transition-colors",
+                  event.cornerStyle === 'angled' ? "text-primary bg-primary/10" : "text-muted-foreground"
+                )}
+                onClick={toggleCornerStyle}
+                title={event.cornerStyle === 'angled' ? "Switch to Rounded Corners" : "Switch to Angled Corners"}
+              >
+                {event.cornerStyle === 'angled' ? <Square className="h-3.5 w-3.5" /> : <Circle className="h-3.5 w-3.5" />}
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="text-muted-foreground hover:text-destructive transition-colors h-7 w-7"
+                onClick={handleDeleteEvent}
+                title="Delete Memory"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           </div>
           
           <div className="space-y-1">

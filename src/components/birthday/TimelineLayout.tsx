@@ -21,8 +21,6 @@ export function TimelineLayout({ events, scrollProgress, theme }: TimelineLayout
     <div className="relative z-10">
       <div className="space-y-16 sm:space-y-32 relative z-10 pt-10 sm:pt-20">
         {events.map((event, index) => {
-          // Calculate when the spine reaches this point.
-          // We map the index to a percentage range.
           const threshold = (index / (events.length || 1)) * 100;
           const isActive = scrollProgress >= threshold;
 
@@ -48,11 +46,11 @@ export function TimelineLayout({ events, scrollProgress, theme }: TimelineLayout
                   imageZoom={event.imageZoom}
                   imageX={event.imageX}
                   imageY={event.imageY}
+                  cornerStyle={event.cornerStyle}
                   icon={React.cloneElement(icons[index % icons.length] as React.ReactElement, { className: "w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" })}
                 />
               </div>
 
-              {/* Timeline Dot/Heart - Centered on axis */}
               <div className={cn(
                 "hidden md:flex absolute left-1/2 -translate-x-1/2 items-center justify-center w-10 h-10 sm:w-14 sm:h-14 rounded-full border-[3px] transition-all duration-700 z-20 shadow-sm overflow-hidden",
                 isCandle ? "bg-black" : "bg-background",

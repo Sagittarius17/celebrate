@@ -27,6 +27,7 @@ export function GridLayout({ events }: GridLayoutProps) {
               imageZoom={event.imageZoom}
               imageX={event.imageX}
               imageY={event.imageY}
+              cornerStyle={event.cornerStyle}
               icon={React.cloneElement(icons[index % icons.length] as React.ReactElement, { className: "w-5 h-5 text-primary-foreground" })}
             />
           </div>

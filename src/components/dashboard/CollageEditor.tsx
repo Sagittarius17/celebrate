@@ -6,7 +6,7 @@ import { Firestore, doc } from 'firebase/firestore';
 import { updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
-import { Move, ZoomIn, Layers, RotateCw, Trash2, Upload, MousePointer2, ImageIcon, Frame } from 'lucide-react';
+import { Move, ZoomIn, Layers, RotateCw, Trash2, Upload, MousePointer2, ImageIcon, Frame, Square, Circle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -32,7 +32,6 @@ interface CollageEditorProps {
 const CANVAS_WIDTH = 1200;
 const CANVAS_HEIGHT = 1600;
 
-// Sub-component for individual collage items
 function CollageItem({ 
   event, 
   scale, 
@@ -136,10 +135,16 @@ function CollageItem({
     onUpdate(event.id, { canvasRotation: newRot });
   };
 
+  const toggleCorners = () => {
+    const nextStyle = event.cornerStyle === 'angled' ? 'rounded' : 'angled';
+    onUpdate(event.id, { cornerStyle: nextStyle });
+  };
+
   const left = (event.canvasX || 10) * scale * CANVAS_WIDTH / 100;
   const top = (event.canvasY || 10) * scale * CANVAS_HEIGHT / 100;
   const baseSize = 300 * scale;
   const currentScale = event.canvasScale || 1;
+  const isAngled = event.cornerStyle === 'angled';
 
   return (
     <div
@@ -163,8 +168,14 @@ function CollageItem({
         onSelect(event.id);
       }}
     >
-      <div className="relative aspect-square bg-white p-3 shadow-xl rounded-sm group">
-        <div className="relative w-full h-full overflow-hidden bg-muted rounded-sm">
+      <div className={cn(
+        "relative aspect-square bg-white p-3 shadow-xl transition-all duration-300 group",
+        isAngled ? "rounded-none" : "rounded-sm"
+      )}>
+        <div className={cn(
+          "relative w-full h-full overflow-hidden bg-muted",
+          isAngled ? "rounded-none" : "rounded-sm"
+        )}>
           <Image 
             src={event.imageUrl} 
             alt={event.title} 
@@ -179,7 +190,6 @@ function CollageItem({
           />
         </div>
         
-        {/* Selection Toolbar */}
         <div 
           className={cn(
             "absolute -top-16 left-1/2 -translate-x-1/2 bg-white dark:bg-slate-800 shadow-2xl rounded-2xl p-1.5 flex items-center gap-1.5 transition-all duration-300 z-50",
@@ -213,6 +223,15 @@ function CollageItem({
           </Button>
           <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" title="Rotate" onClick={(e) => { e.stopPropagation(); rotate(); }}>
             <RotateCw className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className={cn("h-8 w-8 rounded-lg", isAngled && "text-primary")} 
+            title={isAngled ? "Rounded Corners" : "Angled Corners"} 
+            onClick={(e) => { e.stopPropagation(); toggleCorners(); }}
+          >
+            {isAngled ? <Circle className="h-4 w-4" /> : <Square className="h-4 w-4" />}
           </Button>
           <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" title="Change Image" onClick={(e) => { e.stopPropagation(); onFileSelect(); }}>
             <Upload className="h-4 w-4" />
@@ -249,7 +268,7 @@ function CollageItem({
           </AlertDialog>
         </div>
 
-        <div className="mt-4 px-1 pb-2 select-none">
+        <div className="mt-4 px-1 pb-2 select-none text-center">
           <h4 className="font-bold text-xs truncate font-headline">{event.title}</h4>
           <p className="text-[10px] text-muted-foreground truncate italic opacity-60">"{event.message}"</p>
         </div>

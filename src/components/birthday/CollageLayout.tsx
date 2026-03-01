@@ -26,18 +26,20 @@ export function CollageLayout({
         className="w-full relative mx-auto bg-white/50 dark:bg-black/20 rounded-[3rem] shadow-2xl overflow-hidden reveal-on-scroll"
         style={{ aspectRatio: `${CANVAS_WIDTH} / ${CANVAS_HEIGHT}` }}
       >
-        {/* Decor */}
         <div className="absolute top-10 left-10 opacity-20"><Sparkles className="w-10 h-10 text-primary" /></div>
         <div className="absolute bottom-10 right-10 opacity-20"><Heart className="w-10 h-10 text-secondary" /></div>
 
         {events.map((event) => {
-          const baseSize = 300;
           const currentScale = event.canvasScale || 1;
+          const isAngled = event.cornerStyle === 'angled';
           
           return (
             <div
               key={event.id}
-              className="absolute shadow-2xl bg-white p-3 rounded-sm transition-transform duration-700 hover:scale-105 hover:z-[100]"
+              className={cn(
+                "absolute shadow-2xl bg-white p-3 transition-transform duration-700 hover:scale-105 hover:z-[100]",
+                isAngled ? "rounded-none" : "rounded-sm"
+              )}
               style={{
                 left: `${event.canvasX || 10}%`,
                 top: `${event.canvasY || 10}%`,
@@ -46,7 +48,10 @@ export function CollageLayout({
                 transform: `rotate(${event.canvasRotation || 0}deg)`,
               }}
             >
-              <div className="relative aspect-square overflow-hidden bg-muted">
+              <div className={cn(
+                "relative aspect-square overflow-hidden bg-muted",
+                isAngled ? "rounded-none" : "rounded-sm"
+              )}>
                 <Image 
                   src={event.imageUrl} 
                   alt={event.title}

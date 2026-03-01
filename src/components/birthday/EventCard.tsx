@@ -5,6 +5,7 @@ import React from 'react';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 interface EventCardProps {
   title: string;
@@ -17,6 +18,7 @@ interface EventCardProps {
   imageZoom?: number;
   imageX?: number;
   imageY?: number;
+  cornerStyle?: 'rounded' | 'angled';
 }
 
 export const EventCard: React.FC<EventCardProps> = ({ 
@@ -29,10 +31,16 @@ export const EventCard: React.FC<EventCardProps> = ({
   messageFont,
   imageZoom = 1,
   imageX = 0,
-  imageY = 0
+  imageY = 0,
+  cornerStyle = 'rounded'
 }) => {
+  const isAngled = cornerStyle === 'angled';
+
   return (
-    <Card className="overflow-hidden border border-white/20 shadow-xl dark:shadow-2xl transition-all duration-1000 hover:scale-[1.03] bg-white/70 dark:bg-card/70 candle-light:bg-black/60 candle-light:shadow-[0_10px_40px_rgba(255,215,0,0.15)] backdrop-blur-xl rounded-[2.5rem] sm:rounded-[3rem]">
+    <Card className={cn(
+      "overflow-hidden border border-white/20 shadow-xl dark:shadow-2xl transition-all duration-1000 hover:scale-[1.03] bg-white/70 dark:bg-card/70 candle-light:bg-black/60 candle-light:shadow-[0_10px_40px_rgba(255,215,0,0.15)] backdrop-blur-xl",
+      isAngled ? "rounded-none" : "rounded-[2.5rem] sm:rounded-[3rem]"
+    )}>
       <div className="relative h-64 sm:h-80 w-full overflow-hidden">
         <div className="relative w-full h-full overflow-hidden">
           <Image 

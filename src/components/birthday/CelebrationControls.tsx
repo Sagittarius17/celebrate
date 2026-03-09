@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Sun, Flame, Sparkles, Play, Pause, Music } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+const isMobile = window.matchMedia("(max-width:768px)").matches;
 
 interface CelebrationControlsProps {
   theme?: 'light' | 'candle-light';
@@ -255,7 +256,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
                   <div className="w-1.5 h-5 sm:w-2.5 sm:h-8 bg-black rounded-full" />
                 </div>
               ) : (
-                <Play className="fill-black ml-0.5 sm:ml-1" style={{ width: '40px', height: '40px' }} />
+                <Play className="fill-black ml-0.5 sm:ml-1" style={{ width: isMobile ? '24px' : '40px', height: isMobile ? '24px' : '40px' }} />
               )}
             </Button>
           </div>

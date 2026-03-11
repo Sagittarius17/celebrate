@@ -46,7 +46,7 @@ export function TimelineLayout({ events, scrollProgress, theme }: TimelineLayout
                   imageZoom={event.imageZoom}
                   imageX={event.imageX}
                   imageY={event.imageY}
-                  cornerStyle={event.cornerStyle}
+                  cornerStyle="rounded"
                   icon={React.cloneElement(icons[index % icons.length] as React.ReactElement, { className: "w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" })}
                 />
               </div>

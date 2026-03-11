@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Calendar, Trash2, Upload, Image as ImageIcon, Move, ZoomIn, Square, Circle } from 'lucide-react';
+import { Calendar, Trash2, Upload, Image as ImageIcon, Move, ZoomIn } from 'lucide-react';
 import Image from 'next/image';
 import { Firestore, doc } from 'firebase/firestore';
 import { updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -230,11 +230,6 @@ function MemoryItemEditor({
     }
   };
 
-  const toggleCornerStyle = () => {
-    const nextStyle = event.cornerStyle === 'angled' ? 'rounded' : 'angled';
-    handleUpdateEvent({ cornerStyle: nextStyle });
-  };
-
   return (
     <Card className="rounded-[1.5rem] overflow-hidden border-none shadow-sm hover:shadow-md transition-all duration-300 group bg-card">
       <div className="flex flex-col md:flex-row h-full">
@@ -336,18 +331,6 @@ function MemoryItemEditor({
               </div>
             </div>
             <div className="flex items-center gap-1">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className={cn(
-                  "h-7 w-7 transition-colors",
-                  event.cornerStyle === 'angled' ? "text-primary bg-primary/10" : "text-muted-foreground"
-                )}
-                onClick={toggleCornerStyle}
-                title={event.cornerStyle === 'angled' ? "Switch to Rounded Corners" : "Switch to Angled Corners"}
-              >
-                {event.cornerStyle === 'angled' ? <Square className="h-3.5 w-3.5" /> : <Circle className="h-3.5 w-3.5" />}
-              </Button>
               <Button 
                 variant="ghost" 
                 size="icon" 

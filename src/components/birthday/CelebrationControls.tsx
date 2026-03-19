@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Sun, Flame, Sparkles, Play, Pause, Music } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
-const isMobile = window.matchMedia("(max-width:768px)").matches;
 
 interface CelebrationControlsProps {
   theme?: 'light' | 'candle-light';
@@ -34,10 +33,16 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
   const [isHoveringVoice, setIsHoveringVoice] = useState(false);
   const [isMusicExpanded, setIsMusicExpanded] = useState(false);
   const [trackImageUrl, setTrackImageUrl] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const volumeAreaRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    // Check for mobile on mount to avoid hydration errors
+    setIsMobile(window.matchMedia("(max-width:768px)").matches);
+  }, []);
 
   const startMinimizeTimer = () => {
     if (timerRef.current) clearTimeout(timerRef.current);

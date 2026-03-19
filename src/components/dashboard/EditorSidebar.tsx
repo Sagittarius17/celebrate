@@ -27,7 +27,9 @@ import {
   Settings2,
   ArrowLeft,
   Type,
-  Grid
+  Grid,
+  Circle,
+  Square as SquareIcon
 } from 'lucide-react';
 import { DocumentReference, Firestore, doc } from 'firebase/firestore';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -155,13 +157,12 @@ export function EditorSidebar({
     });
   };
 
-  const handleUpdateEventFont = (font: string) => {
+  const handleUpdateEventField = (fieldName: string, value: any) => {
     if (!db || !selectionContext || !selectionContext.eventId) return;
     const eventRef = doc(db, 'celebrationPages', page.id, 'birthdayEvents', selectionContext.eventId);
-    const fieldName = selectionContext.field === 'title' ? 'titleFont' : 'messageFont';
     
     updateDocumentNonBlocking(eventRef, {
-      [fieldName]: font,
+      [fieldName]: value,
       updatedAt: new Date().toISOString()
     });
   };
@@ -219,6 +220,8 @@ export function EditorSidebar({
     ? (selectedEvent?.titleFont || 'inherit') 
     : (selectedEvent?.messageFont || 'inherit');
 
+  const isCollageLayout = page.layout === 'Collage';
+
   return (
     <Sidebar className="border-r">
       <SidebarHeader className="h-16 flex flex-row items-center justify-between px-4 border-b shrink-0">
@@ -240,19 +243,46 @@ export function EditorSidebar({
                  <p className="text-xs font-bold uppercase tracking-widest opacity-80 text-black dark:text-[#FFD700]">
                    Styling {selectionContext.field === 'title' ? 'Title' : 'Message'}
                  </p>
-                 <Select value={currentFont} onValueChange={handleUpdateEventFont}>
-                    <SelectTrigger className="w-full h-12 rounded-xl bg-background border-none shadow-sm">
-                      <SelectValue placeholder="Inherit Page Font" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="inherit">Use Default Page Font</SelectItem>
-                      {FONTS.map(font => (
-                        <SelectItem key={font} value={font}>
-                          <span style={{ fontFamily: font }} className="text-base">{font}</span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                 <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] uppercase tracking-wider font-bold opacity-60">Font Style</Label>
+                      <Select value={currentFont} onValueChange={(val) => handleUpdateEventField(selectionContext.field === 'title' ? 'titleFont' : 'messageFont', val)}>
+                        <SelectTrigger className="w-full h-12 rounded-xl bg-background border-none shadow-sm">
+                          <SelectValue placeholder="Inherit Page Font" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="inherit">Use Default Page Font</SelectItem>
+                          {FONTS.map(font => (
+                            <SelectItem key={font} value={font}>
+                              <span style={{ fontFamily: font }} className="text-base">{font}</span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {isCollageLayout && (
+                      <div className="space-y-2">
+                        <Label className="text-[10px] uppercase tracking-wider font-bold opacity-60">Frame Corners</Label>
+                        <div className="flex bg-muted p-1 rounded-xl">
+                          <Button 
+                            variant={selectedEvent?.cornerStyle !== 'angled' ? 'default' : 'ghost'} 
+                            className="flex-1 rounded-lg h-9 text-xs"
+                            onClick={() => handleUpdateEventField('cornerStyle', 'rounded')}
+                          >
+                            <Circle className="h-3.5 w-3.5 mr-2" /> Rounded
+                          </Button>
+                          <Button 
+                            variant={selectedEvent?.cornerStyle === 'angled' ? 'default' : 'ghost'} 
+                            className="flex-1 rounded-lg h-9 text-xs"
+                            onClick={() => handleUpdateEventField('cornerStyle', 'angled')}
+                          >
+                            <SquareIcon className="h-3.5 w-3.5 mr-2" /> Angled
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                 </div>
                </div>
             </SidebarGroupContent>
           </SidebarGroup>

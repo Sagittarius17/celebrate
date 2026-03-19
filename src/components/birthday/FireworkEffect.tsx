@@ -90,7 +90,7 @@ export const FireworkEffect: React.FC<FireworkEffectProps> = ({ enabled }) => {
   return (
     <div 
       ref={containerRef} 
-      className="fixed inset-0 pointer-events-none z-[70] transition-opacity duration-1000"
+      className="fixed inset-0 pointer-events-none z-[5] transition-opacity duration-1000"
       style={{ 
         opacity: enabled ? 1 : 0,
         visibility: enabled ? 'visible' : 'hidden',

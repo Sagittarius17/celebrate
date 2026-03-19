@@ -169,6 +169,17 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
     }, 800);
   };
 
+  const handleToggleTheme = () => {
+    setTheme(prev => {
+      const next = prev === 'light' ? 'candle-light' : 'light';
+      // Automatically turn off fireworks if switching back to light mode
+      if (next === 'light') {
+        setShowFireworks(false);
+      }
+      return next;
+    });
+  };
+
   if (isFindingPage || isPageLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center space-y-8 px-4 max-w-sm mx-auto">
@@ -215,7 +226,7 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
       {/* Persistent Controls - High z-index for full access */}
       <CelebrationControls 
         theme={theme}
-        onToggleTheme={() => setTheme(prev => prev === 'light' ? 'candle-light' : 'light')}
+        onToggleTheme={handleToggleTheme}
         showFireworks={showFireworks}
         onToggleFireworks={() => setShowFireworks(prev => !prev)}
         voiceNoteUrl={page?.voiceNoteDataUri}

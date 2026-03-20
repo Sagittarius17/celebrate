@@ -249,19 +249,18 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
               variant="ghost"
               className={cn(
                 "rounded-full p-0 backdrop-blur-md border-none transition-all hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center shrink-0",
-                "bg-orange-500 text-black border-none hover:bg-orange-600 z-10",
-                "w-9 h-9 sm:w-14 sm:h-14",
-                !isPlayingVoice && "bg-orange-500"
+                "bg-white/10 hover:bg-white/20 text-foreground z-10",
+                "w-9 h-9 sm:w-14 sm:h-14"
               )}
               title={isPlayingVoice ? "Pause Message" : "Play Creator Message"}
             >
               {isPlayingVoice ? (
                 <div className="flex gap-1 sm:gap-1.5 items-center justify-center">
-                  <div className="w-1.5 h-5 sm:w-2 sm:h-7 bg-black rounded-full" />
-                  <div className="w-1.5 h-5 sm:w-2 sm:h-7 bg-black rounded-full" />
+                  <div className="w-1.5 h-5 sm:w-2 sm:h-7 bg-current rounded-full" />
+                  <div className="w-1.5 h-5 sm:w-2 sm:h-7 bg-current rounded-full" />
                 </div>
               ) : (
-                <Play className="fill-black ml-0.5 sm:ml-1" style={{ width: isMobile ? '16px' : '36px', height: isMobile ? '16px' : '36px' }} />
+                <Play className="fill-current ml-0.5 sm:ml-1" style={{ width: isMobile ? '16px' : '36px', height: isMobile ? '16px' : '36px' }} />
               )}
             </Button>
           </div>

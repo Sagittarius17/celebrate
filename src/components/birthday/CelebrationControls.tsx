@@ -153,7 +153,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
             {trackImageUrl ? (
               <Image src={trackImageUrl} alt="Track Art" fill className="object-cover" />
             ) : (
-              <Music className="h-5 w-5 sm:h-10 sm:w-10 text-primary" />
+              <Music className="h-10 w-10 sm:h-10 sm:w-10 text-primary" />
             )}
           </button>
           
@@ -184,7 +184,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
           className={cn(standardButtonStyle, "bg-white/10 hover:bg-white/20 text-foreground")}
           title={isCandle ? "Return to Light Mode" : "Enter Candle-Light Mode"}
         >
-          {isCandle ? <Sun className="h-5 w-5 sm:h-10 sm:w-10 text-yellow-400" /> : <Flame className="h-5 w-5 sm:h-10 sm:w-10 text-orange-500 fill-orange-500" />}
+          {isCandle ? <Sun className="h-10 w-10 sm:h-10 sm:w-10 text-yellow-400" /> : <Flame className="h-10 w-10 sm:h-10 sm:w-10 text-orange-500 fill-orange-500" />}
         </Button>
       )}
 
@@ -201,7 +201,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
           )}
           title={showFireworks ? "Disable Fireworks" : "Enable Fireworks"}
         >
-          <Sparkles className={cn("h-5 w-5 sm:h-10 sm:w-10", showFireworks && "animate-pulse")} />
+          <Sparkles className={cn("h-10 w-10 sm:h-10 sm:w-10", showFireworks && "animate-pulse")} />
         </Button>
       )}
 
@@ -213,6 +213,16 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
           onMouseEnter={() => setIsHoveringVoice(true)}
           onMouseLeave={() => setIsHoveringVoice(false)}
         >
+          {/* Play Me Tag - Only show when NOT playing and NOT hovering volume */}
+          {!isPlayingVoice && isRevealed && !isHoveringVoice && (
+            <div className="absolute right-[calc(100%+16px)] top-1/2 -translate-y-1/2 pointer-events-none hidden sm:flex items-center animate-in fade-in slide-in-from-right-4 duration-500">
+              <div className="bg-orange-500 text-white px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.15em] shadow-xl animate-pulse">
+                Play Me
+              </div>
+              <div className="w-2 h-2 bg-orange-500 rotate-45 -ml-1.5 shadow-xl" />
+            </div>
+          )}
+
           <div className={cn(
             "absolute right-[calc(100%+12px)] sm:right-[calc(100%+16px)] top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 transition-all duration-300 transform",
             isHoveringVoice ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4 pointer-events-none"

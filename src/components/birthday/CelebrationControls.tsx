@@ -153,7 +153,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
             {trackImageUrl ? (
               <Image src={trackImageUrl} alt="Track Art" fill className="object-cover" />
             ) : (
-              <Music className="h-5 w-5 sm:h-9 sm:w-9 text-primary" />
+              <Music className="h-5 w-5 sm:h-10 sm:w-10 text-primary" />
             )}
           </button>
           
@@ -184,7 +184,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
           className={cn(standardButtonStyle, "bg-white/10 hover:bg-white/20 text-foreground")}
           title={isCandle ? "Return to Light Mode" : "Enter Candle-Light Mode"}
         >
-          {isCandle ? <Sun className="h-5 w-5 sm:h-9 sm:w-9 text-yellow-400" /> : <Flame className="h-5 w-5 sm:h-9 sm:w-9 text-orange-500 fill-orange-500" />}
+          {isCandle ? <Sun className="h-5 w-5 sm:h-10 sm:w-10 text-yellow-400" /> : <Flame className="h-5 w-5 sm:h-10 sm:w-10 text-orange-500 fill-orange-500" />}
         </Button>
       )}
 
@@ -201,7 +201,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
           )}
           title={showFireworks ? "Disable Fireworks" : "Enable Fireworks"}
         >
-          <Sparkles className={cn("h-5 w-5 sm:h-9 sm:w-9", showFireworks && "animate-pulse")} />
+          <Sparkles className={cn("h-5 w-5 sm:h-10 sm:w-10", showFireworks && "animate-pulse")} />
         </Button>
       )}
 
@@ -260,7 +260,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
                   <div className="w-1 h-4 sm:w-2.5 sm:h-8 bg-current rounded-full" />
                 </div>
               ) : (
-                <Play className="fill-current ml-0.5 sm:ml-1.5" style={{ width: isMobile ? '16px' : '36px', height: isMobile ? '16px' : '36px' }} />
+                <Play className="fill-current ml-0.5 sm:ml-1.5" style={{ width: isMobile ? '16px' : '40px', height: isMobile ? '16px' : '40px' }} />
               )}
             </Button>
           </div>

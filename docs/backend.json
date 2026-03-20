@@ -90,7 +90,7 @@
           "description": "A Base64 data URI of a recorded voice message."
         },
         "voiceNoteDuration": {
-          "type": "number",
+          "number": "number",
           "description": "The duration of the voice note in seconds."
         },
         "ownerId": {
@@ -137,6 +137,11 @@
           "type": "string",
           "description": "The specific date associated with this event.",
           "format": "date"
+        },
+        "showDate": {
+          "type": "boolean",
+          "description": "Whether or not to display the date badge on the card.",
+          "default": true
         },
         "title": {
           "type": "string",

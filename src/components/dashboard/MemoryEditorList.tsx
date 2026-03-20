@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Calendar, Trash2, Upload, Image as ImageIcon, Move, ZoomIn } from 'lucide-react';
+import { Calendar, Trash2, Upload, Image as ImageIcon, Move, ZoomIn, Eye, EyeOff } from 'lucide-react';
 import Image from 'next/image';
 import { Firestore, doc } from 'firebase/firestore';
 import { updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -230,6 +230,11 @@ function MemoryItemEditor({
     }
   };
 
+  const toggleShowDate = () => {
+    const newVal = event.showDate === false ? true : false;
+    handleUpdateEvent({ showDate: newVal });
+  };
+
   return (
     <Card className="rounded-[1.5rem] overflow-hidden border-none shadow-sm hover:shadow-md transition-all duration-300 group bg-card">
       <div className="flex flex-col md:flex-row h-full">
@@ -319,7 +324,7 @@ function MemoryItemEditor({
                <span className="text-[10px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full uppercase tracking-widest">
                 Memory #{index + 1}
                </span>
-               <div className="space-y-0">
+               <div className="flex items-center gap-2">
                 <div className="relative flex items-center">
                   <input 
                     type="date" 
@@ -328,6 +333,15 @@ function MemoryItemEditor({
                     onChange={(e) => handleUpdateEvent({ eventDate: e.target.value })}
                   />
                 </div>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className={cn("h-6 w-6 rounded-full transition-colors", event.showDate === false ? "text-muted-foreground/40" : "text-primary")}
+                  onClick={toggleShowDate}
+                  title={event.showDate === false ? "Show Date" : "Hide Date"}
+                >
+                  {event.showDate === false ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                </Button>
               </div>
             </div>
             <div className="flex items-center gap-1">

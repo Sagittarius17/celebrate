@@ -19,6 +19,7 @@ interface EventCardProps {
   imageX?: number;
   imageY?: number;
   cornerStyle?: 'rounded' | 'angled';
+  showDate?: boolean;
 }
 
 export const EventCard: React.FC<EventCardProps> = ({ 
@@ -32,7 +33,8 @@ export const EventCard: React.FC<EventCardProps> = ({
   imageZoom = 1,
   imageX = 0,
   imageY = 0,
-  cornerStyle = 'rounded'
+  cornerStyle = 'rounded',
+  showDate = true
 }) => {
   const isAngled = cornerStyle === 'angled';
 
@@ -54,11 +56,13 @@ export const EventCard: React.FC<EventCardProps> = ({
             data-ai-hint="celebration photo"
           />
         </div>
-        <div className="absolute top-6 left-6">
-          <Badge variant="secondary" className="px-5 py-2 text-xs sm:text-sm font-bold backdrop-blur-xl bg-white/50 dark:bg-black/50 border-none rounded-full shadow-lg">
-            {date}
-          </Badge>
-        </div>
+        {showDate && (
+          <div className="absolute top-6 left-6">
+            <Badge variant="secondary" className="px-5 py-2 text-xs sm:text-sm font-bold backdrop-blur-xl bg-white/50 dark:bg-black/50 border-none rounded-full shadow-lg">
+              {date}
+            </Badge>
+          </div>
+        )}
       </div>
       <CardContent className="p-8 sm:p-12">
         <div className="flex items-center gap-4 mb-4 sm:mb-6">

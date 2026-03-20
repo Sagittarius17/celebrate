@@ -94,6 +94,7 @@ function DashboardEditorContent({ id }: { id: string }) {
       title: 'New Memory',
       message: '',
       eventDate: new Date().toISOString().split('T')[0],
+      showDate: true,
       imageUrl: placeholderImage,
       order: (events?.length || 0) + 1,
       ownerId: user.uid,

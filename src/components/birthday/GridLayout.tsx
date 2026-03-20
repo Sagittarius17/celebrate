@@ -20,6 +20,7 @@ export function GridLayout({ events }: GridLayoutProps) {
             <EventCard 
               title={event.title}
               date={new Date(event.eventDate).toLocaleDateString()}
+              showDate={event.showDate}
               message={event.message}
               imageUrl={event.imageUrl}
               titleFont={event.titleFont}

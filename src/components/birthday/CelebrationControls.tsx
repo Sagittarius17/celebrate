@@ -213,13 +213,13 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
           onMouseEnter={() => setIsHoveringVoice(true)}
           onMouseLeave={() => setIsHoveringVoice(false)}
         >
-          {/* Play Me Tag - Only show when NOT playing and NOT hovering volume */}
+          {/* Play Me Tag - Positioned at bottom, white bg, black text */}
           {!isPlayingVoice && isRevealed && !isHoveringVoice && (
-            <div className="absolute right-[calc(100%+16px)] top-1/2 -translate-y-1/2 pointer-events-none hidden sm:flex items-center animate-in fade-in slide-in-from-right-4 duration-500">
-              <div className="bg-orange-500 text-white px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.15em] shadow-xl animate-pulse">
+            <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 pointer-events-none hidden sm:flex flex-col items-center animate-in fade-in slide-in-from-top-4 duration-500 z-[10001]">
+              <div className="w-2 h-2 bg-white rotate-45 -mb-1 shadow-sm z-10" />
+              <div className="bg-white text-black px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.15em] shadow-xl animate-pulse whitespace-nowrap">
                 Play Me
               </div>
-              <div className="w-2 h-2 bg-orange-500 rotate-45 -ml-1.5 shadow-xl" />
             </div>
           )}
 
@@ -270,7 +270,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
                   <div className="w-1 h-4 sm:w-2.5 sm:h-8 bg-current rounded-full" />
                 </div>
               ) : (
-                <Play className="fill-current ml-0.5 sm:ml-1.5" style={{ width: isMobile ? '16px' : '40px', height: isMobile ? '16px' : '40px' }} />
+                <Play className="fill-current ml-0.5 sm:ml-1.5" style={{ width: isMobile ? '16px' : '36px', height: isMobile ? '16px' : '36px' }} />
               )}
             </Button>
           </div>

@@ -258,13 +258,18 @@ function MemoryItemEditor({
     toast({ title: "Media Rotated", description: `Rotated to ${nextRotation}°` });
   };
 
+  // Rotation scale logic for editor: scale up slightly when rotated sideways to fill gaps
+  const isRotatedSideways = (localFraming.rotation || 0) % 180 !== 0;
+  const rotationScale = isRotatedSideways ? 1.5 : 1;
+  const finalScale = localFraming.zoom * rotationScale;
+
   return (
     <Card className="rounded-[1.5rem] overflow-hidden border-none shadow-sm hover:shadow-md transition-all duration-300 group bg-card">
       <div className="flex flex-col md:flex-row h-full">
         <div 
           ref={containerRef}
           className={cn(
-            "relative w-full md:w-48 h-48 md:h-auto overflow-hidden bg-muted touch-none select-none",
+            "relative w-full md:w-56 h-56 md:h-auto overflow-hidden bg-muted touch-none select-none",
             isPlaceholder ? "cursor-pointer" : "cursor-move"
           )}
           onPointerDown={handlePointerDown}
@@ -274,7 +279,7 @@ function MemoryItemEditor({
           onTouchEnd={handleTouchEnd}
           onClick={handleContainerClick}
         >
-          <div className="relative w-full h-full overflow-hidden pointer-events-none">
+          <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
             {event.videoUrl ? (
               <video 
                 src={event.videoUrl}
@@ -287,7 +292,7 @@ function MemoryItemEditor({
                   !isInteracting && "transition-transform duration-300"
                 )}
                 style={{
-                  transform: `scale(${localFraming.zoom}) translate(${localFraming.x}%, ${localFraming.y}%) rotate(${localFraming.rotation}deg)`
+                  transform: `scale(${finalScale}) translate(${localFraming.x}%, ${localFraming.y}%) rotate(${localFraming.rotation}deg)`
                 }}
               />
             ) : event.imageUrl ? (
@@ -300,7 +305,7 @@ function MemoryItemEditor({
                   !isInteracting && "transition-transform duration-300"
                 )}
                 style={{
-                  transform: `scale(${localFraming.zoom}) translate(${localFraming.x}%, ${localFraming.y}%) rotate(${localFraming.rotation}deg)`
+                  transform: `scale(${finalScale}) translate(${localFraming.x}%, ${localFraming.y}%) rotate(${localFraming.rotation}deg)`
                 }}
               />
             ) : (

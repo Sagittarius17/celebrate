@@ -189,6 +189,11 @@ function CollageItem({
   const left = (event.canvasX || 10) * scale * CANVAS_WIDTH / 100;
   const top = (event.canvasY || 10) * scale * CANVAS_HEIGHT / 100;
   const isAngled = event.cornerStyle === 'angled';
+  
+  // Rotation scale logic for collage: scale up slightly when rotated sideways to fill gaps
+  const isRotatedSideways = (event.mediaRotation || 0) % 180 !== 0;
+  const rotationScale = isRotatedSideways ? 1.5 : 1;
+  const finalScale = (event.imageZoom || 1) * rotationScale;
 
   return (
     <div
@@ -232,7 +237,7 @@ function CollageItem({
                 (!isInteracting && !isRotating) && "transition-transform duration-300"
               )}
               style={{
-                transform: `scale(${event.imageZoom || 1}) translate(${event.imageX || 0}%, ${event.imageY || 0}%) rotate(${event.mediaRotation || 0}deg)`
+                transform: `scale(${finalScale}) translate(${event.imageX || 0}%, ${event.imageY || 0}%) rotate(${event.mediaRotation || 0}deg)`
               }}
             />
           ) : event.imageUrl ? (
@@ -245,7 +250,7 @@ function CollageItem({
                 (!isInteracting && !isRotating) && "transition-transform duration-300"
               )}
               style={{
-                transform: `scale(${event.imageZoom || 1}) translate(${event.imageX || 0}%, ${event.imageY || 0}%) rotate(${event.mediaRotation || 0}deg)`
+                transform: `scale(${finalScale}) translate(${event.imageX || 0}%, ${event.imageY || 0}%) rotate(${event.mediaRotation || 0}deg)`
               }}
             />
           ) : (

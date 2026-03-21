@@ -41,6 +41,12 @@ export const EventCard: React.FC<EventCardProps> = ({
   showDate = true
 }) => {
   const isAngled = cornerStyle === 'angled';
+  
+  // Calculate rotation scale: When rotated 90/270 in a rectangular container, 
+  // we need to scale up to ensure no gaps appear on the sides.
+  const isRotatedSideways = mediaRotation % 180 !== 0;
+  const rotationScale = isRotatedSideways ? 1.5 : 1; 
+  const finalScale = imageZoom * rotationScale;
 
   return (
     <Card className={cn(
@@ -48,7 +54,7 @@ export const EventCard: React.FC<EventCardProps> = ({
       isAngled ? "rounded-none" : "rounded-[2.5rem] sm:rounded-[3rem]"
     )}>
       <div className="relative h-64 sm:h-80 w-full overflow-hidden">
-        <div className="relative w-full h-full overflow-hidden">
+        <div className="relative w-full h-full overflow-hidden bg-muted">
           {videoUrl ? (
             <video 
               src={videoUrl}
@@ -56,9 +62,9 @@ export const EventCard: React.FC<EventCardProps> = ({
               loop
               muted
               playsInline
-              className="w-full h-full object-cover transition-transform duration-300"
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-300"
               style={{
-                transform: `scale(${imageZoom}) translate(${imageX}%, ${imageY}%) rotate(${mediaRotation}deg)`
+                transform: `scale(${finalScale}) translate(${imageX}%, ${imageY}%) rotate(${mediaRotation}deg)`
               }}
             />
           ) : imageUrl ? (
@@ -68,7 +74,7 @@ export const EventCard: React.FC<EventCardProps> = ({
               fill
               className="object-cover transition-transform duration-300"
               style={{
-                transform: `scale(${imageZoom}) translate(${imageX}%, ${imageY}%) rotate(${mediaRotation}deg)`
+                transform: `scale(${finalScale}) translate(${imageX}%, ${imageY}%) rotate(${mediaRotation}deg)`
               }}
               data-ai-hint="celebration photo"
             />
@@ -79,7 +85,7 @@ export const EventCard: React.FC<EventCardProps> = ({
           )}
         </div>
         {showDate && (
-          <div className="absolute top-6 left-6">
+          <div className="absolute top-6 left-6 z-20">
             <Badge variant="secondary" className="px-5 py-2 text-xs sm:text-sm font-bold backdrop-blur-xl bg-white/50 dark:bg-black/50 border-none rounded-full shadow-lg">
               {date}
             </Badge>

@@ -11,7 +11,8 @@ interface EventCardProps {
   title: string;
   date: string;
   message: string;
-  imageUrl: string;
+  imageUrl?: string;
+  videoUrl?: string;
   icon?: React.ReactNode;
   titleFont?: string;
   messageFont?: string;
@@ -26,7 +27,8 @@ export const EventCard: React.FC<EventCardProps> = ({
   title, 
   date, 
   message, 
-  imageUrl, 
+  imageUrl,
+  videoUrl,
   icon,
   titleFont,
   messageFont,
@@ -45,16 +47,34 @@ export const EventCard: React.FC<EventCardProps> = ({
     )}>
       <div className="relative h-64 sm:h-80 w-full overflow-hidden">
         <div className="relative w-full h-full overflow-hidden">
-          <Image 
-            src={imageUrl} 
-            alt={title}
-            fill
-            className="object-cover transition-transform duration-300"
-            style={{
-              transform: `scale(${imageZoom}) translate(${imageX}%, ${imageY}%)`
-            }}
-            data-ai-hint="celebration photo"
-          />
+          {videoUrl ? (
+            <video 
+              src={videoUrl}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover transition-transform duration-300"
+              style={{
+                transform: `scale(${imageZoom}) translate(${imageX}%, ${imageY}%)`
+              }}
+            />
+          ) : imageUrl ? (
+            <Image 
+              src={imageUrl} 
+              alt={title}
+              fill
+              className="object-cover transition-transform duration-300"
+              style={{
+                transform: `scale(${imageZoom}) translate(${imageX}%, ${imageY}%)`
+              }}
+              data-ai-hint="celebration photo"
+            />
+          ) : (
+            <div className="w-full h-full bg-muted flex items-center justify-center">
+               <span className="text-xs text-muted-foreground">No Media</span>
+            </div>
+          )}
         </div>
         {showDate && (
           <div className="absolute top-6 left-6">

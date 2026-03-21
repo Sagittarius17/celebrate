@@ -219,18 +219,39 @@ function CollageItem({
           "relative w-full h-full overflow-hidden bg-muted",
           isAngled ? "rounded-none" : "rounded-sm"
         )}>
-          <Image 
-            src={event.imageUrl} 
-            alt={event.title} 
-            fill 
-            className={cn(
-              "object-cover pointer-events-none",
-              (!isInteracting && !isRotating) && "transition-transform duration-300"
-            )}
-            style={{
-              transform: `scale(${event.imageZoom || 1}) translate(${event.imageX || 0}%, ${event.imageY || 0}%)`
-            }}
-          />
+          {event.videoUrl ? (
+             <video 
+              src={event.videoUrl}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className={cn(
+                "w-full h-full object-cover pointer-events-none",
+                (!isInteracting && !isRotating) && "transition-transform duration-300"
+              )}
+              style={{
+                transform: `scale(${event.imageZoom || 1}) translate(${event.imageX || 0}%, ${event.imageY || 0}%)`
+              }}
+            />
+          ) : event.imageUrl ? (
+            <Image 
+              src={event.imageUrl} 
+              alt={event.title} 
+              fill 
+              className={cn(
+                "object-cover pointer-events-none",
+                (!isInteracting && !isRotating) && "transition-transform duration-300"
+              )}
+              style={{
+                transform: `scale(${event.imageZoom || 1}) translate(${event.imageX || 0}%, ${event.imageY || 0}%)`
+              }}
+            />
+          ) : (
+            <div className="w-full h-full bg-muted flex items-center justify-center">
+              <span className="text-[10px] text-muted-foreground">No Media</span>
+            </div>
+          )}
         </div>
         
         <div 
@@ -255,7 +276,7 @@ function CollageItem({
               className="h-8 px-3 rounded-lg text-[10px] font-bold uppercase tracking-wider"
               onClick={(e) => { e.stopPropagation(); setEditMode('photo'); }}
             >
-              <ImageIcon className="h-3 w-3 mr-1.5" /> Photo
+              <ImageIcon className="h-3 w-3 mr-1.5" /> Media
             </Button>
           </div>
           
@@ -284,7 +305,7 @@ function CollageItem({
           >
             {isAngled ? <Circle className="h-4 w-4" /> : <Square className="h-4 w-4" />}
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" title="Change Image" onClick={(e) => { e.stopPropagation(); onFileSelect(); }}>
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" title="Change Image/Video" onClick={(e) => { e.stopPropagation(); onFileSelect(); }}>
             <Upload className="h-4 w-4" />
           </Button>
           
@@ -376,14 +397,21 @@ export function CollageEditor({ events, isLoading, pageId, db, onFieldFocus }: C
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && selectedId) {
-      if (file.size > 2 * 1024 * 1024) {
-        toast({ variant: "destructive", title: "File too large", description: "Please choose an image under 2MB." });
+      if (file.size > 10 * 1024 * 1024) {
+        toast({ variant: "destructive", title: "File too large", description: "Please choose a media file under 10MB." });
         return;
       }
       const reader = new FileReader();
+      const isVideo = file.type.startsWith('video/');
+
       reader.onloadend = () => {
-        handleUpdateEvent(selectedId, { imageUrl: reader.result as string });
-        toast({ title: "Image Updated" });
+        const result = reader.result as string;
+        if (isVideo) {
+          handleUpdateEvent(selectedId, { videoUrl: result, imageUrl: null });
+        } else {
+          handleUpdateEvent(selectedId, { imageUrl: result, videoUrl: null });
+        }
+        toast({ title: "Media Updated" });
       };
       reader.readAsDataURL(file);
     }
@@ -404,7 +432,7 @@ export function CollageEditor({ events, isLoading, pageId, db, onFieldFocus }: C
             <span className="text-[11px] font-medium">Scroll to zoom</span>
           </div>
         </div>
-        <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
+        <input type="file" ref={fileInputRef} className="hidden" accept="image/*,video/*" onChange={handleFileChange} />
       </div>
 
       <div 

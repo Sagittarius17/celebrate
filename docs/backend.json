@@ -173,6 +173,10 @@
           "type": "string",
           "description": "URL for the image associated with this event."
         },
+        "videoUrl": {
+          "type": "string",
+          "description": "Base64 data URI for a short video clip associated with this event."
+        },
         "imageZoom": {
           "type": "number",
           "description": "Zoom scale for the image (default 1.0).",

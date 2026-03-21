@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Calendar, Trash2, Upload, Image as ImageIcon, Move, ZoomIn, Eye, EyeOff } from 'lucide-react';
+import { Calendar, Trash2, Upload, Image as ImageIcon, Move, ZoomIn, Eye, EyeOff, Film } from 'lucide-react';
 import Image from 'next/image';
 import { Firestore, doc } from 'firebase/firestore';
 import { updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -116,18 +116,36 @@ function MemoryItemEditor({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) {
+      // 10MB Limit
+      if (file.size > 10 * 1024 * 1024) {
         toast({
           variant: "destructive",
           title: "File too large",
-          description: "Please choose an image under 2MB.",
+          description: "Please choose a media file under 10MB.",
         });
         return;
       }
+
+      // Warn about Firestore 1MB limit for Base64 storage
+      if (file.size > 700 * 1024) {
+        toast({
+          variant: "destructive",
+          title: "Database Limit",
+          description: "This file might be too large for Firestore's 1MB limit once encoded. Try a smaller clip!",
+        });
+      }
+
       const reader = new FileReader();
+      const isVideo = file.type.startsWith('video/');
+      
       reader.onloadend = () => {
-        handleUpdateEvent({ imageUrl: reader.result as string });
-        toast({ title: "Image Updated", description: "The memory photo has been changed." });
+        const result = reader.result as string;
+        if (isVideo) {
+          handleUpdateEvent({ videoUrl: result, imageUrl: null });
+        } else {
+          handleUpdateEvent({ imageUrl: result, videoUrl: null });
+        }
+        toast({ title: "Media Updated", description: `The ${isVideo ? 'video' : 'photo'} has been changed.` });
       };
       reader.readAsDataURL(file);
     }
@@ -252,7 +270,22 @@ function MemoryItemEditor({
           onClick={handleContainerClick}
         >
           <div className="relative w-full h-full overflow-hidden pointer-events-none">
-            {event.imageUrl ? (
+            {event.videoUrl ? (
+              <video 
+                src={event.videoUrl}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className={cn(
+                  "w-full h-full object-cover",
+                  !isInteracting && "transition-transform duration-300"
+                )}
+                style={{
+                  transform: `scale(${localFraming.zoom}) translate(${localFraming.x}%, ${localFraming.y}%)`
+                }}
+              />
+            ) : event.imageUrl ? (
               <Image 
                 src={event.imageUrl} 
                 alt={event.title} 
@@ -268,7 +301,7 @@ function MemoryItemEditor({
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
                 <ImageIcon className="h-6 w-6" />
-                <span className="text-[9px] font-bold uppercase tracking-widest">No Image</span>
+                <span className="text-[9px] font-bold uppercase tracking-widest">No Media</span>
               </div>
             )}
           </div>
@@ -277,11 +310,11 @@ function MemoryItemEditor({
             "absolute inset-0 bg-black/40 flex flex-col items-center justify-center transition-opacity pointer-events-none",
             isPlaceholder ? "opacity-100" : "opacity-0 group-hover:opacity-100"
           )}>
-            <div className="flex flex-col items-center gap-2 text-white">
+            <div className="flex flex-col items-center gap-2 text-white text-center px-4">
               {isPlaceholder ? (
                 <>
                   <Upload className="h-6 w-6" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">Click to Upload</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest">Click to Upload Photo/Video</span>
                 </>
               ) : (
                 <>
@@ -305,7 +338,7 @@ function MemoryItemEditor({
                   fileInputRef.current?.click();
                 }}
              >
-               Change Photo
+               Change Media
              </Button>
           )}
 
@@ -313,7 +346,7 @@ function MemoryItemEditor({
             type="file" 
             ref={fileInputRef} 
             className="hidden" 
-            accept="image/*" 
+            accept="image/*,video/*" 
             onChange={handleFileChange} 
           />
         </div>
@@ -321,7 +354,8 @@ function MemoryItemEditor({
         <CardContent className="p-4 md:p-5 flex-1 space-y-3 relative">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-2">
-               <span className="text-[10px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full uppercase tracking-widest">
+               <span className="text-[10px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full uppercase tracking-widest flex items-center gap-1.5">
+                {event.videoUrl ? <Film className="h-2.5 w-2.5" /> : <ImageIcon className="h-2.5 w-2.5" />}
                 Memory #{index + 1}
                </span>
                <div className="flex items-center gap-2">

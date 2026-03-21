@@ -52,15 +52,33 @@ export function CollageLayout({
                 "relative aspect-square overflow-hidden bg-muted",
                 isAngled ? "rounded-none" : "rounded-sm"
               )}>
-                <Image 
-                  src={event.imageUrl} 
-                  alt={event.title}
-                  fill
-                  className="object-cover"
-                  style={{
-                    transform: `scale(${event.imageZoom || 1}) translate(${event.imageX || 0}%, ${event.imageY || 0}%)`
-                  }}
-                />
+                {event.videoUrl ? (
+                  <video 
+                    src={event.videoUrl}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="w-full h-full object-cover"
+                    style={{
+                      transform: `scale(${event.imageZoom || 1}) translate(${event.imageX || 0}%, ${event.imageY || 0}%)`
+                    }}
+                  />
+                ) : event.imageUrl ? (
+                  <Image 
+                    src={event.imageUrl} 
+                    alt={event.title}
+                    fill
+                    className="object-cover"
+                    style={{
+                      transform: `scale(${event.imageZoom || 1}) translate(${event.imageX || 0}%, ${event.imageY || 0}%)`
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-muted flex items-center justify-center">
+                    <span className="text-[10px] text-muted-foreground">No Media</span>
+                  </div>
+                )}
               </div>
               <div className="mt-3 text-center">
                 <p className="font-headline font-bold text-[clamp(8px,1.5vw,14px)] truncate">{event.title}</p>

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Calendar, Trash2, Upload, Image as ImageIcon, Move, ZoomIn, Eye, EyeOff, Film } from 'lucide-react';
+import { Calendar, Trash2, Upload, Image as ImageIcon, Move, ZoomIn, Eye, EyeOff, Film, RotateCw } from 'lucide-react';
 import Image from 'next/image';
 import { Firestore, doc } from 'firebase/firestore';
 import { updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -43,7 +43,8 @@ function MemoryItemEditor({
   const [localFraming, setLocalFraming] = useState({
     zoom: event.imageZoom || 1,
     x: event.imageX || 0,
-    y: event.imageY || 0
+    y: event.imageY || 0,
+    rotation: event.mediaRotation || 0
   });
 
   const [isInteracting, setIsInteracting] = useState(false);
@@ -58,9 +59,10 @@ function MemoryItemEditor({
     setLocalFraming({
       zoom: event.imageZoom || 1,
       x: event.imageX || 0,
-      y: event.imageY || 0
+      y: event.imageY || 0,
+      rotation: event.mediaRotation || 0
     });
-  }, [event.imageZoom, event.imageX, event.imageY]);
+  }, [event.imageZoom, event.imageX, event.imageY, event.mediaRotation]);
 
   const handleUpdateEvent = useCallback((updates: any) => {
     if (!db) return;
@@ -102,21 +104,26 @@ function MemoryItemEditor({
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (localFraming.zoom !== event.imageZoom || localFraming.x !== event.imageX || localFraming.y !== event.imageY) {
+      if (
+        localFraming.zoom !== event.imageZoom || 
+        localFraming.x !== event.imageX || 
+        localFraming.y !== event.imageY ||
+        localFraming.rotation !== event.mediaRotation
+      ) {
         handleUpdateEvent({ 
           imageZoom: localFraming.zoom,
           imageX: localFraming.x,
-          imageY: localFraming.y
+          imageY: localFraming.y,
+          mediaRotation: localFraming.rotation
         });
       }
     }, 500);
     return () => clearTimeout(timer);
-  }, [localFraming, event.imageZoom, event.imageX, event.imageY, handleUpdateEvent]);
+  }, [localFraming, event.imageZoom, event.imageX, event.imageY, event.mediaRotation, handleUpdateEvent]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // 10MB Limit
       if (file.size > 10 * 1024 * 1024) {
         toast({
           variant: "destructive",
@@ -124,15 +131,6 @@ function MemoryItemEditor({
           description: "Please choose a media file under 10MB.",
         });
         return;
-      }
-
-      // Warn about Firestore 1MB limit for Base64 storage
-      if (file.size > 700 * 1024) {
-        toast({
-          variant: "destructive",
-          title: "Database Limit",
-          description: "This file might be too large for Firestore's 1MB limit once encoded. Try a smaller clip!",
-        });
       }
 
       const reader = new FileReader();
@@ -176,7 +174,6 @@ function MemoryItemEditor({
     if (rect) {
       const zoom = localFraming.zoom || 1;
       
-      // Calculate move as % of image size
       const imageWidthInPixels = rect.width * zoom;
       const pctX = (dx / imageWidthInPixels) * 100;
       const pctY = (dy / imageWidthInPixels) * 100;
@@ -253,6 +250,14 @@ function MemoryItemEditor({
     handleUpdateEvent({ showDate: newVal });
   };
 
+  const handleRotateMedia = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const nextRotation = ((localFraming.rotation || 0) + 90) % 360;
+    setLocalFraming(prev => ({ ...prev, rotation: nextRotation }));
+    handleUpdateEvent({ mediaRotation: nextRotation });
+    toast({ title: "Media Rotated", description: `Rotated to ${nextRotation}°` });
+  };
+
   return (
     <Card className="rounded-[1.5rem] overflow-hidden border-none shadow-sm hover:shadow-md transition-all duration-300 group bg-card">
       <div className="flex flex-col md:flex-row h-full">
@@ -282,7 +287,7 @@ function MemoryItemEditor({
                   !isInteracting && "transition-transform duration-300"
                 )}
                 style={{
-                  transform: `scale(${localFraming.zoom}) translate(${localFraming.x}%, ${localFraming.y}%)`
+                  transform: `scale(${localFraming.zoom}) translate(${localFraming.x}%, ${localFraming.y}%) rotate(${localFraming.rotation}deg)`
                 }}
               />
             ) : event.imageUrl ? (
@@ -295,7 +300,7 @@ function MemoryItemEditor({
                   !isInteracting && "transition-transform duration-300"
                 )}
                 style={{
-                  transform: `scale(${localFraming.zoom}) translate(${localFraming.x}%, ${localFraming.y}%)`
+                  transform: `scale(${localFraming.zoom}) translate(${localFraming.x}%, ${localFraming.y}%) rotate(${localFraming.rotation}deg)`
                 }}
               />
             ) : (
@@ -318,11 +323,20 @@ function MemoryItemEditor({
                 </>
               ) : (
                 <>
-                  <div className="flex gap-4">
+                  <div className="flex gap-4 items-center">
                     <Move className="h-5 w-5 opacity-80" />
                     <ZoomIn className="h-5 w-5 opacity-80" />
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 rounded-full bg-white/20 hover:bg-white/40 pointer-events-auto"
+                      onClick={handleRotateMedia}
+                      title="Rotate Media"
+                    >
+                      <RotateCw className="h-4 w-4" />
+                    </Button>
                   </div>
-                  <span className="text-[9px] font-bold uppercase tracking-widest opacity-80">Drag to Pan • Scroll to Zoom</span>
+                  <span className="text-[9px] font-bold uppercase tracking-widest opacity-80">Drag to Pan • Scroll to Zoom • Tap Rotate</span>
                 </>
               )}
             </div>

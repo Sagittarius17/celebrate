@@ -192,6 +192,11 @@
           "description": "Y-axis pan offset in percentage.",
           "default": 0
         },
+        "mediaRotation": {
+          "type": "number",
+          "description": "Rotation of the image/video within the frame in degrees.",
+          "default": 0
+        },
         "canvasX": {
           "type": "number",
           "description": "X-coordinate on the collage canvas (0-100).",

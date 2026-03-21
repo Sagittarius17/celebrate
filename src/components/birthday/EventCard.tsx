@@ -19,6 +19,7 @@ interface EventCardProps {
   imageZoom?: number;
   imageX?: number;
   imageY?: number;
+  mediaRotation?: number;
   cornerStyle?: 'rounded' | 'angled';
   showDate?: boolean;
 }
@@ -35,6 +36,7 @@ export const EventCard: React.FC<EventCardProps> = ({
   imageZoom = 1,
   imageX = 0,
   imageY = 0,
+  mediaRotation = 0,
   cornerStyle = 'rounded',
   showDate = true
 }) => {
@@ -56,7 +58,7 @@ export const EventCard: React.FC<EventCardProps> = ({
               playsInline
               className="w-full h-full object-cover transition-transform duration-300"
               style={{
-                transform: `scale(${imageZoom}) translate(${imageX}%, ${imageY}%)`
+                transform: `scale(${imageZoom}) translate(${imageX}%, ${imageY}%) rotate(${mediaRotation}deg)`
               }}
             />
           ) : imageUrl ? (
@@ -66,7 +68,7 @@ export const EventCard: React.FC<EventCardProps> = ({
               fill
               className="object-cover transition-transform duration-300"
               style={{
-                transform: `scale(${imageZoom}) translate(${imageX}%, ${imageY}%)`
+                transform: `scale(${imageZoom}) translate(${imageX}%, ${imageY}%) rotate(${mediaRotation}deg)`
               }}
               data-ai-hint="celebration photo"
             />

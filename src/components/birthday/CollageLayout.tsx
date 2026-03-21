@@ -61,7 +61,7 @@ export function CollageLayout({
                     playsInline
                     className="w-full h-full object-cover"
                     style={{
-                      transform: `scale(${event.imageZoom || 1}) translate(${event.imageX || 0}%, ${event.imageY || 0}%)`
+                      transform: `scale(${event.imageZoom || 1}) translate(${event.imageX || 0}%, ${event.imageY || 0}%) rotate(${event.mediaRotation || 0}deg)`
                     }}
                   />
                 ) : event.imageUrl ? (
@@ -71,7 +71,7 @@ export function CollageLayout({
                     fill
                     className="object-cover"
                     style={{
-                      transform: `scale(${event.imageZoom || 1}) translate(${event.imageX || 0}%, ${event.imageY || 0}%)`
+                      transform: `scale(${event.imageZoom || 1}) translate(${event.imageX || 0}%, ${event.imageY || 0}%) rotate(${event.mediaRotation || 0}deg)`
                     }}
                   />
                 ) : (

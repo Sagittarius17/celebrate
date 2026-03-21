@@ -38,11 +38,13 @@ export function CarouselLayout({ events }: CarouselLayoutProps) {
                   showDate={event.showDate}
                   message={event.message}
                   imageUrl={event.imageUrl}
+                  videoUrl={event.videoUrl}
                   titleFont={event.titleFont}
                   messageFont={event.messageFont}
                   imageZoom={event.imageZoom}
                   imageX={event.imageX}
                   imageY={event.imageY}
+                  mediaRotation={event.mediaRotation}
                   cornerStyle="rounded"
                   icon={React.cloneElement(icons[index % icons.length] as React.ReactElement, { className: "w-6 h-6 text-primary-foreground" })}
                 />

@@ -42,6 +42,7 @@ export function TimelineLayout({ events, scrollProgress, theme }: TimelineLayout
                   showDate={event.showDate}
                   message={event.message}
                   imageUrl={event.imageUrl}
+                  videoUrl={event.videoUrl}
                   titleFont={event.titleFont}
                   messageFont={event.messageFont}
                   imageZoom={event.imageZoom}

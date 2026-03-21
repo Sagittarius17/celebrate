@@ -6,7 +6,7 @@ import { Firestore, doc } from 'firebase/firestore';
 import { updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
-import { Move, ZoomIn, Layers, RotateCw, Trash2, Upload, MousePointer2, ImageIcon, Frame, Square, Circle } from 'lucide-react';
+import { Move, ZoomIn, Layers, RotateCw, Trash2, Upload, MousePointer2, ImageIcon, Frame, Square, Circle, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -73,7 +73,6 @@ function CollageItem({
         const currentZoom = event.imageZoom || 1;
         const newZoom = Math.min(Math.max(currentZoom + delta, 1), 5);
         
-        // When zooming, recalculate bounds and snap if necessary
         const bound = 50 * (1 - 1 / newZoom);
         const clampedX = Math.min(Math.max(event.imageX || 0, -bound), bound);
         const clampedY = Math.min(Math.max(event.imageY || 0, -bound), bound);
@@ -124,19 +123,15 @@ function CollageItem({
         canvasY: Math.min(Math.max(newY, -30), 100),
       });
     } else {
-      // Dragging inside the frame
       const zoom = event.imageZoom || 1;
       const imageWidthInPixels = cardWidth * zoom;
       
-      // dxPixels / imageWidthInPixels gives us the % of the image width moved
-      // Multiplying by 100 gives the value for translate(X%, Y%)
       const dxPct = (dxPixels / imageWidthInPixels) * 100;
       const dyPct = (dyPixels / imageWidthInPixels) * 100;
 
       const newX = dragStartRef.current.initialX + dxPct;
       const newY = dragStartRef.current.initialY + dyPct;
       
-      // Keep edges jointed to the frame
       const bound = 50 * (1 - 1 / zoom);
 
       onUpdate(event.id, {
@@ -174,6 +169,12 @@ function CollageItem({
   const handleRotatePointerUp = (e: React.PointerEvent) => {
     setIsRotating(false);
     (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+  };
+
+  const handleRotateMedia = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const nextRotation = ((event.mediaRotation || 0) + 90) % 360;
+    onUpdate(event.id, { mediaRotation: nextRotation });
   };
 
   const bringToFront = () => {
@@ -231,7 +232,7 @@ function CollageItem({
                 (!isInteracting && !isRotating) && "transition-transform duration-300"
               )}
               style={{
-                transform: `scale(${event.imageZoom || 1}) translate(${event.imageX || 0}%, ${event.imageY || 0}%)`
+                transform: `scale(${event.imageZoom || 1}) translate(${event.imageX || 0}%, ${event.imageY || 0}%) rotate(${event.mediaRotation || 0}deg)`
               }}
             />
           ) : event.imageUrl ? (
@@ -244,7 +245,7 @@ function CollageItem({
                 (!isInteracting && !isRotating) && "transition-transform duration-300"
               )}
               style={{
-                transform: `scale(${event.imageZoom || 1}) translate(${event.imageX || 0}%, ${event.imageY || 0}%)`
+                transform: `scale(${event.imageZoom || 1}) translate(${event.imageX || 0}%, ${event.imageY || 0}%) rotate(${event.mediaRotation || 0}deg)`
               }}
             />
           ) : (
@@ -289,12 +290,21 @@ function CollageItem({
             variant="ghost" 
             size="icon" 
             className={cn("h-8 w-8 rounded-lg cursor-ew-resize transition-colors", isRotating && "text-primary bg-primary/10")} 
-            title="Drag Left/Right to Rotate"
+            title="Drag Left/Right to Rotate Card"
             onPointerDown={handleRotatePointerDown}
             onPointerMove={handleRotatePointerMove}
             onPointerUp={handleRotatePointerUp}
           >
             <RotateCw className={cn("h-4 w-4", isRotating && "animate-spin-slow")} />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8 rounded-lg" 
+            title="Rotate Media (Photo/Video)" 
+            onClick={handleRotateMedia}
+          >
+            <RefreshCcw className="h-4 w-4" />
           </Button>
           <Button 
             variant="ghost" 

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Calendar, Trash2, Upload, Image as ImageIcon, Move, ZoomIn, Eye, EyeOff, Film, RotateCw } from 'lucide-react';
+import { Calendar, Trash2, Upload, Image as ImageIcon, Move, ZoomIn, Eye, EyeOff, Film, RotateCw, X } from 'lucide-react';
 import Image from 'next/image';
 import { Firestore, doc } from 'firebase/firestore';
 import { updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -154,6 +154,12 @@ function MemoryItemEditor({
     const eventRef = doc(db, 'celebrationPages', pageId, 'birthdayEvents', event.id);
     deleteDocumentNonBlocking(eventRef);
     toast({ title: "Memory Removed", description: "The memory has been deleted." });
+  };
+
+  const handleRemoveMedia = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    handleUpdateEvent({ imageUrl: null, videoUrl: null });
+    toast({ title: "Media Removed" });
   };
 
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -345,6 +351,18 @@ function MemoryItemEditor({
               )}
             </div>
           </div>
+
+          {!isPlaceholder && (event.imageUrl || event.videoUrl) && (
+             <Button 
+                variant="destructive" 
+                size="icon" 
+                className="absolute top-2 left-2 h-7 w-7 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-30 shadow-sm border-none pointer-events-auto"
+                onClick={handleRemoveMedia}
+                title="Remove Media"
+             >
+               <X className="h-4 w-4" />
+             </Button>
+          )}
 
           {!isPlaceholder && (
              <Button 

@@ -56,6 +56,7 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
   
   const spotifyControllerRef = useRef<any>(null);
   const ytPlayerRef = useRef<any>(null);
+  const ytReadyRef = useRef(false);
   
   const minimizeTimerRef = useRef<NodeJS.Timeout | null>(null);
   const musicWasPlayingRef = useRef(false);
@@ -85,8 +86,10 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
         setIsMusicExpanded(true);
         setIsPlaying(true);
         startMinimizeTimer();
-      } else if (soundtrackSource === 'youtube' && ytPlayerRef.current) {
-        ytPlayerRef.current.seekTo(spotifyTrackStartMs / 1000);
+      } else if (soundtrackSource === 'youtube' && ytPlayerRef.current && typeof ytPlayerRef.current.playVideo === 'function') {
+        if (typeof ytPlayerRef.current.seekTo === 'function') {
+          ytPlayerRef.current.seekTo(spotifyTrackStartMs / 1000);
+        }
         ytPlayerRef.current.playVideo();
         setIsMusicExpanded(true);
         setIsPlaying(true);
@@ -126,6 +129,7 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
       try { ytPlayerRef.current.destroy(); } catch(e) {}
     }
 
+    ytReadyRef.current = false;
     ytPlayerRef.current = new (window as any).YT.Player(ytPlayerContainerRef.current, {
       height: '80',
       width: '100%',
@@ -140,6 +144,9 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
         start: Math.floor(spotifyTrackStartMs / 1000),
       },
       events: {
+        onReady: () => {
+          ytReadyRef.current = true;
+        },
         onStateChange: (event: any) => {
           if (event.data === (window as any).YT.PlayerState.PLAYING) {
             setIsPlaying(true);
@@ -161,7 +168,9 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
         
         if (positionMs >= endMs) {
           if (spotifyLoop) {
-            ytPlayerRef.current.seekTo(spotifyTrackStartMs / 1000);
+            if (typeof ytPlayerRef.current.seekTo === 'function') {
+              ytPlayerRef.current.seekTo(spotifyTrackStartMs / 1000);
+            }
           } else {
             ytPlayerRef.current.pauseVideo();
             setIsPlaying(false);
@@ -233,12 +242,12 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
         musicWasPlayingRef.current = true;
         if (soundtrackSource === 'upload' && customTrackAudioRef.current) customTrackAudioRef.current.pause();
         else if (soundtrackSource === 'spotify' && spotifyControllerRef.current) spotifyControllerRef.current.pause();
-        else if (soundtrackSource === 'youtube' && ytPlayerRef.current) ytPlayerRef.current.pauseVideo();
+        else if (soundtrackSource === 'youtube' && ytPlayerRef.current && typeof ytPlayerRef.current.pauseVideo === 'function') ytPlayerRef.current.pauseVideo();
       }
     } else if (musicWasPlayingRef.current) {
       if (soundtrackSource === 'upload' && customTrackAudioRef.current) customTrackAudioRef.current.play();
       else if (soundtrackSource === 'spotify' && spotifyControllerRef.current) spotifyControllerRef.current.play();
-      else if (soundtrackSource === 'youtube' && ytPlayerRef.current) ytPlayerRef.current.playVideo();
+      else if (soundtrackSource === 'youtube' && ytPlayerRef.current && typeof ytPlayerRef.current.playVideo === 'function') ytPlayerRef.current.playVideo();
       musicWasPlayingRef.current = false;
     }
   }, [isPlayingVoice, isPlaying, soundtrackSource]);
@@ -247,7 +256,7 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
     if (soundtrackSource === 'upload' && customTrackAudioRef.current) {
       isPlaying ? customTrackAudioRef.current.pause() : customTrackAudioRef.current.play();
       setIsPlaying(!isPlaying);
-    } else if (soundtrackSource === 'youtube' && ytPlayerRef.current) {
+    } else if (soundtrackSource === 'youtube' && ytPlayerRef.current && typeof ytPlayerRef.current.playVideo === 'function') {
       isPlaying ? ytPlayerRef.current.pauseVideo() : ytPlayerRef.current.playVideo();
       setIsPlaying(!isPlaying);
     } else {

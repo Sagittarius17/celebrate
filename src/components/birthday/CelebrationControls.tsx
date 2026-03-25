@@ -15,6 +15,7 @@ interface CelebrationControlsProps {
   voiceNoteUrl?: string | null;
   spotifyTrackId?: string;
   spotifyTrackStartMs?: number;
+  spotifyTrackDurationMs?: number;
   isRevealed?: boolean;
 }
 
@@ -26,36 +27,59 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
   voiceNoteUrl,
   spotifyTrackId,
   spotifyTrackStartMs = 0,
+  spotifyTrackDurationMs = 300000, // Default to 5 mins if not set
   isRevealed = false
 }) => {
   const isCandle = theme === 'candle-light';
   const [isPlayingVoice, setIsPlayingVoice] = useState(false);
   const [voiceProgress, setVoiceProgress] = useState(0);
-  const [voiceVolume, setVoiceVolume] = useState(0.6); // Default 60%
+  const [voiceVolume, setVoiceVolume] = useState(0.6);
   const [isHoveringVoice, setIsHoveringVoice] = useState(false);
   const [isMusicExpanded, setIsMusicExpanded] = useState(false);
   const [trackImageUrl, setTrackImageUrl] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [isMusicActive, setIsMusicActive] = useState(false);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const volumeAreaRef = useRef<HTMLDivElement>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const minimizeTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const musicDurationTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    // Check for mobile on mount to avoid hydration errors
     setIsMobile(window.matchMedia("(max-width:768px)").matches);
   }, []);
 
   const startMinimizeTimer = () => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
+    if (minimizeTimerRef.current) clearTimeout(minimizeTimerRef.current);
+    minimizeTimerRef.current = setTimeout(() => {
       setIsMusicExpanded(false);
     }, 5000);
   };
 
   const clearMinimizeTimer = () => {
-    if (timerRef.current) clearTimeout(timerRef.current);
+    if (minimizeTimerRef.current) clearTimeout(minimizeTimerRef.current);
   };
+
+  // Logic to handle auto-stop based on duration
+  useEffect(() => {
+    if (isRevealed && spotifyTrackId) {
+      setIsMusicActive(true);
+      
+      // Clear any existing timer
+      if (musicDurationTimerRef.current) clearTimeout(musicDurationTimerRef.current);
+
+      // If duration is less than "Full Song" (5 mins), set a timer to stop it
+      if (spotifyTrackDurationMs < 300000) {
+        musicDurationTimerRef.current = setTimeout(() => {
+          setIsMusicActive(false);
+        }, spotifyTrackDurationMs);
+      }
+    }
+    
+    return () => {
+      if (musicDurationTimerRef.current) clearTimeout(musicDurationTimerRef.current);
+    };
+  }, [isRevealed, spotifyTrackId, spotifyTrackDurationMs, spotifyTrackStartMs]);
 
   useEffect(() => {
     if (spotifyTrackId) {
@@ -130,9 +154,8 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
 
   const standardButtonStyle = "rounded-full w-10 h-10 sm:w-14 sm:h-14 p-0 backdrop-blur-md border-none transition-all hover:scale-105 active:scale-95 shadow-2xl flex items-center justify-center shrink-0";
 
-  // Convert start time to seconds for Spotify t parameter
   const startSeconds = Math.floor(spotifyTrackStartMs / 1000);
-  const spotifyEmbedUrl = spotifyTrackId 
+  const spotifyEmbedUrl = (spotifyTrackId && isMusicActive)
     ? `https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0&autoplay=1${startSeconds > 0 ? `&t=${startSeconds}` : ''}`
     : '';
 
@@ -148,15 +171,23 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
         className="hidden"
       />
 
-      {/* Spotify Section */}
       {spotifyTrackId && isRevealed && (
         <div className="relative flex flex-col items-center">
           <button 
             className={cn(
               "relative w-10 h-10 sm:w-14 sm:h-14 rounded-full overflow-hidden shadow-2xl border-2 transition-all duration-300 bg-black shrink-0 flex items-center justify-center cursor-pointer",
-              isMusicExpanded ? "border-primary scale-105" : "border-white/20 hover:scale-105"
+              isMusicExpanded ? "border-primary scale-105" : "border-white/20 hover:scale-105",
+              !isMusicActive && "opacity-50 grayscale"
             )}
-            onClick={() => setIsMusicExpanded(!isMusicExpanded)}
+            onClick={() => {
+              if (!isMusicActive) {
+                // If it was timed out or stopped, restart it
+                setIsMusicActive(true);
+                setIsMusicExpanded(true);
+              } else {
+                setIsMusicExpanded(!isMusicExpanded);
+              }
+            }}
           >
             {trackImageUrl ? (
               <Image src={trackImageUrl} alt="Track Art" fill className="object-cover" />
@@ -167,24 +198,25 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
           
           <div className={cn(
             "absolute top-0 right-[calc(100%+16px)] sm:right-[calc(100%+24px)] transition-all duration-500 ease-in-out overflow-hidden h-20 flex items-center",
-            isMusicExpanded ? "w-[240px] sm:w-[350px] opacity-100" : "w-0 opacity-0 pointer-events-none"
+            isMusicExpanded && isMusicActive ? "w-[240px] sm:w-[350px] opacity-100" : "w-0 opacity-0 pointer-events-none"
           )}>
             <div className="w-full h-full bg-black/80 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md border border-white/10">
-              <iframe 
-                src={spotifyEmbedUrl} 
-                width="100%" 
-                height="80" 
-                frameBorder="0" 
-                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-                loading="lazy"
-                className="rounded-none border-none"
-              />
+              {isMusicActive && (
+                <iframe 
+                  src={spotifyEmbedUrl} 
+                  width="100%" 
+                  height="80" 
+                  frameBorder="0" 
+                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                  loading="lazy"
+                  className="rounded-none border-none"
+                />
+              )}
             </div>
           </div>
         </div>
       )}
 
-      {/* Theme Toggle */}
       {onToggleTheme && (
         <Button
           onClick={onToggleTheme}
@@ -196,7 +228,6 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
         </Button>
       )}
 
-      {/* Fireworks */}
       {onToggleFireworks && isCandle && (
         <Button
           onClick={onToggleFireworks}
@@ -213,7 +244,6 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
         </Button>
       )}
 
-      {/* Voice Note Section */}
       {voiceNoteUrl && (
         <div 
           ref={volumeAreaRef}
@@ -221,7 +251,6 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
           onMouseEnter={() => setIsHoveringVoice(true)}
           onMouseLeave={() => setIsHoveringVoice(false)}
         >
-          {/* Play Me Tag - Positioned at bottom, white bg, black text */}
           {!isPlayingVoice && isRevealed && !isHoveringVoice && (
             <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 pointer-events-none hidden sm:flex flex-col items-center animate-in fade-in slide-in-from-top-4 duration-500 z-[10001]">
               <div className="w-2 h-2 bg-white rotate-45 -mb-1 shadow-sm z-10" />

@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { use, useEffect, useState, useRef } from 'react';
+import React, { use, useEffect, useState, useRef } from 'reavy';
 import { useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { Header } from '@/components/birthday/Header';
@@ -189,7 +189,6 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
   const handleToggleTheme = () => {
     setTheme(prev => {
       const next = prev === 'light' ? 'candle-light' : 'light';
-      // Automatically turn off fireworks if switching back to light mode
       if (next === 'light') {
         setShowFireworks(false);
       }
@@ -240,7 +239,6 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       <ButterflySwarm theme={theme} />
       <FireworkEffect enabled={showFireworks} />
       
-      {/* Persistent Controls - High z-index for full access */}
       <CelebrationControls 
         theme={theme}
         onToggleTheme={handleToggleTheme}
@@ -249,10 +247,10 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         voiceNoteUrl={page?.voiceNoteDataUri}
         spotifyTrackId={page?.spotifyTrackId}
         spotifyTrackStartMs={page?.spotifyTrackStartMs}
+        spotifyTrackDurationMs={page?.spotifyTrackDurationMs}
         isRevealed={isRevealed}
       />
 
-      {/* Main Content */}
       <div className={cn("transition-opacity duration-1000", isRevealed ? "opacity-100" : "opacity-0 pointer-events-none")}>
         <Header 
           title={page?.title} 
@@ -317,7 +315,6 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
                     events={events} 
                     recipientName={page?.recipientName} 
                     creatorName={page?.creatorName} 
-                    pattern={page?.collagePattern}
                   />
                 )}
               </div>

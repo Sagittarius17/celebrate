@@ -247,7 +247,7 @@ export function EditorSidebar({
                     <div className="space-y-2">
                       <Label className="text-[10px] uppercase tracking-wider font-bold opacity-60">Font Style</Label>
                       <Select value={currentFont} onValueChange={(val) => handleUpdateEventField(selectionContext.field === 'title' ? 'titleFont' : 'messageFont', val)}>
-                        <SelectTrigger className="w-full h-12 rounded-xl bg-background border-none shadow-sm">
+                        <SelectTrigger className="w-full h-12 rounded-full bg-background border-2 border-transparent focus:ring-0 transition-all">
                           <SelectValue placeholder="Inherit Page Font" />
                         </SelectTrigger>
                         <SelectContent>
@@ -264,17 +264,17 @@ export function EditorSidebar({
                     {isCollageLayout && (
                       <div className="space-y-2">
                         <Label className="text-[10px] uppercase tracking-wider font-bold opacity-60">Frame Corners</Label>
-                        <div className="flex bg-muted p-1 rounded-xl">
+                        <div className="flex bg-muted p-1 rounded-full">
                           <Button 
                             variant={selectedEvent?.cornerStyle !== 'angled' ? 'default' : 'ghost'} 
-                            className="flex-1 rounded-lg h-9 text-xs"
+                            className="flex-1 rounded-full h-9 text-xs"
                             onClick={() => handleUpdateEventField('cornerStyle', 'rounded')}
                           >
                             <Circle className="h-3.5 w-3.5 mr-2" /> Rounded
                           </Button>
                           <Button 
                             variant={selectedEvent?.cornerStyle === 'angled' ? 'default' : 'ghost'} 
-                            className="flex-1 rounded-lg h-9 text-xs"
+                            className="flex-1 rounded-full h-9 text-xs"
                             onClick={() => handleUpdateEventField('cornerStyle', 'angled')}
                           >
                             <SquareIcon className="h-3.5 w-3.5 mr-2" /> Angled
@@ -294,14 +294,14 @@ export function EditorSidebar({
             <div className="space-y-2.5">
               <Label className="text-sm font-medium text-black/70 dark:text-[#FFD700]/70">Choose Layout</Label>
               <Select value={page.layout || 'Timeline'} onValueChange={(val) => handleUpdatePage({ layout: val })}>
-                <SelectTrigger className="w-full h-12 rounded-xl"><SelectValue placeholder="Select layout" /></SelectTrigger>
+                <SelectTrigger className="w-full h-12 rounded-full border-2 border-transparent focus:ring-0 transition-all"><SelectValue placeholder="Select layout" /></SelectTrigger>
                 <SelectContent>{LAYOUTS.map(layout => <SelectItem key={layout} value={layout}>{layout}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="space-y-2.5">
               <Label className="text-sm font-medium text-black/70 dark:text-[#FFD700]/70">Global Font</Label>
               <Select value={page.font || 'Playfair Display'} onValueChange={(val) => handleUpdatePage({ font: val })}>
-                <SelectTrigger className="w-full h-12 rounded-xl"><SelectValue placeholder="Select font" /></SelectTrigger>
+                <SelectTrigger className="w-full h-12 rounded-full border-2 border-transparent focus:ring-0 transition-all"><SelectValue placeholder="Select font" /></SelectTrigger>
                 <SelectContent>{FONTS.map(font => <SelectItem key={font} value={font}><span style={{ fontFamily: font }} className="text-base">{font}</span></SelectItem>)}</SelectContent>
               </Select>
             </div>
@@ -315,7 +315,7 @@ export function EditorSidebar({
               <Label className="text-sm font-medium text-black/70 dark:text-[#FFD700]/70">Spotify Track ID or URL</Label>
               <Input 
                 placeholder="Paste Link or ID here" 
-                className="rounded-xl h-12 text-sm"
+                className="rounded-full h-12 px-6 bg-muted/30 border-2 border-transparent focus-visible:border-primary focus-visible:ring-0 text-sm transition-all"
                 value={page.spotifyTrackId || ''} 
                 onChange={(e) => handleUpdatePage({ spotifyTrackId: extractSpotifyTrackId(e.target.value) })} 
               />
@@ -355,7 +355,7 @@ export function EditorSidebar({
               placeholder="A final heart-warming message..." 
               value={customQuote} 
               onChange={(e) => setCustomQuote(e.target.value)} 
-              className="min-h-[100px] text-sm rounded-xl" 
+              className="min-h-[120px] p-5 text-sm rounded-[2rem] bg-muted/30 border-2 border-transparent focus-visible:border-primary focus-visible:ring-0 transition-all resize-none shadow-none" 
             />
             <Button variant="secondary" className="w-full rounded-full h-12 text-sm text-black dark:text-[#FFD700] font-bold" onClick={onSaveQuote} disabled={isSavingQuote}>
               {isSavingQuote ? "Saving..." : <><Save className="mr-2 h-4 w-4" /> Save Ending</>}

@@ -249,7 +249,6 @@ export default function Dashboard() {
     reader.onloadend = async () => {
       const base64 = reader.result as string;
       try {
-        // Only update Firestore to avoid the Firebase Auth "Photo URL too long" error
         if (db && user.uid) {
           const userRef = doc(db, 'users', user.uid);
           updateDocumentNonBlocking(userRef, { photoURL: base64, updatedAt: new Date().toISOString() });
@@ -316,27 +315,27 @@ export default function Dashboard() {
                 <DialogHeader><DialogTitle>Create a New Surprise Page</DialogTitle></DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
-                    <Label>Occasion</Label>
+                    <Label className="ml-4 text-[10px] uppercase font-bold tracking-widest opacity-60">Occasion</Label>
                     <Select value={newSurprise.occasion} onValueChange={(val) => setNewSurprise({...newSurprise, occasion: val})}>
-                      <SelectTrigger className="rounded-xl h-12"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectTrigger className="rounded-full h-12 px-6 bg-muted/30 border-2 border-transparent focus:ring-0 transition-all"><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent>{OCCASIONS.map(occ => <SelectItem key={occ} value={occ}>{occ}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                   <div className="grid gap-2">
-                    <Label>Who is this for? (Recipient)</Label>
-                    <Input placeholder="e.g. Sarah Jones" className="rounded-xl h-12" value={newSurprise.recipientName} onChange={(e) => setNewSurprise({...newSurprise, recipientName: e.target.value})} />
+                    <Label className="ml-4 text-[10px] uppercase font-bold tracking-widest opacity-60">Who is this for? (Recipient)</Label>
+                    <Input placeholder="e.g. Sarah Jones" className="rounded-full h-12 px-6 bg-muted/30 border-2 border-transparent focus-visible:border-primary focus-visible:ring-0 transition-all" value={newSurprise.recipientName} onChange={(e) => setNewSurprise({...newSurprise, recipientName: e.target.value})} />
                   </div>
                   <div className="grid gap-2">
-                    <Label>Your Name (Creator)</Label>
-                    <Input placeholder="e.g. David" className="rounded-xl h-12" value={newSurprise.creatorName} onChange={(e) => setNewSurprise({...newSurprise, creatorName: e.target.value})} />
+                    <Label className="ml-4 text-[10px] uppercase font-bold tracking-widest opacity-60">Your Name (Creator)</Label>
+                    <Input placeholder="e.g. David" className="rounded-full h-12 px-6 bg-muted/30 border-2 border-transparent focus-visible:border-primary focus-visible:ring-0 transition-all" value={newSurprise.creatorName} onChange={(e) => setNewSurprise({...newSurprise, creatorName: e.target.value})} />
                   </div>
                   <div className="grid gap-2">
-                    <Label>Page Title</Label>
-                    <Input placeholder="e.g. Happy 25th Birthday, Sarah!" className="rounded-xl h-12" value={newSurprise.title} onChange={(e) => setNewSurprise({...newSurprise, title: e.target.value})} />
+                    <Label className="ml-4 text-[10px] uppercase font-bold tracking-widest opacity-60">Page Title</Label>
+                    <Input placeholder="e.g. Happy 25th Birthday, Sarah!" className="rounded-full h-12 px-6 bg-muted/30 border-2 border-transparent focus-visible:border-primary focus-visible:ring-0 transition-all" value={newSurprise.title} onChange={(e) => setNewSurprise({...newSurprise, title: e.target.value})} />
                   </div>
                   <div className="grid gap-2">
-                    <Label className="flex items-center gap-2"><Music className="h-4 w-4 text-primary" /> Spotify Track ID or URL</Label>
-                    <Input placeholder="Paste Link or ID here" className="rounded-xl h-12" value={newSurprise.spotifyTrackId} onChange={(e) => setNewSurprise({...newSurprise, spotifyTrackId: extractSpotifyTrackId(e.target.value)})} />
+                    <Label className="ml-4 text-[10px] uppercase font-bold tracking-widest opacity-60 flex items-center gap-2"><Music className="h-3 w-3" /> Spotify Track ID or URL</Label>
+                    <Input placeholder="Paste Link or ID here" className="rounded-full h-12 px-6 bg-muted/30 border-2 border-transparent focus-visible:border-primary focus-visible:ring-0 transition-all" value={newSurprise.spotifyTrackId} onChange={(e) => setNewSurprise({...newSurprise, spotifyTrackId: extractSpotifyTrackId(e.target.value)})} />
                     <TrackMetadataDisplay trackId={newSurprise.spotifyTrackId} />
                   </div>
                 </div>
@@ -434,27 +433,27 @@ export default function Dashboard() {
             {editingSurprise && (
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label>Occasion</Label>
+                  <Label className="ml-4 text-[10px] uppercase font-bold tracking-widest opacity-60">Occasion</Label>
                   <Select value={editingSurprise.occasion} onValueChange={(val) => setEditingSurprise({...editingSurprise, occasion: val})}>
-                    <SelectTrigger className="rounded-xl h-12"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectTrigger className="rounded-full h-12 px-6 bg-muted/30 border-2 border-transparent focus:ring-0 transition-all"><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent>{OCCASIONS.map(occ => <SelectItem key={occ} value={occ}>{occ}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div className="grid gap-2">
-                  <Label>Who is this for? (Recipient)</Label>
-                  <Input className="rounded-xl h-12" value={editingSurprise.recipientName} onChange={(e) => setEditingSurprise({...editingSurprise, recipientName: e.target.value})} />
+                  <Label className="ml-4 text-[10px] uppercase font-bold tracking-widest opacity-60">Who is this for? (Recipient)</Label>
+                  <Input className="rounded-full h-12 px-6 bg-muted/30 border-2 border-transparent focus-visible:border-primary focus-visible:ring-0 transition-all" value={editingSurprise.recipientName} onChange={(e) => setEditingSurprise({...editingSurprise, recipientName: e.target.value})} />
                 </div>
                 <div className="grid gap-2">
-                  <Label>Your Name (Creator)</Label>
-                  <Input className="rounded-xl h-12" value={editingSurprise.creatorName || ''} onChange={(e) => setEditingSurprise({...editingSurprise, creatorName: e.target.value})} />
+                  <Label className="ml-4 text-[10px] uppercase font-bold tracking-widest opacity-60">Your Name (Creator)</Label>
+                  <Input className="rounded-full h-12 px-6 bg-muted/30 border-2 border-transparent focus-visible:border-primary focus-visible:ring-0 transition-all" value={editingSurprise.creatorName || ''} onChange={(e) => setEditingSurprise({...editingSurprise, creatorName: e.target.value})} />
                 </div>
                 <div className="grid gap-2">
-                  <Label>Page Title</Label>
-                  <Input className="rounded-xl h-12" value={editingSurprise.title} onChange={(e) => setEditingSurprise({...editingSurprise, title: e.target.value})} />
+                  <Label className="ml-4 text-[10px] uppercase font-bold tracking-widest opacity-60">Page Title</Label>
+                  <Input className="rounded-full h-12 px-6 bg-muted/30 border-2 border-transparent focus-visible:border-primary focus-visible:ring-0 transition-all" value={editingSurprise.title} onChange={(e) => setEditingSurprise({...editingSurprise, title: e.target.value})} />
                 </div>
                 <div className="grid gap-2">
-                  <Label className="flex items-center gap-2"><Music className="h-4 w-4 text-primary" /> Spotify Track ID or URL</Label>
-                  <Input className="rounded-xl h-12" value={editingSurprise.spotifyTrackId || ''} onChange={(e) => setEditingSurprise({...editingSurprise, spotifyTrackId: extractSpotifyTrackId(e.target.value)})} />
+                  <Label className="ml-4 text-[10px] uppercase font-bold tracking-widest opacity-60 flex items-center gap-2"><Music className="h-3 w-3" /> Spotify Track ID or URL</Label>
+                  <Input className="rounded-full h-12 px-6 bg-muted/30 border-2 border-transparent focus-visible:border-primary focus-visible:ring-0 transition-all" value={editingSurprise.spotifyTrackId || ''} onChange={(e) => setEditingSurprise({...editingSurprise, spotifyTrackId: extractSpotifyTrackId(e.target.value)})} />
                   <TrackMetadataDisplay trackId={editingSurprise.spotifyTrackId || ''} />
                 </div>
               </div>

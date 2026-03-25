@@ -258,7 +258,6 @@ function MemoryItemEditor({
     toast({ title: "Media Rotated", description: `Rotated to ${nextRotation}°` });
   };
 
-  // Rotation scale logic for editor: scale up slightly when rotated sideways to fill gaps
   const isRotatedSideways = (localFraming.rotation || 0) % 180 !== 0;
   const rotationScale = isRotatedSideways ? 1.5 : 1;
   const finalScale = localFraming.zoom * rotationScale;
@@ -411,11 +410,11 @@ function MemoryItemEditor({
           </div>
           
           <div className="space-y-1">
-            <Label className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.1em] opacity-40">Memory Title</Label>
+            <Label className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-1.5 block opacity-60">Memory Title</Label>
             <Input 
               placeholder="e.g. First Steps" 
               style={{ fontFamily: event.titleFont || 'inherit' }}
-              className="border-none bg-transparent p-0 h-auto text-xl font-headline font-bold focus-visible:ring-0 shadow-none"
+              className="h-12 px-5 rounded-full bg-muted/30 border-2 border-transparent hover:border-primary/20 focus-visible:border-primary focus-visible:ring-0 text-lg font-headline font-bold transition-all shadow-none"
               value={event.title}
               onFocus={() => onFieldFocus?.(event.id, 'title')}
               onChange={(e) => handleUpdateEvent({ title: e.target.value })}
@@ -423,11 +422,11 @@ function MemoryItemEditor({
           </div>
 
           <div className="space-y-1">
-            <Label className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.1em] opacity-40">The Story</Label>
+            <Label className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-1.5 block opacity-60">The Story</Label>
             <Textarea 
               placeholder="Tell the story of this moment..." 
               style={{ fontFamily: event.messageFont || 'inherit' }}
-              className="border-none bg-transparent p-0 h-auto min-h-[40px] italic text-muted-foreground focus-visible:ring-0 shadow-none resize-none leading-relaxed text-sm"
+              className="min-h-[100px] px-5 py-4 rounded-[2rem] bg-muted/30 border-2 border-transparent hover:border-primary/20 focus-visible:border-primary focus-visible:ring-0 italic text-muted-foreground leading-relaxed text-sm resize-none transition-all shadow-none"
               value={event.message}
               onFocus={() => onFieldFocus?.(event.id, 'message')}
               onChange={(e) => handleUpdateEvent({ message: e.target.value })}

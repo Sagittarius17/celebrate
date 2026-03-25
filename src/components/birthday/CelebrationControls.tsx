@@ -65,15 +65,6 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
         controllerRef.current.play();
         setIsMusicExpanded(true);
         startMinimizeTimer();
-      } else {
-        // If not ready yet, we try one more time after a short delay
-        setTimeout(() => {
-          if (controllerRef.current) {
-            controllerRef.current.play();
-            setIsMusicExpanded(true);
-            startMinimizeTimer();
-          }
-        }, 500);
       }
     }
   }));
@@ -84,6 +75,9 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
 
     const initSpotify = (IFrameAPI: any) => {
       if (!embedContainerRef.current) return;
+      
+      // Clear container before creating new controller
+      embedContainerRef.current.innerHTML = '';
       
       const options = {
         uri: `spotify:track:${spotifyTrackId}`,
@@ -119,16 +113,17 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
       });
     };
 
-    // Check if API is already loaded
-    if ((window as any).SpotifyIframeApi) {
+    const handleAPILoad = () => {
       initSpotify((window as any).SpotifyIframeApi);
+    };
+
+    if ((window as any).SpotifyIframeApi) {
+      handleAPILoad();
     } else {
-      // Define global callback
       (window as any).onSpotifyIframeApiReady = (IFrameAPI: any) => {
         initSpotify(IFrameAPI);
       };
 
-      // Load script if not already present
       if (!document.getElementById('spotify-iframe-api')) {
         const script = document.createElement('script');
         script.id = 'spotify-iframe-api';
@@ -176,8 +171,12 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
     >
       <audio ref={audioRef} src={voiceNoteUrl || undefined} className="hidden" onEnded={() => setIsPlayingVoice(false)} />
 
-      {spotifyTrackId && isRevealed && (
-        <div className="relative flex flex-col items-center">
+      {/* 
+        CRITICAL: The Spotify container must ALWAYS be in the DOM (even if hidden) 
+        so the API can initialize BEFORE the reveal click.
+      */}
+      {spotifyTrackId && (
+        <div className={cn("relative flex flex-col items-center transition-opacity duration-500", !isRevealed && "opacity-0 pointer-events-none")}>
           <button 
             className={cn(
               "relative w-10 h-10 sm:w-14 sm:h-14 rounded-full overflow-hidden shadow-2xl border-2 transition-all duration-300 bg-black shrink-0 flex items-center justify-center cursor-pointer",
@@ -216,19 +215,19 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
         </div>
       )}
 
-      {onToggleTheme && (
+      {onToggleTheme && isRevealed && (
         <Button onClick={onToggleTheme} variant="ghost" className={cn(standardButtonStyle, "bg-white/10 hover:bg-white/20 text-foreground")}>
           {isCandle ? <Sun className="h-10 w-10 text-yellow-400" /> : <Flame className="h-10 w-10 text-orange-500 fill-orange-500" />}
         </Button>
       )}
 
-      {onToggleFireworks && isCandle && (
+      {onToggleFireworks && isCandle && isRevealed && (
         <Button onClick={onToggleFireworks} variant="ghost" className={cn(standardButtonStyle, showFireworks ? "bg-primary text-primary-foreground" : "bg-white/10 text-foreground hover:bg-white/20")}>
           <Sparkles className={cn("h-10 w-10", showFireworks && "animate-pulse")} />
         </Button>
       )}
 
-      {voiceNoteUrl && (
+      {voiceNoteUrl && isRevealed && (
         <div className="relative w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center shrink-0">
           <Button onClick={toggleVoiceNote} variant="ghost" className={cn("rounded-full p-0 backdrop-blur-md border-none transition-all hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center bg-white/10 hover:bg-white/20 text-foreground w-9 h-9 sm:w-14 sm:h-14")}>
             {isPlayingVoice ? <div className="flex gap-1.5"><div className="w-2 h-6 bg-current rounded-full" /><div className="w-2 h-6 bg-current rounded-full" /></div> : <Play className="fill-current ml-1 w-6 h-6 sm:w-8 sm:h-8" />}

@@ -300,11 +300,17 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
       )}
 
       {voiceNoteUrl && isRevealed && (
-        <div className="flex flex-col items-center gap-1.5">
-          <Button onClick={() => { if (!audioRef.current) return; isPlayingVoice ? audioRef.current.pause() : audioRef.current.play(); setIsPlayingVoice(!isPlayingVoice); }} variant="ghost" className={cn(standardButtonStyle, "bg-white/10 text-foreground")}>
+        <div className="flex flex-col items-center gap-2 group">
+          <Button 
+            onClick={() => { if (!audioRef.current) return; isPlayingVoice ? audioRef.current.pause() : audioRef.current.play(); setIsPlayingVoice(!isPlayingVoice); }} 
+            variant="ghost" 
+            className={cn(standardButtonStyle, "bg-white/10 text-foreground hover:bg-white/20")}
+          >
             {isPlayingVoice ? <div className="flex gap-1.5"><div className="w-2 h-6 bg-current rounded-full animate-pulse" /><div className="w-2 h-6 bg-current rounded-full animate-pulse" /></div> : <Play className="fill-current ml-1 w-6 h-6 sm:w-8 sm:h-8" />}
           </Button>
-          <span className="text-[10px] font-bold uppercase tracking-widest text-white drop-shadow-md animate-pulse">Play Me</span>
+          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary-foreground bg-primary px-3 py-1 rounded-full shadow-lg animate-pulse transition-all duration-300 group-hover:opacity-0 group-hover:scale-95 group-hover:translate-y-1">
+            Play Me
+          </span>
         </div>
       )}
 

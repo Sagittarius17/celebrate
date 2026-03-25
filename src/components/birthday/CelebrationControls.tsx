@@ -86,8 +86,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
             setReloader(prev => prev + 1);
             setIsFading(false);
           } else {
-            // If not looping, we just let it stay faded or we could reload with autoplay off
-            // but for now, reloader is primarily for loop
+            // If not looping, we just let it stay faded
           }
         }, spotifyTrackDurationMs);
       }
@@ -124,7 +123,8 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
   const standardButtonStyle = "rounded-full w-10 h-10 sm:w-14 sm:h-14 p-0 backdrop-blur-md border-none transition-all hover:scale-105 active:scale-95 shadow-2xl flex items-center justify-center shrink-0";
   
   const startSeconds = Math.floor(spotifyTrackStartMs / 1000);
-  // Ensure reloader is part of the key to force fresh autoplay on every loop/reveal
+  
+  // CRITICAL: Construct the embed URL only when revealed to force browser to see it as a fresh play attempt
   const spotifyEmbedUrl = (spotifyTrackId && isRevealed)
     ? `https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0&autoplay=1${startSeconds > 0 ? `&t=${startSeconds}` : ''}&_r=${reloader}`
     : '';
@@ -171,14 +171,14 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
               "w-full h-full bg-black/80 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md border border-white/10 transition-opacity duration-1000",
               isFading ? "opacity-0" : "opacity-100"
             )}>
-              {/* The iframe is keyed by reloader to force a hard reload when looping or revealing */}
+              {/* Force immediate loading and visibility to satisfy autoplay policies */}
               <iframe 
                 key={`spotify-player-${reloader}`}
                 src={spotifyEmbedUrl} 
                 width="100%" 
                 height="80" 
                 frameBorder="0" 
-                allow="autoplay; clipboard-write; encrypted-media; fullscreen" 
+                allow="autoplay *; clipboard-write; encrypted-media; fullscreen" 
                 loading="eager"
                 className="rounded-none border-none"
               />
@@ -195,7 +195,6 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
 
       {onToggleFireworks && isCandle && (
         <Button onClick={onToggleFireworks} variant="ghost" className={cn(standardButtonStyle, showFireworks ? "bg-primary text-primary-foreground" : "bg-white/10 text-foreground hover:bg-white/20")}>
-          <padding className={cn("h-10 w-10", showFireworks && "animate-pulse")} />
           <Sparkles className={cn("h-10 w-10", showFireworks && "animate-pulse")} />
         </Button>
       )}

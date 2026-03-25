@@ -163,8 +163,7 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
 
   const handleRevealClick = () => {
     if (isOpening) return;
-    // CRITICAL: We set isRevealed and isOpening instantly.
-    // This connects the Spotify autoplay directly to the user's click gesture.
+    // CRITICAL: Set states instantly to preserve user gesture context for autoplay
     setIsOpening(true);
     setIsRevealed(true);
   };

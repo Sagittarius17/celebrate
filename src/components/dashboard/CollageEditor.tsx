@@ -4,7 +4,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Firestore, doc } from 'firebase/firestore';
 import { updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { cn } from '@/lib/utils';
+import { cn, optimizeImage } from '@/lib/utils';
 import Image from 'next/image';
 import { Move, ZoomIn, Layers, RotateCw, Trash2, Upload, MousePointer2, ImageIcon, Frame, Square, Circle, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -190,7 +190,6 @@ function CollageItem({
   const top = (event.canvasY || 10) * scale * CANVAS_HEIGHT / 100;
   const isAngled = event.cornerStyle === 'angled';
   
-  // Rotation scale logic for collage: scale up slightly when rotated sideways to fill gaps
   const isRotatedSideways = (event.mediaRotation || 0) % 180 !== 0;
   const rotationScale = isRotatedSideways ? 1.5 : 1;
   const finalScale = (event.imageZoom || 1) * rotationScale;
@@ -422,14 +421,16 @@ export function CollageEditor({ events, isLoading, pageId, db, onFieldFocus }: C
       const reader = new FileReader();
       const isVideo = file.type.startsWith('video/');
 
-      reader.onloadend = () => {
+      reader.onloadend = async () => {
         const result = reader.result as string;
         if (isVideo) {
           handleUpdateEvent(selectedId, { videoUrl: result, imageUrl: null });
         } else {
-          handleUpdateEvent(selectedId, { imageUrl: result, videoUrl: null });
+          // Intelligent client-side optimization for better performance and resolution
+          const optimized = await optimizeImage(result);
+          handleUpdateEvent(selectedId, { imageUrl: optimized, videoUrl: null });
         }
-        toast({ title: "Media Updated" });
+        toast({ title: "Media Optimized & Updated" });
       };
       reader.readAsDataURL(file);
     }

@@ -32,6 +32,7 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useDashboardTheme } from './layout';
 import Image from 'next/image';
+import { optimizeImage } from '@/lib/utils';
 
 const OCCASIONS = [
   "Birthday",
@@ -235,23 +236,16 @@ export default function Dashboard() {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
-    if (file.size > 1 * 1024 * 1024) {
-      toast({
-        variant: "destructive",
-        title: "File too large",
-        description: "Please choose an image under 1MB.",
-      });
-      return;
-    }
-
     setIsUploadingPfp(true);
     const reader = new FileReader();
     reader.onloadend = async () => {
       const base64 = reader.result as string;
       try {
+        // Optimize the profile picture resolution before saving
+        const optimized = await optimizeImage(base64, 400, 0.7); // Smaller for PFP
         if (db && user.uid) {
           const userRef = doc(db, 'users', user.uid);
-          updateDocumentNonBlocking(userRef, { photoURL: base64, updatedAt: new Date().toISOString() });
+          updateDocumentNonBlocking(userRef, { photoURL: optimized, updatedAt: new Date().toISOString() });
         }
         toast({ title: "Profile Picture Updated" });
       } catch (err: any) {

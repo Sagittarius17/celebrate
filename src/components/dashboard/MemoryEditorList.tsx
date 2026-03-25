@@ -13,7 +13,7 @@ import Image from 'next/image';
 import { Firestore, doc } from 'firebase/firestore';
 import { updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
+import { cn, optimizeImage } from '@/lib/utils';
 
 interface MemoryEditorListProps {
   events: any[] | null;
@@ -126,6 +126,7 @@ function MemoryItemEditor({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Limit file size to 10MB initially to avoid browser crashes during processing
       if (file.size > 10 * 1024 * 1024) {
         toast({
           variant: "destructive",
@@ -138,14 +139,17 @@ function MemoryItemEditor({
       const reader = new FileReader();
       const isVideo = file.type.startsWith('video/');
       
-      reader.onloadend = () => {
+      reader.onloadend = async () => {
         const result = reader.result as string;
         if (isVideo) {
+          // Optimization for video is complex client-side, we store as is if small enough
           handleUpdateEvent({ videoUrl: result, imageUrl: null });
         } else {
-          handleUpdateEvent({ imageUrl: result, videoUrl: null });
+          // Automatically optimize and reduce resolution of images to "applicable size"
+          const optimized = await optimizeImage(result);
+          handleUpdateEvent({ imageUrl: optimized, videoUrl: null });
         }
-        toast({ title: "Media Updated", description: `The ${isVideo ? 'video' : 'photo'} has been changed.` });
+        toast({ title: "Media Updated", description: `The ${isVideo ? 'video' : 'photo'} has been optimized and changed.` });
       };
       reader.readAsDataURL(file);
     }

@@ -56,9 +56,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
     if (minimizeTimerRef.current) clearTimeout(minimizeTimerRef.current);
   };
 
-  // Music Playback and Duration Logic
   useEffect(() => {
-    // When revealed, start the music
     if (isRevealed && spotifyTrackId) {
       setIsMusicActive(true);
       setIsFading(false);
@@ -70,18 +68,14 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
 
       clearTimers();
 
-      // Only set timers if duration is not "Full Song"
       if (spotifyTrackDurationMs < 300000) {
-        // Start visual fade 3 seconds before the end
         const fadeDelay = Math.max(0, spotifyTrackDurationMs - 3000);
         fadeTimerRef.current = setTimeout(() => {
           setIsFading(true);
         }, fadeDelay);
 
-        // Handle the end of the duration
         musicDurationTimerRef.current = setTimeout(() => {
           if (spotifyLoop) {
-            // Restart the track - this will reset the useEffect via reloader
             setReloader(prev => prev + 1);
           } else {
             setIsMusicActive(false);
@@ -125,7 +119,6 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
   
   const startSeconds = Math.floor(spotifyTrackStartMs / 1000);
   
-  // Construct URL - Only provide a URL if isMusicActive is true
   const spotifyEmbedUrl = (spotifyTrackId && isMusicActive)
     ? `https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0&autoplay=1${startSeconds > 0 ? `&t=${startSeconds}` : ''}&_r=${reloader}`
     : '';
@@ -155,15 +148,23 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
             }}
           >
             {trackImageUrl ? (
-              <Image src={trackImageUrl} alt="Track Art" fill className="object-cover" />
+              <Image 
+                src={trackImageUrl} 
+                alt="Track Art" 
+                fill 
+                sizes="(max-width: 768px) 40px, 56px"
+                className="object-cover" 
+              />
             ) : (
               <Music className="h-6 w-6 text-primary" />
             )}
           </button>
           
           <div className={cn(
-            "absolute top-0 right-[calc(100%+16px)] sm:right-[calc(100%+24px)] transition-all duration-500 ease-in-out overflow-hidden h-20 flex items-center",
-            isMusicExpanded && isMusicActive ? "w-[240px] sm:w-[350px] opacity-100" : "w-0 opacity-0 pointer-events-none"
+            "absolute top-0 right-[calc(100%+16px)] sm:right-[calc(100%+24px)] transition-all duration-500 ease-in-out h-20 flex items-center",
+            isMusicExpanded && isMusicActive 
+              ? "w-[240px] sm:w-[350px] opacity-100 scale-100" 
+              : "w-[240px] sm:w-[350px] opacity-0 scale-95 pointer-events-none"
           )}>
             <div className={cn(
               "w-full h-full bg-black/80 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md border border-white/10 transition-opacity duration-1000",
@@ -171,11 +172,12 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
             )}>
               {isMusicActive && (
                 <iframe 
+                  key={`spotify-player-${reloader}`}
                   src={spotifyEmbedUrl} 
                   width="100%" 
                   height="80" 
                   frameBorder="0" 
-                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                  allow="autoplay; clipboard-write; encrypted-media; fullscreen" 
                   loading="lazy"
                   className="rounded-none border-none"
                 />

@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { use, useEffect, useState, useRef } from 'reavy';
+import React, { use, useEffect, useState, useRef } from 'react';
 import { useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { Header } from '@/components/birthday/Header';
@@ -180,10 +180,9 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
 
   const handleRevealClick = () => {
     if (isOpening) return;
+    // CRITICAL: Set states instantly to preserve user gesture context for autoplay
     setIsOpening(true);
-    setTimeout(() => {
-      setIsRevealed(true);
-    }, 800);
+    setIsRevealed(true);
   };
 
   const handleToggleTheme = () => {
@@ -248,6 +247,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         spotifyTrackId={page?.spotifyTrackId}
         spotifyTrackStartMs={page?.spotifyTrackStartMs}
         spotifyTrackDurationMs={page?.spotifyTrackDurationMs}
+        spotifyLoop={page?.spotifyLoop}
         isRevealed={isRevealed}
       />
 
@@ -349,13 +349,6 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
                 )}
               </div>
             </div>
-            
-            {isOpening && (
-              <div className="flex items-center gap-2 text-primary font-bold animate-fade-in">
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span>Preparing your journey...</span>
-              </div>
-            )}
           </div>
         </div>
       )}

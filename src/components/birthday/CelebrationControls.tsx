@@ -55,7 +55,6 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
     if (minimizeTimerRef.current) clearTimeout(minimizeTimerRef.current);
   };
 
-  // Automatically expand music when revealed to ensure browser sees it as "visible" and active
   useEffect(() => {
     if (isRevealed && spotifyTrackId) {
       setIsMusicExpanded(true);
@@ -74,7 +73,6 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
 
       clearTimers();
 
-      // Only set timers if we have a limited duration (less than 5 mins)
       if (spotifyTrackDurationMs < 300000) {
         const fadeDelay = Math.max(0, spotifyTrackDurationMs - 3000);
         fadeTimerRef.current = setTimeout(() => {
@@ -85,8 +83,6 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
           if (spotifyLoop) {
             setReloader(prev => prev + 1);
             setIsFading(false);
-          } else {
-            // If not looping, we just let it stay faded
           }
         }, spotifyTrackDurationMs);
       }
@@ -124,9 +120,9 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
   
   const startSeconds = Math.floor(spotifyTrackStartMs / 1000);
   
-  // CRITICAL: Construct the embed URL only when revealed to force browser to see it as a fresh play attempt
+  // Clean URL construction
   const spotifyEmbedUrl = (spotifyTrackId && isRevealed)
-    ? `https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0&autoplay=1${startSeconds > 0 ? `&t=${startSeconds}` : ''}&_r=${reloader}`
+    ? `https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0&autoplay=1${startSeconds > 0 ? `&t=${startSeconds}` : ''}&reloader=${reloader}`
     : '';
 
   return (
@@ -171,14 +167,14 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
               "w-full h-full bg-black/80 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md border border-white/10 transition-opacity duration-1000",
               isFading ? "opacity-0" : "opacity-100"
             )}>
-              {/* Force immediate loading and visibility to satisfy autoplay policies */}
+              {/* Standardized allow attribute - Removed '*' wildcard which triggers browser warnings */}
               <iframe 
                 key={`spotify-player-${reloader}`}
                 src={spotifyEmbedUrl} 
                 width="100%" 
                 height="80" 
                 frameBorder="0" 
-                allow="autoplay *; clipboard-write; encrypted-media; fullscreen" 
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen" 
                 loading="eager"
                 className="rounded-none border-none"
               />

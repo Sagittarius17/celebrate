@@ -44,12 +44,12 @@ export function LivePreviewFrame({ url }: LivePreviewFrameProps) {
             transform: `scale(${previewScale})`,
           }}
         >
-          {/* CRITICAL: Explicitly allow autoplay on the preview frame so the soundtrack works in the editor */}
+          {/* Standardized allow attribute to avoid Feature Policy parsing errors */}
           <iframe 
             src={url} 
             className="w-full h-full border-none"
             title="Live Preview"
-            allow="autoplay *; clipboard-write; encrypted-media; fullscreen"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen"
           />
         </div>
       </div>

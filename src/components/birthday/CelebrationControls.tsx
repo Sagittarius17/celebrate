@@ -3,7 +3,7 @@
 
 import React, { useState, useRef, useEffect, useImperativeHandle, forwardRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Sun, Flame, Sparkles, Play, Pause, Music } from 'lucide-react';
+import { Sun, Flame, Sparkles, Play, Pause, Music, Volume2, VolumeX } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
@@ -48,6 +48,7 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
   const controllerRef = useRef<any>(null);
   const minimizeTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isApiReadyRef = useRef(false);
+  const musicWasPlayingRef = useRef(false);
 
   const startMinimizeTimer = useCallback(() => {
     if (minimizeTimerRef.current) clearTimeout(minimizeTimerRef.current);
@@ -74,7 +75,6 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
   const initSpotify = useCallback((IFrameAPI: any) => {
     if (!embedContainerRef.current || !spotifyTrackId) return;
     
-    // Clear previous content to avoid duplicates
     embedContainerRef.current.innerHTML = '';
     
     const options = {
@@ -102,7 +102,6 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
           }
         }
 
-        // Visual fade hint
         const fadeStartMs = endMs - 3000;
         setIsFading(position >= fadeStartMs && position < endMs);
       });
@@ -157,6 +156,23 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
     }
   }, [spotifyTrackId]);
 
+  // Audio Focus Logic: Pause music when voice note plays, resume when it stops
+  useEffect(() => {
+    if (!controllerRef.current || !isApiReadyRef.current) return;
+
+    if (isPlayingVoice) {
+      if (isPlaying) {
+        musicWasPlayingRef.current = true;
+        controllerRef.current.pause();
+      }
+    } else {
+      if (musicWasPlayingRef.current) {
+        controllerRef.current.play();
+        musicWasPlayingRef.current = false;
+      }
+    }
+  }, [isPlayingVoice, isPlaying]);
+
   const toggleVoiceNote = () => {
     if (!audioRef.current) return;
     if (isPlayingVoice) {
@@ -191,6 +207,7 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
             )}
             onClick={() => {
               setIsMusicExpanded(!isMusicExpanded);
+              startMinimizeTimer();
             }}
           >
             {trackImageUrl ? (
@@ -203,6 +220,13 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
               />
             ) : (
               <Music className="h-6 w-6 text-primary" />
+            )}
+            
+            {/* Audio Focus Indicator */}
+            {isPlayingVoice && (
+              <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                <VolumeX className="h-5 w-5 text-white/70" />
+              </div>
             )}
           </button>
           
@@ -237,8 +261,13 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
       {voiceNoteUrl && isRevealed && (
         <div className="relative w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center shrink-0">
           <Button onClick={toggleVoiceNote} variant="ghost" className={cn("rounded-full p-0 backdrop-blur-md border-none transition-all hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center bg-white/10 hover:bg-white/20 text-foreground w-9 h-9 sm:w-14 sm:h-14")}>
-            {isPlayingVoice ? <div className="flex gap-1.5"><div className="w-2 h-6 bg-current rounded-full" /><div className="w-2 h-6 bg-current rounded-full" /></div> : <Play className="fill-current ml-1 w-6 h-6 sm:w-8 sm:h-8" />}
+            {isPlayingVoice ? <div className="flex gap-1.5"><div className="w-2 h-6 bg-current rounded-full animate-pulse" /><div className="w-2 h-6 bg-current rounded-full animate-pulse" /></div> : <Play className="fill-current ml-1 w-6 h-6 sm:w-8 sm:h-8" />}
           </Button>
+          {isPlayingVoice && (
+            <div className="absolute -bottom-1 w-full flex justify-center">
+              <span className="text-[8px] font-bold text-primary uppercase tracking-tighter">Voice Active</span>
+            </div>
+          )}
         </div>
       )}
 

@@ -95,7 +95,6 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
     }
   }));
 
-  // Spotify Logic
   const initSpotify = useCallback((IFrameAPI: any) => {
     if (!embedContainerRef.current || !spotifyTrackId || soundtrackSource !== 'spotify') return;
     embedContainerRef.current.innerHTML = '';
@@ -107,7 +106,6 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
         const endMs = spotifyTrackStartMs + spotifyTrackDurationMs;
         setIsPlaying(!isPaused);
         
-        // Loop or Pause logic
         if (position >= endMs && !isPaused) {
           if (spotifyLoop) {
             EmbedController.seek(spotifyTrackStartMs / 1000);
@@ -121,7 +119,6 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
     });
   }, [spotifyTrackId, spotifyTrackStartMs, spotifyTrackDurationMs, spotifyLoop, soundtrackSource]);
 
-  // YouTube Logic
   const initYouTube = useCallback(() => {
     if (!ytPlayerContainerRef.current || !youtubeVideoId || soundtrackSource !== 'youtube') return;
     
@@ -143,9 +140,6 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
         start: Math.floor(spotifyTrackStartMs / 1000),
       },
       events: {
-        onReady: (event: any) => {
-          // Player ready
-        },
         onStateChange: (event: any) => {
           if (event.data === (window as any).YT.PlayerState.PLAYING) {
             setIsPlaying(true);
@@ -157,7 +151,6 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
     });
   }, [youtubeVideoId, soundtrackSource, spotifyTrackStartMs]);
 
-  // Combined Monitor for YouTube and Upload
   useEffect(() => {
     const interval = setInterval(() => {
       if (!isPlaying) return;
@@ -267,7 +260,7 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
   const hasSoundtrack = (soundtrackSource === 'spotify' && spotifyTrackId) || (soundtrackSource === 'youtube' && youtubeVideoId) || (soundtrackSource === 'upload' && customTrackUrl);
 
   return (
-    <div className="fixed top-4 right-4 sm:top-10 sm:right-10 z-[10000] flex flex-col items-center gap-2 pointer-events-auto" onMouseEnter={clearMinimizeTimer} onMouseLeave={startMinimizeTimer}>
+    <div className="fixed top-4 right-4 sm:top-10 sm:right-10 z-[10000] flex flex-col items-center gap-4 pointer-events-auto" onMouseEnter={clearMinimizeTimer} onMouseLeave={startMinimizeTimer}>
       <audio ref={audioRef} src={voiceNoteUrl || undefined} className="hidden" onEnded={() => setIsPlayingVoice(false)} />
       {soundtrackSource === 'upload' && <audio ref={customTrackAudioRef} src={customTrackUrl || undefined} className="hidden" />}
 
@@ -307,9 +300,12 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
       )}
 
       {voiceNoteUrl && isRevealed && (
-        <Button onClick={() => { if (!audioRef.current) return; isPlayingVoice ? audioRef.current.pause() : audioRef.current.play(); setIsPlayingVoice(!isPlayingVoice); }} variant="ghost" className={cn(standardButtonStyle, "bg-white/10 text-foreground")}>
-          {isPlayingVoice ? <div className="flex gap-1.5"><div className="w-2 h-6 bg-current rounded-full animate-pulse" /><div className="w-2 h-6 bg-current rounded-full animate-pulse" /></div> : <Play className="fill-current ml-1 w-6 h-6 sm:w-8 sm:h-8" />}
-        </Button>
+        <div className="flex flex-col items-center gap-1.5">
+          <Button onClick={() => { if (!audioRef.current) return; isPlayingVoice ? audioRef.current.pause() : audioRef.current.play(); setIsPlayingVoice(!isPlayingVoice); }} variant="ghost" className={cn(standardButtonStyle, "bg-white/10 text-foreground")}>
+            {isPlayingVoice ? <div className="flex gap-1.5"><div className="w-2 h-6 bg-current rounded-full animate-pulse" /><div className="w-2 h-6 bg-current rounded-full animate-pulse" /></div> : <Play className="fill-current ml-1 w-6 h-6 sm:w-8 sm:h-8" />}
+          </Button>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-white drop-shadow-md animate-pulse">Play Me</span>
+        </div>
       )}
 
       <style jsx>{`.animate-spin-slow { animation: spin 12s linear infinite; } @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>

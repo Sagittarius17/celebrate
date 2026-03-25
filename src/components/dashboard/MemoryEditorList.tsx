@@ -23,6 +23,8 @@ interface MemoryEditorListProps {
   onFieldFocus?: (eventId: string, field: 'title' | 'message') => void;
 }
 
+const DEFAULT_PLACEHOLDER = "https://picsum.photos/seed/placeholder/600/400";
+
 function MemoryItemEditor({ 
   event, 
   index,
@@ -73,7 +75,7 @@ function MemoryItemEditor({
     });
   }, [db, pageId, event.id]);
 
-  const isPlaceholder = event.imageUrl?.includes('picsum.photos/seed/placeholder');
+  const isPlaceholder = !event.videoUrl && (event.imageUrl?.includes('picsum.photos/seed/placeholder') || !event.imageUrl);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -158,8 +160,15 @@ function MemoryItemEditor({
 
   const handleRemoveMedia = (e: React.MouseEvent) => {
     e.stopPropagation();
-    handleUpdateEvent({ imageUrl: null, videoUrl: null });
-    toast({ title: "Media Removed" });
+    handleUpdateEvent({ 
+      imageUrl: DEFAULT_PLACEHOLDER, 
+      videoUrl: null,
+      imageX: 0,
+      imageY: 0,
+      imageZoom: 1,
+      mediaRotation: 0
+    });
+    toast({ title: "Media Removed", description: "Reverted to placeholder." });
   };
 
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -364,19 +373,17 @@ function MemoryItemEditor({
              </Button>
           )}
 
-          {!isPlaceholder && (
-             <Button 
-                variant="outline" 
-                size="sm" 
-                className="absolute top-2 right-2 h-7 rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-white text-black hover:bg-white/90 hover:text-black text-[10px] font-bold pointer-events-auto shadow-sm border-none"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  fileInputRef.current?.click();
-                }}
-             >
-               Change Media
-             </Button>
-          )}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="absolute top-2 right-2 h-7 rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-white text-black hover:bg-white/90 hover:text-black text-[10px] font-bold pointer-events-auto shadow-sm border-none"
+            onClick={(e) => {
+              e.stopPropagation();
+              fileInputRef.current?.click();
+            }}
+          >
+            {isPlaceholder ? "Upload Media" : "Change Media"}
+          </Button>
 
           <input 
             type="file" 

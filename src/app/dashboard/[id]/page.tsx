@@ -179,7 +179,7 @@ function DashboardEditorContent({ id }: { id: string }) {
       />
       <SidebarInset>
         <div className="flex flex-col min-h-screen">
-          <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/95 px-4 lg:px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/95 px-4 lg:px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex items-center gap-2">
               <SidebarTrigger className={cn("-ml-1 h-10 w-10 rounded-full", state === "expanded" && "md:hidden")} />
               <Link href="/dashboard">

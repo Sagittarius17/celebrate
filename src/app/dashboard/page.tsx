@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -327,11 +326,6 @@ export default function Dashboard() {
                     <Label className="ml-4 text-[10px] uppercase font-bold tracking-widest opacity-60">Page Title</Label>
                     <Input placeholder="e.g. Happy 25th Birthday, Sarah!" className="rounded-[2rem] h-12 px-6 bg-muted/30 border-2 border-transparent focus-visible:border-primary focus-visible:ring-0 transition-all" value={newSurprise.title} onChange={(e) => setNewSurprise({...newSurprise, title: e.target.value})} />
                   </div>
-                  <div className="grid gap-2">
-                    <Label className="ml-4 text-[10px] uppercase font-bold tracking-widest opacity-60 flex items-center gap-2"><Music className="h-3 w-3" /> Spotify Track ID or URL</Label>
-                    <Input placeholder="Paste Link or ID here" className="rounded-[2rem] h-12 px-6 bg-muted/30 border-2 border-transparent focus-visible:border-primary focus-visible:ring-0 transition-all" value={newSurprise.spotifyTrackId} onChange={(e) => setNewSurprise({...newSurprise, spotifyTrackId: extractSpotifyTrackId(e.target.value)})} />
-                    <TrackMetadataDisplay trackId={newSurprise.spotifyTrackId} />
-                  </div>
                 </div>
                 <DialogFooter>
                   <Button className="w-full rounded-full h-12" onClick={handleCreate} disabled={!newSurprise.recipientName || !newSurprise.title || !newSurprise.creatorName}>Create Surprise</Button>
@@ -444,11 +438,6 @@ export default function Dashboard() {
                 <div className="grid gap-2">
                   <Label className="ml-4 text-[10px] uppercase font-bold tracking-widest opacity-60">Page Title</Label>
                   <Input className="rounded-[2rem] h-12 px-6 bg-muted/30 border-2 border-transparent focus-visible:border-primary focus-visible:ring-0 transition-all" value={editingSurprise.title} onChange={(e) => setEditingSurprise({...editingSurprise, title: e.target.value})} />
-                </div>
-                <div className="grid gap-2">
-                  <Label className="ml-4 text-[10px] uppercase font-bold tracking-widest opacity-60 flex items-center gap-2"><Music className="h-3 w-3" /> Spotify Track ID or URL</Label>
-                  <Input className="rounded-[2rem] h-12 px-6 bg-muted/30 border-2 border-transparent focus-visible:border-primary focus-visible:ring-0 transition-all" value={editingSurprise.spotifyTrackId || ''} onChange={(e) => setEditingSurprise({...editingSurprise, spotifyTrackId: extractSpotifyTrackId(e.target.value)})} />
-                  <TrackMetadataDisplay trackId={editingSurprise.spotifyTrackId || ''} />
                 </div>
               </div>
             )}

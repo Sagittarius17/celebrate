@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useRef, useEffect, useImperativeHandle, forwardRef } from 'react';
+import React, { useState, useRef, useEffect, useImperativeHandle, forwardRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Sun, Flame, Sparkles, Play, Pause, Music } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -47,6 +47,17 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
   const controllerRef = useRef<any>(null);
   const minimizeTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  const startMinimizeTimer = useCallback(() => {
+    if (minimizeTimerRef.current) clearTimeout(minimizeTimerRef.current);
+    minimizeTimerRef.current = setTimeout(() => {
+      setIsMusicExpanded(false);
+    }, 6000);
+  }, []);
+
+  const clearMinimizeTimer = useCallback(() => {
+    if (minimizeTimerRef.current) clearTimeout(minimizeTimerRef.current);
+  }, []);
+
   // Expose the play function to the parent for synchronous triggering
   useImperativeHandle(ref, () => ({
     playMusic: () => {
@@ -54,31 +65,26 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
         controllerRef.current.play();
         setIsMusicExpanded(true);
         startMinimizeTimer();
+      } else {
+        // If not ready yet, we try one more time after a short delay
+        setTimeout(() => {
+          if (controllerRef.current) {
+            controllerRef.current.play();
+            setIsMusicExpanded(true);
+            startMinimizeTimer();
+          }
+        }, 500);
       }
     }
   }));
 
-  const startMinimizeTimer = () => {
-    if (minimizeTimerRef.current) clearTimeout(minimizeTimerRef.current);
-    minimizeTimerRef.current = setTimeout(() => {
-      setIsMusicExpanded(false);
-    }, 6000);
-  };
-
-  const clearMinimizeTimer = () => {
-    if (minimizeTimerRef.current) clearTimeout(minimizeTimerRef.current);
-  };
-
-  // Load Spotify IFrame API
+  // Initialize Spotify API
   useEffect(() => {
     if (!spotifyTrackId || typeof window === 'undefined') return;
 
-    const script = document.createElement('script');
-    script.src = "https://open.spotify.com/embed/iframe-api/v1";
-    script.async = true;
-    document.body.appendChild(script);
-
-    window.onSpotifyIframeApiReady = (IFrameAPI: any) => {
+    const initSpotify = (IFrameAPI: any) => {
+      if (!embedContainerRef.current) return;
+      
       const options = {
         uri: `spotify:track:${spotifyTrackId}`,
         width: '100%',
@@ -88,15 +94,11 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
       IFrameAPI.createController(embedContainerRef.current, options, (EmbedController: any) => {
         controllerRef.current = EmbedController;
         
-        // Listen for playback updates to handle duration and looping
         EmbedController.addListener('playback_update', (e: any) => {
-          const { position, duration, isPaused } = e.data;
-          
-          // Calculate how far we are into the "clip"
+          const { position, isPaused } = e.data;
           const startMs = spotifyTrackStartMs;
           const endMs = startMs + spotifyTrackDurationMs;
           
-          // Handle Looping and Duration
           if (position >= endMs && !isPaused) {
             if (spotifyLoop) {
               EmbedController.seek(startMs / 1000);
@@ -105,31 +107,43 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
             }
           }
 
-          // Handle Visual Fade (start fade 3s before end)
           const fadeStartMs = endMs - 3000;
-          if (position >= fadeStartMs && position < endMs) {
-            setIsFading(true);
-          } else {
-            setIsFading(false);
-          }
+          setIsFading(position >= fadeStartMs && position < endMs);
         });
 
-        // Set initial start position
-        if (spotifyTrackStartMs > 0) {
-          EmbedController.seek(spotifyTrackStartMs / 1000);
-        }
+        EmbedController.addListener('ready', () => {
+          if (spotifyTrackStartMs > 0) {
+            EmbedController.seek(spotifyTrackStartMs / 1000);
+          }
+        });
       });
     };
 
-    return () => {
-      if (script.parentNode) {
-        document.body.removeChild(script);
+    // Check if API is already loaded
+    if ((window as any).SpotifyIframeApi) {
+      initSpotify((window as any).SpotifyIframeApi);
+    } else {
+      // Define global callback
+      (window as any).onSpotifyIframeApiReady = (IFrameAPI: any) => {
+        initSpotify(IFrameAPI);
+      };
+
+      // Load script if not already present
+      if (!document.getElementById('spotify-iframe-api')) {
+        const script = document.createElement('script');
+        script.id = 'spotify-iframe-api';
+        script.src = "https://open.spotify.com/embed/iframe-api/v1";
+        script.async = true;
+        document.body.appendChild(script);
       }
+    }
+
+    return () => {
       if (minimizeTimerRef.current) clearTimeout(minimizeTimerRef.current);
     };
   }, [spotifyTrackId, spotifyTrackStartMs, spotifyTrackDurationMs, spotifyLoop]);
 
-  // Fetch track metadata
+  // Fetch track metadata for the button icon
   useEffect(() => {
     if (spotifyTrackId) {
       fetch(`https://open.spotify.com/oembed?url=spotify:track:${spotifyTrackId}`)
@@ -196,7 +210,7 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
               "w-full h-full bg-black/80 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md border border-white/10 transition-opacity duration-1000",
               isFading ? "opacity-30" : "opacity-100"
             )}>
-              <div ref={embedContainerRef} className="rounded-none border-none" />
+              <div ref={embedContainerRef} className="w-full h-full min-h-[80px]" />
             </div>
           </div>
         </div>

@@ -39,6 +39,7 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
   const isCandle = theme === 'candle-light';
   const [isPlayingVoice, setIsPlayingVoice] = useState(false);
   const [isMusicExpanded, setIsMusicExpanded] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [trackImageUrl, setTrackImageUrl] = useState<string | null>(null);
   const [isFading, setIsFading] = useState(false);
   
@@ -64,6 +65,7 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
       if (controllerRef.current && isApiReadyRef.current) {
         controllerRef.current.play();
         setIsMusicExpanded(true);
+        setIsPlaying(true);
         startMinimizeTimer();
       }
     }
@@ -89,6 +91,8 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
         const startMs = spotifyTrackStartMs;
         const endMs = startMs + spotifyTrackDurationMs;
         
+        setIsPlaying(!isPaused);
+
         if (position >= endMs && !isPaused) {
           if (spotifyLoop) {
             EmbedController.seek(startMs / 1000);
@@ -108,9 +112,6 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
         if (spotifyTrackStartMs > 0) {
           EmbedController.seek(spotifyTrackStartMs / 1000);
         }
-        
-        // If we are already revealed by the time API is ready, try to play
-        // Note: This might still be blocked by browser if not triggered by the actual click
       });
     });
   }, [spotifyTrackId, spotifyTrackStartMs, spotifyTrackDurationMs, spotifyLoop]);
@@ -145,14 +146,12 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
 
   useEffect(() => {
     if (spotifyTrackId) {
-      // Fetch metadata safely, ignoring potential internal Spotify CORS errors
       fetch(`https://open.spotify.com/oembed?url=spotify:track:${spotifyTrackId}`)
         .then(res => res.ok ? res.json() : Promise.reject())
         .then(data => {
           if (data.thumbnail_url) setTrackImageUrl(data.thumbnail_url);
         })
         .catch(() => {
-          // Fallback if oembed fails
           setTrackImageUrl(null);
         });
     }
@@ -187,7 +186,8 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
           <button 
             className={cn(
               "relative w-10 h-10 sm:w-14 sm:h-14 rounded-full overflow-hidden shadow-2xl border-2 transition-all duration-300 bg-black shrink-0 flex items-center justify-center cursor-pointer",
-              isMusicExpanded ? "border-primary scale-105" : "border-white/20 hover:scale-105"
+              isMusicExpanded ? "border-primary scale-105" : "border-white/20 hover:scale-105",
+              isPlaying && "animate-spin-slow"
             )}
             onClick={() => {
               setIsMusicExpanded(!isMusicExpanded);
@@ -241,6 +241,16 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
           </Button>
         </div>
       )}
+
+      <style jsx>{`
+        .animate-spin-slow {
+          animation: spin 12s linear infinite;
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 });

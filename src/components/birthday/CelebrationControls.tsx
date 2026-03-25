@@ -59,7 +59,6 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
     if (minimizeTimerRef.current) clearTimeout(minimizeTimerRef.current);
   }, []);
 
-  // Expose the play function to the parent for synchronous triggering
   useImperativeHandle(ref, () => ({
     playMusic: () => {
       if (controllerRef.current) {
@@ -67,20 +66,17 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
         setIsMusicExpanded(true);
         startMinimizeTimer();
       } else {
-        // If the controller isn't ready yet, queue the play command
         pendingPlayRef.current = true;
       }
     }
   }));
 
-  // Initialize Spotify API
   useEffect(() => {
     if (!spotifyTrackId || typeof window === 'undefined') return;
 
     const initSpotify = (IFrameAPI: any) => {
       if (!embedContainerRef.current) return;
       
-      // Clear container before creating new controller
       embedContainerRef.current.innerHTML = '';
       
       const options = {
@@ -100,6 +96,7 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
           if (position >= endMs && !isPaused) {
             if (spotifyLoop) {
               EmbedController.seek(startMs / 1000);
+              EmbedController.play();
             } else {
               EmbedController.pause();
             }
@@ -113,7 +110,6 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
           if (spotifyTrackStartMs > 0) {
             EmbedController.seek(spotifyTrackStartMs / 1000);
           }
-          // If a play request was made before we were ready, execute it now
           if (pendingPlayRef.current) {
             EmbedController.play();
             setIsMusicExpanded(true);
@@ -124,12 +120,8 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
       });
     };
 
-    const handleAPILoad = () => {
-      initSpotify((window as any).SpotifyIframeApi);
-    };
-
     if ((window as any).SpotifyIframeApi) {
-      handleAPILoad();
+      initSpotify((window as any).SpotifyIframeApi);
     } else {
       (window as any).onSpotifyIframeApiReady = (IFrameAPI: any) => {
         initSpotify(IFrameAPI);
@@ -145,11 +137,10 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
     }
 
     return () => {
-      if (minimizeTimerRef.current) clearTimeout(minimizeTimerRef.current);
+      clearMinimizeTimer();
     };
-  }, [spotifyTrackId, spotifyTrackStartMs, spotifyTrackDurationMs, spotifyLoop, startMinimizeTimer]);
+  }, [spotifyTrackId, spotifyTrackStartMs, spotifyTrackDurationMs, spotifyLoop, startMinimizeTimer, clearMinimizeTimer]);
 
-  // Fetch track metadata for the button icon
   useEffect(() => {
     if (spotifyTrackId) {
       fetch(`https://open.spotify.com/oembed?url=spotify:track:${spotifyTrackId}`)
@@ -182,10 +173,6 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
     >
       <audio ref={audioRef} src={voiceNoteUrl || undefined} className="hidden" onEnded={() => setIsPlayingVoice(false)} />
 
-      {/* 
-        CRITICAL: The Spotify container is always in the DOM but hidden until revealed.
-        This allows the API to initialize properly before the reveal click.
-      */}
       {spotifyTrackId && (
         <div className={cn("relative flex flex-col items-center transition-all duration-700", !isRevealed ? "opacity-0 scale-50 pointer-events-none" : "opacity-100 scale-100")}>
           <button 

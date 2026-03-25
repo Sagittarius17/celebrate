@@ -105,7 +105,7 @@ function TrackMetadataDisplay({ trackId }: { trackId: string }) {
   if (!metadata) return null;
 
   return (
-    <div className="flex items-center gap-3 mt-4 p-3 bg-muted/30 rounded-xl border border-dashed border-black/30 dark:border-[#FFD700]/30 animate-in fade-in slide-in-from-top-2">
+    <div className="flex items-center gap-3 mt-4 p-3 bg-muted/30 rounded-2xl border border-dashed border-black/30 dark:border-[#FFD700]/30 animate-in fade-in slide-in-from-top-2">
       <div className="relative h-12 w-12 shrink-0 rounded-lg overflow-hidden bg-muted">
         <Image src={metadata.imageUrl} alt="" fill className="object-cover" />
       </div>
@@ -351,16 +351,16 @@ export function EditorSidebar({
         <SidebarGroup>
           <SidebarGroupLabel className="px-3 mb-2 font-bold text-black dark:text-[#FFD700] text-sm">Final Quote</SidebarGroupLabel>
           <SidebarGroupContent className="px-3">
-            <div className="p-3 bg-muted/20 dark:bg-black/20 rounded-[2.5rem] border border-dashed border-black/20 dark:border-[#FFD700]/20 space-y-3 animate-in zoom-in-95 duration-300">
+            <div className="p-3 bg-muted/20 dark:bg-black/20 rounded-2xl border border-dashed border-black/20 dark:border-[#FFD700]/20 space-y-3 animate-in zoom-in-95 duration-300">
               <Textarea 
                 placeholder="A final heart-warming message..." 
                 value={customQuote} 
                 onChange={(e) => setCustomQuote(e.target.value)} 
-                className="min-h-[120px] p-5 text-sm rounded-[1.5rem] bg-white dark:bg-black/40 border-none focus-visible:ring-0 transition-all resize-none shadow-none" 
+                className="min-h-[120px] p-5 text-sm rounded-xl bg-white dark:bg-black/40 border-none focus-visible:ring-0 transition-all resize-none shadow-none" 
               />
               <Button 
                 variant="secondary" 
-                className="w-full rounded-full h-12 text-sm text-black dark:text-[#FFD700] font-bold shadow-sm" 
+                className="w-full rounded-xl h-12 text-sm text-black dark:text-[#FFD700] font-bold shadow-sm" 
                 onClick={onSaveQuote} 
                 disabled={isSavingQuote}
               >

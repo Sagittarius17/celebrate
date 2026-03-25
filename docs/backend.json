@@ -89,6 +89,11 @@
           "type": "number",
           "description": "The start offset of the Spotify clip in milliseconds."
         },
+        "spotifyLoop": {
+          "type": "boolean",
+          "description": "Whether to loop the Spotify track duration.",
+          "default": false
+        },
         "voiceNoteDataUri": {
           "type": "string",
           "description": "A Base64 data URI of a recorded voice message."

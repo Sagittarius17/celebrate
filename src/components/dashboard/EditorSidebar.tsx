@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { 
   Select, 
   SelectContent, 
@@ -25,7 +26,8 @@ import {
   Type,
   Circle,
   Square as SquareIcon,
-  Timer
+  Timer,
+  Repeat
 } from 'lucide-react';
 import { DocumentReference, Firestore, doc } from 'firebase/firestore';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -352,7 +354,16 @@ export function EditorSidebar({
                     value={Math.floor((page.spotifyTrackStartMs || 0) / 1000)}
                     onChange={(e) => handleUpdatePage({ spotifyTrackStartMs: (parseInt(e.target.value) || 0) * 1000 })}
                   />
-                  <p className="text-[9px] text-muted-foreground italic leading-tight">Pick the best part of the song!</p>
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <Label className="text-[10px] font-bold text-black/60 dark:text-[#FFD700]/60 uppercase tracking-tight flex items-center gap-1.5">
+                    <Repeat className="h-3 w-3" /> Loop Track
+                  </Label>
+                  <Switch 
+                    checked={page.spotifyLoop || false} 
+                    onCheckedChange={(val) => handleUpdatePage({ spotifyLoop: val })}
+                  />
                 </div>
               </div>
             )}

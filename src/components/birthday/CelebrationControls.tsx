@@ -16,6 +16,7 @@ interface CelebrationControlsProps {
   spotifyTrackId?: string;
   spotifyTrackStartMs?: number;
   spotifyTrackDurationMs?: number;
+  spotifyLoop?: boolean;
   isRevealed?: boolean;
 }
 
@@ -27,27 +28,25 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
   voiceNoteUrl,
   spotifyTrackId,
   spotifyTrackStartMs = 0,
-  spotifyTrackDurationMs = 300000, // Default to 5 mins if not set
+  spotifyTrackDurationMs = 300000,
+  spotifyLoop = false,
   isRevealed = false
 }) => {
   const isCandle = theme === 'candle-light';
   const [isPlayingVoice, setIsPlayingVoice] = useState(false);
-  const [voiceProgress, setVoiceProgress] = useState(0);
   const [voiceVolume, setVoiceVolume] = useState(0.6);
   const [isHoveringVoice, setIsHoveringVoice] = useState(false);
   const [isMusicExpanded, setIsMusicExpanded] = useState(false);
   const [trackImageUrl, setTrackImageUrl] = useState<string | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
   const [isMusicActive, setIsMusicActive] = useState(false);
+  const [isFading, setIsFading] = useState(false);
+  const [reloader, setReloader] = useState(0); // Used to force iframe reload for loops
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const volumeAreaRef = useRef<HTMLDivElement>(null);
   const minimizeTimerRef = useRef<NodeJS.Timeout | null>(null);
   const musicDurationTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    setIsMobile(window.matchMedia("(max-width:768px)").matches);
-  }, []);
+  const fadeTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const startMinimizeTimer = () => {
     if (minimizeTimerRef.current) clearTimeout(minimizeTimerRef.current);
@@ -60,58 +59,56 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
     if (minimizeTimerRef.current) clearTimeout(minimizeTimerRef.current);
   };
 
-  // Logic to handle auto-stop based on duration
+  // Music Playback and Duration Logic
   useEffect(() => {
     if (isRevealed && spotifyTrackId) {
       setIsMusicActive(true);
+      setIsFading(false);
       
-      // Clear any existing timer
-      if (musicDurationTimerRef.current) clearTimeout(musicDurationTimerRef.current);
+      const clearTimers = () => {
+        if (musicDurationTimerRef.current) clearTimeout(musicDurationTimerRef.current);
+        if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
+      };
 
-      // If duration is less than "Full Song" (5 mins), set a timer to stop it
+      clearTimers();
+
+      // If duration is less than "Full Song" (300k ms), manage the end
       if (spotifyTrackDurationMs < 300000) {
+        // Start visual fade 3 seconds before the end
+        const fadeDelay = Math.max(0, spotifyTrackDurationMs - 3000);
+        fadeTimerRef.current = setTimeout(() => {
+          setIsFading(true);
+        }, fadeDelay);
+
+        // Handle the end of the duration
         musicDurationTimerRef.current = setTimeout(() => {
-          setIsMusicActive(false);
+          if (spotifyLoop) {
+            // Restart the track
+            setReloader(prev => prev + 1);
+          } else {
+            setIsMusicActive(false);
+            setIsFading(false);
+          }
         }, spotifyTrackDurationMs);
       }
     }
     
     return () => {
       if (musicDurationTimerRef.current) clearTimeout(musicDurationTimerRef.current);
+      if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
     };
-  }, [isRevealed, spotifyTrackId, spotifyTrackDurationMs, spotifyTrackStartMs]);
+  }, [isRevealed, spotifyTrackId, spotifyTrackDurationMs, spotifyLoop, reloader]);
 
   useEffect(() => {
     if (spotifyTrackId) {
       fetch(`https://open.spotify.com/oembed?url=spotify:track:${spotifyTrackId}`)
         .then(res => res.json())
         .then(data => {
-          if (data.thumbnail_url) {
-            setTrackImageUrl(data.thumbnail_url);
-          }
+          if (data.thumbnail_url) setTrackImageUrl(data.thumbnail_url);
         })
         .catch(() => {});
     }
   }, [spotifyTrackId]);
-
-  useEffect(() => {
-    const el = volumeAreaRef.current;
-    if (!el) return;
-
-    const handleWheel = (e: WheelEvent) => {
-      if (!isHoveringVoice) return;
-      e.preventDefault(); 
-      const delta = e.deltaY > 0 ? -0.05 : 0.05;
-      setVoiceVolume(v => {
-        const next = Math.min(Math.max(v + delta, 0), 1);
-        if (audioRef.current) audioRef.current.volume = next;
-        return next;
-      });
-    };
-
-    el.addEventListener('wheel', handleWheel, { passive: false });
-    return () => el.removeEventListener('wheel', handleWheel);
-  }, [isHoveringVoice]);
 
   const toggleVoiceNote = () => {
     if (!audioRef.current) return;
@@ -124,39 +121,10 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
     }
   };
 
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    const updateProgress = () => {
-      if (audio.duration && !isNaN(audio.duration)) {
-        setVoiceProgress((audio.currentTime / audio.duration) * 100);
-      }
-    };
-
-    const handleEnded = () => {
-      setIsPlayingVoice(false);
-      setVoiceProgress(0);
-    };
-
-    audio.addEventListener('timeupdate', updateProgress);
-    audio.addEventListener('ended', handleEnded);
-
-    return () => {
-      audio.removeEventListener('timeupdate', updateProgress);
-      audio.removeEventListener('ended', handleEnded);
-    };
-  }, [voiceNoteUrl]);
-
-  const radius = 27; 
-  const circumference = 2 * Math.PI * radius;
-  const voiceStrokeDashoffset = circumference - (voiceProgress / 100) * circumference;
-
   const standardButtonStyle = "rounded-full w-10 h-10 sm:w-14 sm:h-14 p-0 backdrop-blur-md border-none transition-all hover:scale-105 active:scale-95 shadow-2xl flex items-center justify-center shrink-0";
-
   const startSeconds = Math.floor(spotifyTrackStartMs / 1000);
   const spotifyEmbedUrl = (spotifyTrackId && isMusicActive)
-    ? `https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0&autoplay=1${startSeconds > 0 ? `&t=${startSeconds}` : ''}`
+    ? `https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0&autoplay=1${startSeconds > 0 ? `&t=${startSeconds}` : ''}&_r=${reloader}`
     : '';
 
   return (
@@ -165,11 +133,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
       onMouseEnter={clearMinimizeTimer}
       onMouseLeave={startMinimizeTimer}
     >
-      <audio 
-        ref={audioRef} 
-        src={voiceNoteUrl || undefined} 
-        className="hidden"
-      />
+      <audio ref={audioRef} src={voiceNoteUrl || undefined} className="hidden" onEnded={() => setIsPlayingVoice(false)} />
 
       {spotifyTrackId && isRevealed && (
         <div className="relative flex flex-col items-center">
@@ -181,18 +145,16 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
             )}
             onClick={() => {
               if (!isMusicActive) {
-                // If it was timed out or stopped, restart it
                 setIsMusicActive(true);
-                setIsMusicExpanded(true);
-              } else {
-                setIsMusicExpanded(!isMusicExpanded);
+                setReloader(prev => prev + 1);
               }
+              setIsMusicExpanded(!isMusicExpanded);
             }}
           >
             {trackImageUrl ? (
               <Image src={trackImageUrl} alt="Track Art" fill className="object-cover" />
             ) : (
-              <Music className="h-10 w-10 sm:h-10 sm:w-10 text-primary" />
+              <Music className="h-6 w-6 text-primary" />
             )}
           </button>
           
@@ -200,7 +162,10 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
             "absolute top-0 right-[calc(100%+16px)] sm:right-[calc(100%+24px)] transition-all duration-500 ease-in-out overflow-hidden h-20 flex items-center",
             isMusicExpanded && isMusicActive ? "w-[240px] sm:w-[350px] opacity-100" : "w-0 opacity-0 pointer-events-none"
           )}>
-            <div className="w-full h-full bg-black/80 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md border border-white/10">
+            <div className={cn(
+              "w-full h-full bg-black/80 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md border border-white/10 transition-opacity duration-1000",
+              isFading ? "opacity-0" : "opacity-100"
+            )}>
               {isMusicActive && (
                 <iframe 
                   src={spotifyEmbedUrl} 
@@ -218,99 +183,22 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
       )}
 
       {onToggleTheme && (
-        <Button
-          onClick={onToggleTheme}
-          variant="ghost"
-          className={cn(standardButtonStyle, "bg-white/10 hover:bg-white/20 text-foreground")}
-          title={isCandle ? "Return to Light Mode" : "Enter Candle-Light Mode"}
-        >
-          {isCandle ? <Sun className="h-10 w-10 sm:h-10 sm:w-10 text-yellow-400" /> : <Flame className="h-10 w-10 sm:h-10 sm:w-10 text-orange-500 fill-orange-500" />}
+        <Button onClick={onToggleTheme} variant="ghost" className={cn(standardButtonStyle, "bg-white/10 hover:bg-white/20 text-foreground")}>
+          {isCandle ? <Sun className="h-10 w-10 text-yellow-400" /> : <Flame className="h-10 w-10 text-orange-500 fill-orange-500" />}
         </Button>
       )}
 
       {onToggleFireworks && isCandle && (
-        <Button
-          onClick={onToggleFireworks}
-          variant="ghost"
-          className={cn(
-            standardButtonStyle,
-            showFireworks 
-              ? "bg-primary text-primary-foreground" 
-              : "bg-white/10 text-foreground hover:bg-white/20"
-          )}
-          title={showFireworks ? "Disable Fireworks" : "Enable Fireworks"}
-        >
-          <Sparkles className={cn("h-10 w-10 sm:h-10 sm:w-10", showFireworks && "animate-pulse")} />
+        <Button onClick={onToggleFireworks} variant="ghost" className={cn(standardButtonStyle, showFireworks ? "bg-primary text-primary-foreground" : "bg-white/10 text-foreground hover:bg-white/20")}>
+          <Sparkles className={cn("h-10 w-10", showFireworks && "animate-pulse")} />
         </Button>
       )}
 
       {voiceNoteUrl && (
-        <div 
-          ref={volumeAreaRef}
-          className="relative flex items-center gap-4 mt-1"
-          onMouseEnter={() => setIsHoveringVoice(true)}
-          onMouseLeave={() => setIsHoveringVoice(false)}
-        >
-          {!isPlayingVoice && isRevealed && !isHoveringVoice && (
-            <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 pointer-events-none hidden sm:flex flex-col items-center animate-in fade-in slide-in-from-top-4 duration-500 z-[10001]">
-              <div className="w-2 h-2 bg-white rotate-45 -mb-1 shadow-sm z-10" />
-              <div className="bg-white text-black px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.15em] shadow-xl animate-pulse whitespace-nowrap">
-                Play Me
-              </div>
-            </div>
-          )}
-
-          <div className={cn(
-            "absolute right-[calc(100%+12px)] sm:right-[calc(100%+16px)] top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 transition-all duration-300 transform",
-            isHoveringVoice ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4 pointer-events-none"
-          )}>
-            <div className="h-20 sm:h-28 w-2 bg-white/10 rounded-full relative overflow-hidden flex flex-col justify-end backdrop-blur-sm border border-white/5">
-              <div 
-                className="w-full bg-orange-500 transition-all duration-150 rounded-full"
-                style={{ height: `${voiceVolume * 100}%` }}
-              />
-            </div>
-            <span className="text-[10px] font-bold text-orange-500 whitespace-nowrap">
-              {Math.round(voiceVolume * 100)}%
-            </span>
-          </div>
-
-          <div className="relative w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center shrink-0">
-            <svg className="absolute inset-0 w-full h-full -rotate-90 transform pointer-events-none z-20" viewBox="0 0 60 60">
-              <circle cx="30" cy="30" r={radius} stroke="currentColor" strokeWidth="3" fill="transparent" className="text-orange-500/10" />
-              <circle
-                cx="30"
-                cy="30"
-                r={radius}
-                stroke="currentColor"
-                strokeWidth="3"
-                fill="transparent"
-                strokeDasharray={circumference}
-                style={{ strokeDashoffset: voiceStrokeDashoffset, transition: 'stroke-dashoffset 0.1s linear' }}
-                strokeLinecap="round"
-                className="text-orange-500"
-              />
-            </svg>
-            <Button
-              onClick={toggleVoiceNote}
-              variant="ghost"
-              className={cn(
-                "rounded-full p-0 backdrop-blur-md border-none transition-all hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center shrink-0",
-                "bg-white/10 hover:bg-white/20 text-foreground z-10",
-                "w-9 h-9 sm:w-14 sm:h-14"
-              )}
-              title={isPlayingVoice ? "Pause Message" : "Play Creator Message"}
-            >
-              {isPlayingVoice ? (
-                <div className="flex gap-1 sm:gap-1.5 items-center justify-center">
-                  <div className="w-1 h-4 sm:w-2.5 sm:h-8 bg-current rounded-full" />
-                  <div className="w-1 h-4 sm:w-2.5 sm:h-8 bg-current rounded-full" />
-                </div>
-              ) : (
-                <Play className="fill-current ml-0.5 sm:ml-1.5" style={{ width: isMobile ? '16px' : '36px', height: isMobile ? '16px' : '36px' }} />
-              )}
-            </Button>
-          </div>
+        <div className="relative w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center shrink-0">
+          <Button onClick={toggleVoiceNote} variant="ghost" className={cn("rounded-full p-0 backdrop-blur-md border-none transition-all hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center bg-white/10 hover:bg-white/20 text-foreground w-9 h-9 sm:w-14 sm:h-14")}>
+            {isPlayingVoice ? <div className="flex gap-1.5"><div className="w-2 h-6 bg-current rounded-full" /><div className="w-2 h-6 bg-current rounded-full" /></div> : <Play className="fill-current ml-1 w-6 h-6 sm:w-8 sm:h-8" />}
+          </Button>
         </div>
       )}
     </div>

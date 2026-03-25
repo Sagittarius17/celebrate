@@ -231,6 +231,7 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
         spotifyTrackId={page?.spotifyTrackId}
         spotifyTrackStartMs={page?.spotifyTrackStartMs}
         spotifyTrackDurationMs={page?.spotifyTrackDurationMs}
+        spotifyLoop={page?.spotifyLoop}
         isRevealed={isRevealed}
       />
 

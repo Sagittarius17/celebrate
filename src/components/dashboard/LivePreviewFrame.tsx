@@ -56,6 +56,7 @@ export function LivePreviewFrame({ url }: LivePreviewFrameProps) {
             src={url} 
             className="w-full h-full border-none"
             title="Live Preview"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen"
           />
         </div>
       </div>

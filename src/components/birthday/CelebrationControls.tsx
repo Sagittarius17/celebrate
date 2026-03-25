@@ -36,7 +36,6 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
   const [isPlayingVoice, setIsPlayingVoice] = useState(false);
   const [isMusicExpanded, setIsMusicExpanded] = useState(false);
   const [trackImageUrl, setTrackImageUrl] = useState<string | null>(null);
-  const [isMusicActive, setIsMusicActive] = useState(false);
   const [isFading, setIsFading] = useState(false);
   const [reloader, setReloader] = useState(0); 
   
@@ -58,7 +57,6 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
 
   useEffect(() => {
     if (isRevealed && spotifyTrackId) {
-      setIsMusicActive(true);
       setIsFading(false);
       
       const clearTimers = () => {
@@ -68,6 +66,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
 
       clearTimers();
 
+      // Only set a cut-off if duration is less than standard "full song" length
       if (spotifyTrackDurationMs < 300000) {
         const fadeDelay = Math.max(0, spotifyTrackDurationMs - 3000);
         fadeTimerRef.current = setTimeout(() => {
@@ -77,14 +76,13 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
         musicDurationTimerRef.current = setTimeout(() => {
           if (spotifyLoop) {
             setReloader(prev => prev + 1);
-          } else {
-            setIsMusicActive(false);
             setIsFading(false);
+          } else {
+            // We can't really "stop" the iframe easily without removing it,
+            // but the reloader logic handles the restart/stop effectively.
           }
         }, spotifyTrackDurationMs);
       }
-    } else if (!isRevealed) {
-        setIsMusicActive(false);
     }
     
     return () => {
@@ -119,7 +117,8 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
   
   const startSeconds = Math.floor(spotifyTrackStartMs / 1000);
   
-  const spotifyEmbedUrl = (spotifyTrackId && isMusicActive)
+  // Directly tied to isRevealed so it renders in the same interaction cycle
+  const spotifyEmbedUrl = (spotifyTrackId && isRevealed)
     ? `https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0&autoplay=1${startSeconds > 0 ? `&t=${startSeconds}` : ''}&_r=${reloader}`
     : '';
 
@@ -136,14 +135,9 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
           <button 
             className={cn(
               "relative w-10 h-10 sm:w-14 sm:h-14 rounded-full overflow-hidden shadow-2xl border-2 transition-all duration-300 bg-black shrink-0 flex items-center justify-center cursor-pointer",
-              isMusicExpanded ? "border-primary scale-105" : "border-white/20 hover:scale-105",
-              !isMusicActive && "opacity-50 grayscale"
+              isMusicExpanded ? "border-primary scale-105" : "border-white/20 hover:scale-105"
             )}
             onClick={() => {
-              if (!isMusicActive) {
-                setIsMusicActive(true);
-                setReloader(prev => prev + 1);
-              }
               setIsMusicExpanded(!isMusicExpanded);
             }}
           >
@@ -162,7 +156,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
           
           <div className={cn(
             "absolute top-0 right-[calc(100%+16px)] sm:right-[calc(100%+24px)] transition-all duration-500 ease-in-out h-20 flex items-center",
-            isMusicExpanded && isMusicActive 
+            isMusicExpanded 
               ? "w-[240px] sm:w-[350px] opacity-100 scale-100" 
               : "w-[240px] sm:w-[350px] opacity-0 scale-95 pointer-events-none"
           )}>
@@ -170,18 +164,16 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
               "w-full h-full bg-black/80 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md border border-white/10 transition-opacity duration-1000",
               isFading ? "opacity-0" : "opacity-100"
             )}>
-              {isMusicActive && (
-                <iframe 
-                  key={`spotify-player-${reloader}`}
-                  src={spotifyEmbedUrl} 
-                  width="100%" 
-                  height="80" 
-                  frameBorder="0" 
-                  allow="autoplay; clipboard-write; encrypted-media; fullscreen" 
-                  loading="lazy"
-                  className="rounded-none border-none"
-                />
-              )}
+              <iframe 
+                key={`spotify-player-${reloader}`}
+                src={spotifyEmbedUrl} 
+                width="100%" 
+                height="80" 
+                frameBorder="0" 
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                loading="lazy"
+                className="rounded-none border-none"
+              />
             </div>
           </div>
         </div>

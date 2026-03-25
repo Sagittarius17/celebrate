@@ -48,12 +48,20 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
     if (minimizeTimerRef.current) clearTimeout(minimizeTimerRef.current);
     minimizeTimerRef.current = setTimeout(() => {
       setIsMusicExpanded(false);
-    }, 5000);
+    }, 6000);
   };
 
   const clearMinimizeTimer = () => {
     if (minimizeTimerRef.current) clearTimeout(minimizeTimerRef.current);
   };
+
+  // Automatically expand music when revealed to ensure browser sees it as "visible" for autoplay
+  useEffect(() => {
+    if (isRevealed && spotifyTrackId) {
+      setIsMusicExpanded(true);
+      startMinimizeTimer();
+    }
+  }, [isRevealed, spotifyTrackId]);
 
   useEffect(() => {
     if (isRevealed && spotifyTrackId) {
@@ -66,7 +74,6 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
 
       clearTimers();
 
-      // Only set a cut-off if duration is less than standard "full song" length
       if (spotifyTrackDurationMs < 300000) {
         const fadeDelay = Math.max(0, spotifyTrackDurationMs - 3000);
         fadeTimerRef.current = setTimeout(() => {
@@ -77,9 +84,6 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
           if (spotifyLoop) {
             setReloader(prev => prev + 1);
             setIsFading(false);
-          } else {
-            // We can't really "stop" the iframe easily without removing it,
-            // but the reloader logic handles the restart/stop effectively.
           }
         }, spotifyTrackDurationMs);
       }
@@ -116,8 +120,6 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
   const standardButtonStyle = "rounded-full w-10 h-10 sm:w-14 sm:h-14 p-0 backdrop-blur-md border-none transition-all hover:scale-105 active:scale-95 shadow-2xl flex items-center justify-center shrink-0";
   
   const startSeconds = Math.floor(spotifyTrackStartMs / 1000);
-  
-  // Directly tied to isRevealed so it renders in the same interaction cycle
   const spotifyEmbedUrl = (spotifyTrackId && isRevealed)
     ? `https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0&autoplay=1${startSeconds > 0 ? `&t=${startSeconds}` : ''}&_r=${reloader}`
     : '';
@@ -146,7 +148,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
                 src={trackImageUrl} 
                 alt="Track Art" 
                 fill 
-                sizes="(max-width: 768px) 40px, 56px"
+                sizes="56px"
                 className="object-cover" 
               />
             ) : (
@@ -170,8 +172,8 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
                 width="100%" 
                 height="80" 
                 frameBorder="0" 
-                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-                loading="lazy"
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen" 
+                loading="eager"
                 className="rounded-none border-none"
               />
             </div>

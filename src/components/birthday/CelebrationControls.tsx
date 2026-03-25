@@ -34,16 +34,13 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
 }) => {
   const isCandle = theme === 'candle-light';
   const [isPlayingVoice, setIsPlayingVoice] = useState(false);
-  const [voiceVolume, setVoiceVolume] = useState(0.6);
-  const [isHoveringVoice, setIsHoveringVoice] = useState(false);
   const [isMusicExpanded, setIsMusicExpanded] = useState(false);
   const [trackImageUrl, setTrackImageUrl] = useState<string | null>(null);
   const [isMusicActive, setIsMusicActive] = useState(false);
   const [isFading, setIsFading] = useState(false);
-  const [reloader, setReloader] = useState(0); // Used to force iframe reload for loops
+  const [reloader, setReloader] = useState(0); 
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const volumeAreaRef = useRef<HTMLDivElement>(null);
   const minimizeTimerRef = useRef<NodeJS.Timeout | null>(null);
   const musicDurationTimerRef = useRef<NodeJS.Timeout | null>(null);
   const fadeTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -61,6 +58,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
 
   // Music Playback and Duration Logic
   useEffect(() => {
+    // When revealed, start the music
     if (isRevealed && spotifyTrackId) {
       setIsMusicActive(true);
       setIsFading(false);
@@ -72,7 +70,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
 
       clearTimers();
 
-      // If duration is less than "Full Song" (300k ms), manage the end
+      // Only set timers if duration is not "Full Song"
       if (spotifyTrackDurationMs < 300000) {
         // Start visual fade 3 seconds before the end
         const fadeDelay = Math.max(0, spotifyTrackDurationMs - 3000);
@@ -83,7 +81,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
         // Handle the end of the duration
         musicDurationTimerRef.current = setTimeout(() => {
           if (spotifyLoop) {
-            // Restart the track
+            // Restart the track - this will reset the useEffect via reloader
             setReloader(prev => prev + 1);
           } else {
             setIsMusicActive(false);
@@ -91,6 +89,8 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
           }
         }, spotifyTrackDurationMs);
       }
+    } else if (!isRevealed) {
+        setIsMusicActive(false);
     }
     
     return () => {
@@ -122,7 +122,10 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
   };
 
   const standardButtonStyle = "rounded-full w-10 h-10 sm:w-14 sm:h-14 p-0 backdrop-blur-md border-none transition-all hover:scale-105 active:scale-95 shadow-2xl flex items-center justify-center shrink-0";
+  
   const startSeconds = Math.floor(spotifyTrackStartMs / 1000);
+  
+  // Construct URL - Only provide a URL if isMusicActive is true
   const spotifyEmbedUrl = (spotifyTrackId && isMusicActive)
     ? `https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0&autoplay=1${startSeconds > 0 ? `&t=${startSeconds}` : ''}&_r=${reloader}`
     : '';

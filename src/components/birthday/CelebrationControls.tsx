@@ -46,7 +46,7 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
   const embedContainerRef = useRef<HTMLDivElement>(null);
   const controllerRef = useRef<any>(null);
   const minimizeTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const pendingPlayRef = useRef(false);
+  const isApiReadyRef = useRef(false);
 
   const startMinimizeTimer = useCallback(() => {
     if (minimizeTimerRef.current) clearTimeout(minimizeTimerRef.current);
@@ -61,94 +61,100 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
 
   useImperativeHandle(ref, () => ({
     playMusic: () => {
-      if (controllerRef.current) {
+      if (controllerRef.current && isApiReadyRef.current) {
         controllerRef.current.play();
         setIsMusicExpanded(true);
         startMinimizeTimer();
-      } else {
-        pendingPlayRef.current = true;
       }
     }
   }));
 
-  useEffect(() => {
-    if (!spotifyTrackId || typeof window === 'undefined') return;
-
-    const initSpotify = (IFrameAPI: any) => {
-      if (!embedContainerRef.current) return;
+  const initSpotify = useCallback((IFrameAPI: any) => {
+    if (!embedContainerRef.current || !spotifyTrackId) return;
+    
+    // Clear previous content to avoid duplicates
+    embedContainerRef.current.innerHTML = '';
+    
+    const options = {
+      uri: `spotify:track:${spotifyTrackId}`,
+      width: '100%',
+      height: '80',
+    };
+    
+    IFrameAPI.createController(embedContainerRef.current, options, (EmbedController: any) => {
+      controllerRef.current = EmbedController;
       
-      embedContainerRef.current.innerHTML = '';
-      
-      const options = {
-        uri: `spotify:track:${spotifyTrackId}`,
-        width: '100%',
-        height: '80',
-      };
-      
-      IFrameAPI.createController(embedContainerRef.current, options, (EmbedController: any) => {
-        controllerRef.current = EmbedController;
+      EmbedController.addListener('playback_update', (e: any) => {
+        const { position, isPaused } = e.data;
+        const startMs = spotifyTrackStartMs;
+        const endMs = startMs + spotifyTrackDurationMs;
         
-        EmbedController.addListener('playback_update', (e: any) => {
-          const { position, isPaused } = e.data;
-          const startMs = spotifyTrackStartMs;
-          const endMs = startMs + spotifyTrackDurationMs;
-          
-          if (position >= endMs && !isPaused) {
-            if (spotifyLoop) {
-              EmbedController.seek(startMs / 1000);
-              EmbedController.play();
-            } else {
-              EmbedController.pause();
-            }
-          }
-
-          const fadeStartMs = endMs - 3000;
-          setIsFading(position >= fadeStartMs && position < endMs);
-        });
-
-        EmbedController.addListener('ready', () => {
-          if (spotifyTrackStartMs > 0) {
-            EmbedController.seek(spotifyTrackStartMs / 1000);
-          }
-          if (pendingPlayRef.current) {
+        if (position >= endMs && !isPaused) {
+          if (spotifyLoop) {
+            EmbedController.seek(startMs / 1000);
             EmbedController.play();
-            setIsMusicExpanded(true);
-            startMinimizeTimer();
-            pendingPlayRef.current = false;
+          } else {
+            EmbedController.pause();
           }
-        });
+        }
+
+        // Visual fade hint
+        const fadeStartMs = endMs - 3000;
+        setIsFading(position >= fadeStartMs && position < endMs);
       });
+
+      EmbedController.addListener('ready', () => {
+        isApiReadyRef.current = true;
+        if (spotifyTrackStartMs > 0) {
+          EmbedController.seek(spotifyTrackStartMs / 1000);
+        }
+        
+        // If we are already revealed by the time API is ready, try to play
+        // Note: This might still be blocked by browser if not triggered by the actual click
+      });
+    });
+  }, [spotifyTrackId, spotifyTrackStartMs, spotifyTrackDurationMs, spotifyLoop]);
+
+  useEffect(() => {
+    if (!spotifyTrackId) return;
+
+    const loadApi = () => {
+      if ((window as any).SpotifyIframeApi) {
+        initSpotify((window as any).SpotifyIframeApi);
+      } else {
+        (window as any).onSpotifyIframeApiReady = (IFrameAPI: any) => {
+          initSpotify(IFrameAPI);
+        };
+
+        if (!document.getElementById('spotify-iframe-api')) {
+          const script = document.createElement('script');
+          script.id = 'spotify-iframe-api';
+          script.src = "https://open.spotify.com/embed/iframe-api/v1";
+          script.async = true;
+          document.body.appendChild(script);
+        }
+      }
     };
 
-    if ((window as any).SpotifyIframeApi) {
-      initSpotify((window as any).SpotifyIframeApi);
-    } else {
-      (window as any).onSpotifyIframeApiReady = (IFrameAPI: any) => {
-        initSpotify(IFrameAPI);
-      };
-
-      if (!document.getElementById('spotify-iframe-api')) {
-        const script = document.createElement('script');
-        script.id = 'spotify-iframe-api';
-        script.src = "https://open.spotify.com/embed/iframe-api/v1";
-        script.async = true;
-        document.body.appendChild(script);
-      }
-    }
+    loadApi();
 
     return () => {
       clearMinimizeTimer();
     };
-  }, [spotifyTrackId, spotifyTrackStartMs, spotifyTrackDurationMs, spotifyLoop, startMinimizeTimer, clearMinimizeTimer]);
+  }, [spotifyTrackId, initSpotify, clearMinimizeTimer]);
 
   useEffect(() => {
     if (spotifyTrackId) {
+      // Fetch metadata safely, ignoring potential internal Spotify CORS errors
       fetch(`https://open.spotify.com/oembed?url=spotify:track:${spotifyTrackId}`)
-        .then(res => res.json())
+        .then(res => res.ok ? res.json() : Promise.reject())
         .then(data => {
           if (data.thumbnail_url) setTrackImageUrl(data.thumbnail_url);
         })
-        .catch(() => {});
+        .catch(() => {
+          // Fallback if oembed fails
+          setTrackImageUrl(null);
+        });
     }
   }, [spotifyTrackId]);
 
@@ -174,7 +180,10 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
       <audio ref={audioRef} src={voiceNoteUrl || undefined} className="hidden" onEnded={() => setIsPlayingVoice(false)} />
 
       {spotifyTrackId && (
-        <div className={cn("relative flex flex-col items-center transition-all duration-700", !isRevealed ? "opacity-0 scale-50 pointer-events-none" : "opacity-100 scale-100")}>
+        <div className={cn(
+          "relative flex flex-col items-center transition-all duration-700", 
+          !isRevealed ? "opacity-0 scale-50 pointer-events-none" : "opacity-100 scale-100"
+        )}>
           <button 
             className={cn(
               "relative w-10 h-10 sm:w-14 sm:h-14 rounded-full overflow-hidden shadow-2xl border-2 transition-all duration-300 bg-black shrink-0 flex items-center justify-center cursor-pointer",

@@ -17,7 +17,7 @@ import { Gift, PackageOpen, Loader2, Heart, Sparkles } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { cn } from '@/utils';
+import { cn } from '@/lib/utils';
 
 const DEFAULT_QUOTES: Record<string, string> = {
   "Birthday": "To many more years of joy, laughter, and beautiful memories! Happy Birthday!",
@@ -42,7 +42,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
   const [isRevealed, setIsRevealed] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
-  
+
   const journeyRef = useRef<HTMLDivElement>(null);
   const endTriggerRef = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<CelebrationControlsHandle>(null);
@@ -70,7 +70,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
 
         const q = query(collection(db, 'celebrationPages'), where('accessCode', '==', accessCodeFromUrl));
         const snap = await getDocs(q);
-        
+
         if (snap.empty) {
           setError("Invalid secret link. Please check with the person who created your surprise!");
         } else {
@@ -133,24 +133,24 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
   useEffect(() => {
     const handleScroll = () => {
       if (!journeyRef.current || !endTriggerRef.current) return;
-      
+
       const journey = journeyRef.current;
       const heartTrigger = endTriggerRef.current;
-      
+
       const journeyRect = journey.getBoundingClientRect();
       const heartRect = heartTrigger.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
-      
-      const triggerPoint = viewportHeight * 0.7; 
+
+      const triggerPoint = viewportHeight * 0.7;
       const journeyTop = journeyRect.top;
-      const heartCenter = heartRect.top + (heartRect.height / 2); 
-      
+      const heartCenter = heartRect.top + (heartRect.height / 2);
+
       const totalHeight = heartCenter - journeyTop;
       const currentDistance = triggerPoint - journeyTop;
-      
+
       const progress = (currentDistance / totalHeight) * 100;
       const clampedProgress = Math.min(Math.max(progress, 0), 100);
-      
+
       setScrollProgress(prev => {
         if (prev >= 100 && clampedProgress < 100) return 100;
         return clampedProgress;
@@ -181,7 +181,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
 
   const handleRevealClick = () => {
     if (isOpening) return;
-    
+
     // CRITICAL: Set states and trigger sound synchronously
     setIsOpening(true);
     setIsRevealed(true);
@@ -236,15 +236,15 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
   const finalQuoteToDisplay = page?.finalQuote || DEFAULT_QUOTES[page?.occasion] || DEFAULT_QUOTES["Other"];
   const globalStyle = { fontFamily: page?.font ? `${page.font}, sans-serif` : 'inherit' };
   const layout = page?.layout || 'Timeline';
-  
+
   const isFullyConnected = scrollProgress >= 100;
 
   return (
     <main className={cn("min-h-screen bg-background transition-all duration-1000", theme)} style={globalStyle}>
       <ButterflySwarm theme={theme} />
       <FireworkEffect enabled={showFireworks} />
-      
-      <CelebrationControls 
+
+      <CelebrationControls
         ref={controlsRef}
         theme={theme}
         onToggleTheme={handleToggleTheme}
@@ -259,35 +259,35 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       />
 
       <div className={cn("transition-opacity duration-1000", isRevealed ? "opacity-100" : "opacity-0 pointer-events-none")}>
-        <Header 
-          title={page?.title} 
-          occasion={page?.occasion} 
-          theme={theme} 
+        <Header
+          title={page?.title}
+          occasion={page?.occasion}
+          theme={theme}
         />
-        
+
         <section id="journey" ref={journeyRef} className="pt-8 pb-0 sm:pt-16 relative z-10">
           <div className="max-w-7xl mx-auto px-4">
             <div className="text-center mb-12 sm:mb-20 px-4">
               <h2 className="text-3xl sm:text-5xl font-bold mb-4" style={{ fontFamily: page?.font || 'inherit' }}>{page?.title || 'Our Journey'}</h2>
               <div className="w-16 sm:w-24 h-1 bg-secondary mx-auto rounded-full mb-8" />
             </div>
-            
+
             {layout === 'Timeline' ? (
               <div className="relative flex flex-col items-center">
-                <div 
-                  className="absolute left-1/2 -translate-x-1/2 w-2 z-0 pointer-events-none" 
-                  style={{ 
-                    height: 'calc(100% - 60px)', 
-                    top: '-40px' 
+                <div
+                  className="absolute left-1/2 -translate-x-1/2 w-2 z-0 pointer-events-none"
+                  style={{
+                    height: 'calc(100% - 60px)',
+                    top: '-40px'
                   }}
                 >
                   <div className="w-full h-full timeline-line opacity-10" />
-                  <div 
+                  <div
                     className="absolute top-0 left-0 w-full z-10 timeline-glow-line"
                     style={{ height: `${scrollProgress}%` }}
                   />
                 </div>
-                
+
                 <div className="w-full relative z-10">
                   <TimelineLayout events={events} scrollProgress={scrollProgress} theme={theme} />
                 </div>
@@ -300,7 +300,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
                     <div className={cn(
                       "bg-white p-3 sm:p-4 rounded-full shadow-2xl border-4 transition-all duration-700",
                       isFullyConnected && theme === 'candle-light'
-                        ? "animate-rgb-border" 
+                        ? "animate-rgb-border"
                         : (isFullyConnected ? "border-secondary" : "border-secondary/40")
                     )}>
                       <Heart className={cn(
@@ -318,16 +318,16 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
                 ) : layout === 'Grid' ? (
                   <GridLayout events={events} />
                 ) : (
-                  <CollageLayout 
-                    events={events} 
-                    recipientName={page?.recipientName} 
-                    creatorName={page?.creatorName} 
+                  <CollageLayout
+                    events={events}
+                    recipientName={page?.recipientName}
+                    creatorName={page?.creatorName}
                   />
                 )}
               </div>
             )}
 
-            <FinalMessage 
+            <FinalMessage
               isVisible={layout !== 'Timeline' || isFullyConnected}
               recipientName={page?.recipientName}
               quote={finalQuoteToDisplay}

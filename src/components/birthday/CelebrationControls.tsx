@@ -310,8 +310,8 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
           </Button>
           
           <div className="relative flex flex-col items-center transition-all duration-300 group-hover:opacity-0 group-hover:scale-95 group-hover:translate-y-1">
-            <div className="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-b-[5px] border-b-primary animate-pulse-slow mb-0.5" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary-foreground bg-primary px-4 py-1.5 rounded-full shadow-xl animate-pulse-slow">
+            <div className="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-b-[5px] border-b-secondary animate-pulse-slow mb-0.5" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary-foreground bg-secondary px-4 py-1.5 rounded-full shadow-xl animate-pulse-slow">
               Play Me
             </span>
           </div>

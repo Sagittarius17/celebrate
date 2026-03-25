@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, use, useRef, useEffect } from 'react';
@@ -140,14 +139,6 @@ function DashboardEditorContent({ id }: { id: string }) {
     setTimeout(() => setIsCopied(false), 2000);
   };
 
-  const copyAccessCode = () => {
-    if (!page) return;
-    navigator.clipboard.writeText(page.accessCode);
-    setIsCodeCopied(true);
-    toast({ title: "Code Copied!" });
-    setTimeout(() => setIsCodeCopied(false), 2000);
-  };
-
   if (isPageLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-8 space-y-6 max-w-sm mx-auto">
@@ -209,8 +200,8 @@ function DashboardEditorContent({ id }: { id: string }) {
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto p-4 lg:p-6">
-            <div className="max-w-[1600px] mx-auto space-y-4">
+          <main className={cn("flex-1 overflow-y-auto", showLivePreview ? "p-4 lg:p-8" : "p-4 lg:p-6")}>
+            <div className={cn("mx-auto space-y-4", showLivePreview ? "max-w-none" : "max-w-[1600px]")}>
               {!showLivePreview && (
                 <div className="flex justify-between items-center mb-4">
                   <div className="flex items-center gap-3">

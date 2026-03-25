@@ -1,9 +1,8 @@
-
 "use client";
 
 import React, { useState, useRef, useEffect, useImperativeHandle, forwardRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Sun, Flame, Sparkles, Play, Pause, Music, Volume2, VolumeX, Youtube } from 'lucide-react';
+import { Sun, Flame, Sparkles, Play, Pause, Music, Volume2, VolumeX, Youtube, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
@@ -267,7 +266,7 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
     }
   };
 
-  const standardButtonStyle = "rounded-full w-10 h-10 sm:w-14 sm:h-14 p-0 backdrop-blur-md border-none transition-all hover:scale-105 active:scale-95 shadow-2xl flex items-center justify-center shrink-0";
+  const standardButtonStyle = "rounded-full w-10 h-10 sm:w-14 sm:h-14 p-0 backdrop-blur-md border-none transition-all hover:scale-105 active:scale-95 shadow-2xl flex items-center justify-center shrink-0 overflow-hidden";
   const hasSoundtrack = (soundtrackSource === 'spotify' && spotifyTrackId) || (soundtrackSource === 'youtube' && youtubeVideoId) || (soundtrackSource === 'upload' && customTrackUrl);
 
   return (
@@ -299,7 +298,10 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
       )}
 
       {onToggleTheme && isRevealed && (
-        <Button onClick={onToggleTheme} className={cn(standardButtonStyle, "bg-white/10 text-foreground hover:bg-white/20 hover:text-foreground shadow-2xl")}>
+        <Button 
+          onClick={onToggleTheme} 
+          className={cn(standardButtonStyle, "bg-white/10 text-foreground hover:bg-white/20 shadow-2xl")}
+        >
           {isCandle ? <Sun className="h-10 w-10 text-yellow-400" /> : <Flame className="h-10 w-10 text-orange-500 fill-orange-500" />}
         </Button>
       )}
@@ -311,7 +313,7 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
       )}
 
       {voiceNoteUrl && isRevealed && (
-        <div className="flex flex-col items-center gap-6 group">
+        <div className="flex flex-col items-center group">
           <Button 
             onClick={() => { if (!audioRef.current) return; isPlayingVoice ? audioRef.current.pause() : audioRef.current.play(); setIsPlayingVoice(!isPlayingVoice); }} 
             className={cn(standardButtonStyle, "bg-white/10 text-foreground hover:bg-white/20 shadow-2xl")}
@@ -319,16 +321,16 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
             {isPlayingVoice ? <div className="flex gap-1.5"><div className="w-2 h-6 bg-current rounded-full animate-pulse" /><div className="w-2 h-6 bg-current rounded-full animate-pulse" /></div> : <Play className="fill-current ml-1 w-6 h-6 sm:w-8 sm:h-8" />}
           </Button>
           
-          <div className="relative flex flex-col items-center transition-all duration-300 group-hover:opacity-0 group-hover:scale-95 group-hover:translate-y-1">
-            <div className="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-b-[5px] border-b-secondary animate-pulse-slow mb-1" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground bg-secondary px-4 py-1.5 rounded-full shadow-xl animate-pulse-slow">
+          <div className="relative flex flex-col items-center transition-all duration-300 group-hover:opacity-0 group-hover:scale-95 group-hover:translate-y-1 mt-6">
+            <ChevronUp className="w-4 h-4 text-secondary animate-bounce-slow mb-[-4px]" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-foreground bg-secondary px-4 py-1.5 rounded-full shadow-xl animate-pulse-slow">
               Play Me
             </span>
           </div>
         </div>
       )}
 
-      <style jsx>{`.animate-spin-slow { animation: spin 12s linear infinite; } @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+      <style jsx>{`.animate-spin-slow { animation: spin 12s linear infinite; } @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } .animate-bounce-slow { animation: bounce 3s infinite; }`}</style>
     </div>
   );
 });

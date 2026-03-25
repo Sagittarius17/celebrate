@@ -12,6 +12,7 @@ interface HeaderProps {
   showVideo?: boolean;
   startMs?: number;
   loop?: boolean;
+  soundtrackSource?: string;
 }
 
 export const Header: React.FC<HeaderProps> = ({ 
@@ -21,9 +22,11 @@ export const Header: React.FC<HeaderProps> = ({
   youtubeVideoId,
   showVideo = true,
   startMs = 0,
-  loop = false
+  loop = false,
+  soundtrackSource
 }) => {
   const isCandle = theme === 'candle-light';
+  const isYouTubeSource = soundtrackSource === 'youtube';
 
   const scrollToJourney = () => {
     const element = document.getElementById('journey');
@@ -37,7 +40,7 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="relative min-h-screen flex flex-col z-10 overflow-hidden">
       {/* Background Video for YouTube Tracks (Light Mode Only) */}
-      {!isCandle && youtubeVideoId && showVideo && (
+      {!isCandle && youtubeVideoId && showVideo && isYouTubeSource && (
         <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none transition-opacity duration-1000 opacity-40">
           <div 
             className="absolute inset-0 z-10 w-full h-full"

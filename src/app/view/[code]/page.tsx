@@ -273,6 +273,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
           showVideo={showBackgroundVideo}
           startMs={page?.spotifyTrackStartMs}
           loop={page?.spotifyLoop}
+          soundtrackSource={page?.soundtrackSource}
         />
 
         <section id="journey" ref={journeyRef} className="pt-8 pb-0 sm:pt-16 relative z-10">

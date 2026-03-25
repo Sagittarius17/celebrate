@@ -44,12 +44,12 @@ export function LivePreviewFrame({ url }: LivePreviewFrameProps) {
             transform: `scale(${previewScale})`,
           }}
         >
-          {/* Standardized allow attribute to avoid Feature Policy parsing errors */}
+          {/* Use standard allow attribute for permission delegation */}
           <iframe 
             src={url} 
             className="w-full h-full border-none"
             title="Live Preview"
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen"
+            allow="autoplay; encrypted-media"
           />
         </div>
       </div>

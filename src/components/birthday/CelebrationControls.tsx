@@ -73,16 +73,22 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
 
       clearTimers();
 
+      // Set up the duration limit and looping
       if (spotifyTrackDurationMs < 300000) {
+        // Visual fade out 3 seconds before the end
         const fadeDelay = Math.max(0, spotifyTrackDurationMs - 3000);
         fadeTimerRef.current = setTimeout(() => {
           setIsFading(true);
         }, fadeDelay);
 
+        // Reset or loop when duration is reached
         musicDurationTimerRef.current = setTimeout(() => {
           if (spotifyLoop) {
             setReloader(prev => prev + 1);
             setIsFading(false);
+          } else {
+            // If not looping, we just let it be or the reloader could reset to a "stopped" state if needed
+            // For now, we allow looping to be the primary driver of reloads
           }
         }, spotifyTrackDurationMs);
       }
@@ -120,9 +126,9 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
   
   const startSeconds = Math.floor(spotifyTrackStartMs / 1000);
   
-  // Clean URL construction
+  // Clean URL construction with cache-busting reloader param
   const spotifyEmbedUrl = (spotifyTrackId && isRevealed)
-    ? `https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0&autoplay=1${startSeconds > 0 ? `&t=${startSeconds}` : ''}&reloader=${reloader}`
+    ? `https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0&autoplay=1${startSeconds > 0 ? `&t=${startSeconds}` : ''}&loop=${reloader}`
     : '';
 
   return (
@@ -167,14 +173,13 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
               "w-full h-full bg-black/80 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md border border-white/10 transition-opacity duration-1000",
               isFading ? "opacity-0" : "opacity-100"
             )}>
-              {/* Standardized allow attribute - Removed '*' wildcard which triggers browser warnings */}
+              {/* IMPORTANT: We do NOT use a key here so that the iframe element is preserved during reloads, which helps maintain autoplay permissions */}
               <iframe 
-                key={`spotify-player-${reloader}`}
                 src={spotifyEmbedUrl} 
                 width="100%" 
                 height="80" 
                 frameBorder="0" 
-                allow="autoplay; clipboard-write; encrypted-media; fullscreen" 
+                allow="autoplay; encrypted-media" 
                 loading="eager"
                 className="rounded-none border-none"
               />

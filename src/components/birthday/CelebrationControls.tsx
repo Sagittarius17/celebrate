@@ -147,6 +147,9 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
         fs: 0,
         modestbranding: 1,
         rel: 0,
+        iv_load_policy: 3,
+        disablekb: 1,
+        fs: 0,
         start: Math.floor(spotifyTrackStartMs / 1000),
       },
       events: {
@@ -305,7 +308,7 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
       {onToggleBackgroundVideo && soundtrackSource === 'youtube' && isRevealed && !isCandle && (
         <Button 
           onClick={onToggleBackgroundVideo} 
-          className={cn(standardButtonStyle, showBackgroundVideo ? "bg-primary text-primary-foreground" : "bg-white/10 text-foreground hover:bg-white/20")}
+          className={cn(standardButtonStyle, showBackgroundVideo ? "bg-primary text-primary-foreground hover:bg-white/20" : "bg-white/10 text-foreground hover:bg-white/20")}
         >
           {showBackgroundVideo ? <Video className="h-10 w-10" /> : <VideoOff className="h-10 w-10" />}
         </Button>
@@ -321,7 +324,7 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
       )}
 
       {onToggleFireworks && isCandle && isRevealed && (
-        <Button onClick={onToggleFireworks} className={cn(standardButtonStyle, showFireworks ? "bg-primary text-primary-foreground" : "bg-white/10 text-foreground hover:bg-white/20")}>
+        <Button onClick={onToggleFireworks} className={cn(standardButtonStyle, showFireworks ? "bg-primary text-primary-foreground hover:bg-white/20" : "bg-white/10 text-foreground hover:bg-white/20")}>
           <Sparkles className={cn("h-10 w-10", showFireworks && "animate-pulse")} />
         </Button>
       )}
@@ -335,7 +338,7 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
             {isPlayingVoice ? <div className="flex gap-1.5"><div className="w-2 h-6 bg-current rounded-full animate-pulse" /><div className="w-2 h-6 bg-current rounded-full animate-pulse" /></div> : <Play className="fill-current ml-1 w-6 h-6 sm:w-8 sm:h-8" />}
           </Button>
           
-          <div className="relative flex flex-col items-center transition-all duration-300 group-hover:opacity-0 group-hover:scale-95 group-hover:translate-y-1 mt-10">
+          <div className="relative flex flex-col items-center transition-all duration-300 group-hover:opacity-0 group-hover:scale-95 group-hover:translate-y-1 mt-4">
             <ChevronUp className="w-4 h-4 text-secondary animate-bounce-slow mb-[-4px]" />
             <span className="text-[10px] font-bold uppercase tracking-widest text-foreground bg-secondary px-4 py-1.5 rounded-full shadow-xl animate-pulse-slow">
               Play Me

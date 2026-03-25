@@ -18,6 +18,8 @@ interface CelebrationControlsProps {
   spotifyTrackDurationMs?: number;
   spotifyLoop?: boolean;
   isRevealed?: boolean;
+  customTrackUrl?: string | null;
+  soundtrackSource?: 'spotify' | 'upload';
 }
 
 export interface CelebrationControlsHandle {
@@ -34,7 +36,9 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
   spotifyTrackStartMs = 0,
   spotifyTrackDurationMs = 300000,
   spotifyLoop = false,
-  isRevealed = false
+  isRevealed = false,
+  customTrackUrl,
+  soundtrackSource = 'spotify'
 }, ref) => {
   const isCandle = theme === 'candle-light';
   const [isPlayingVoice, setIsPlayingVoice] = useState(false);
@@ -44,6 +48,7 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
   const [isFading, setIsFading] = useState(false);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const customTrackAudioRef = useRef<HTMLAudioElement | null>(null);
   const embedContainerRef = useRef<HTMLDivElement>(null);
   const controllerRef = useRef<any>(null);
   const minimizeTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -63,7 +68,13 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
 
   useImperativeHandle(ref, () => ({
     playMusic: () => {
-      if (controllerRef.current && isApiReadyRef.current) {
+      if (soundtrackSource === 'upload' && customTrackAudioRef.current) {
+        customTrackAudioRef.current.currentTime = spotifyTrackStartMs / 1000;
+        customTrackAudioRef.current.play();
+        setIsPlaying(true);
+        setIsMusicExpanded(true);
+        startMinimizeTimer();
+      } else if (controllerRef.current && isApiReadyRef.current) {
         controllerRef.current.play();
         setIsMusicExpanded(true);
         setIsPlaying(true);
@@ -73,7 +84,7 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
   }));
 
   const initSpotify = useCallback((IFrameAPI: any) => {
-    if (!embedContainerRef.current || !spotifyTrackId) return;
+    if (!embedContainerRef.current || !spotifyTrackId || soundtrackSource !== 'spotify') return;
     
     embedContainerRef.current.innerHTML = '';
     
@@ -113,10 +124,10 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
         }
       });
     });
-  }, [spotifyTrackId, spotifyTrackStartMs, spotifyTrackDurationMs, spotifyLoop]);
+  }, [spotifyTrackId, spotifyTrackStartMs, spotifyTrackDurationMs, spotifyLoop, soundtrackSource]);
 
   useEffect(() => {
-    if (!spotifyTrackId) return;
+    if (!spotifyTrackId || soundtrackSource !== 'spotify') return;
 
     const loadApi = () => {
       if ((window as any).SpotifyIframeApi) {
@@ -141,10 +152,10 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
     return () => {
       clearMinimizeTimer();
     };
-  }, [spotifyTrackId, initSpotify, clearMinimizeTimer]);
+  }, [spotifyTrackId, initSpotify, clearMinimizeTimer, soundtrackSource]);
 
   useEffect(() => {
-    if (spotifyTrackId) {
+    if (spotifyTrackId && soundtrackSource === 'spotify') {
       fetch(`https://open.spotify.com/oembed?url=spotify:track:${spotifyTrackId}`)
         .then(res => res.ok ? res.json() : Promise.reject())
         .then(data => {
@@ -153,25 +164,61 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
         .catch(() => {
           setTrackImageUrl(null);
         });
+    } else {
+      setTrackImageUrl(null);
     }
-  }, [spotifyTrackId]);
+  }, [spotifyTrackId, soundtrackSource]);
 
-  // Audio Focus Logic: Pause music when voice note plays, resume when it stops
+  // Audio Focus Logic
   useEffect(() => {
-    if (!controllerRef.current || !isApiReadyRef.current) return;
-
     if (isPlayingVoice) {
       if (isPlaying) {
         musicWasPlayingRef.current = true;
-        controllerRef.current.pause();
+        if (soundtrackSource === 'upload' && customTrackAudioRef.current) {
+          customTrackAudioRef.current.pause();
+        } else if (controllerRef.current) {
+          controllerRef.current.pause();
+        }
       }
     } else {
       if (musicWasPlayingRef.current) {
-        controllerRef.current.play();
+        if (soundtrackSource === 'upload' && customTrackAudioRef.current) {
+          customTrackAudioRef.current.play();
+        } else if (controllerRef.current) {
+          controllerRef.current.play();
+        }
         musicWasPlayingRef.current = false;
       }
     }
-  }, [isPlayingVoice, isPlaying]);
+  }, [isPlayingVoice, isPlaying, soundtrackSource]);
+
+  // Custom Track Looping & Duration Monitor
+  useEffect(() => {
+    if (soundtrackSource !== 'upload' || !customTrackAudioRef.current) return;
+    
+    const audio = customTrackAudioRef.current;
+    const interval = setInterval(() => {
+      if (!isPlaying) return;
+      
+      const positionMs = audio.currentTime * 1000;
+      const endMs = spotifyTrackStartMs + spotifyTrackDurationMs;
+      
+      if (positionMs >= endMs) {
+        if (spotifyLoop) {
+          audio.currentTime = spotifyTrackStartMs / 1000;
+          audio.play();
+        } else {
+          audio.pause();
+          setIsPlaying(false);
+        }
+      }
+
+      const fadeStartMs = endMs - 3000;
+      setIsFading(positionMs >= fadeStartMs && positionMs < endMs);
+    }, 200);
+
+    return () => clearInterval(interval);
+  }, [soundtrackSource, isPlaying, spotifyTrackStartMs, spotifyTrackDurationMs, spotifyLoop]);
 
   const toggleVoiceNote = () => {
     if (!audioRef.current) return;
@@ -184,8 +231,25 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
     }
   };
 
+  const toggleMusic = () => {
+    if (soundtrackSource === 'upload' && customTrackAudioRef.current) {
+      if (isPlaying) {
+        customTrackAudioRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        customTrackAudioRef.current.play();
+        setIsPlaying(true);
+      }
+    } else {
+      setIsMusicExpanded(!isMusicExpanded);
+      startMinimizeTimer();
+    }
+  };
+
   const standardButtonStyle = "rounded-full w-10 h-10 sm:w-14 sm:h-14 p-0 backdrop-blur-md border-none transition-all hover:scale-105 active:scale-95 shadow-2xl flex items-center justify-center shrink-0";
   
+  const hasSoundtrack = (soundtrackSource === 'spotify' && spotifyTrackId) || (soundtrackSource === 'upload' && customTrackUrl);
+
   return (
     <div 
       className="fixed top-4 right-4 sm:top-10 sm:right-10 z-[10000] flex flex-col items-center gap-2 pointer-events-auto"
@@ -193,8 +257,13 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
       onMouseLeave={startMinimizeTimer}
     >
       <audio ref={audioRef} src={voiceNoteUrl || undefined} className="hidden" onEnded={() => setIsPlayingVoice(false)} />
+      {soundtrackSource === 'upload' && (
+        <audio ref={customTrackAudioRef} src={customTrackUrl || undefined} className="hidden" onEnded={() => {
+          if (!spotifyLoop) setIsPlaying(false);
+        }} />
+      )}
 
-      {spotifyTrackId && (
+      {hasSoundtrack && (
         <div className={cn(
           "relative flex flex-col items-center transition-all duration-700", 
           !isRevealed ? "opacity-0 scale-50 pointer-events-none" : "opacity-100 scale-100"
@@ -202,27 +271,17 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
           <button 
             className={cn(
               "relative w-10 h-10 sm:w-14 sm:h-14 rounded-full overflow-hidden shadow-2xl border-2 transition-all duration-300 bg-black shrink-0 flex items-center justify-center cursor-pointer",
-              isMusicExpanded ? "border-primary scale-105" : "border-white/20 hover:scale-105",
+              (isMusicExpanded || (soundtrackSource === 'upload' && isPlaying)) ? "border-primary scale-105" : "border-white/20 hover:scale-105",
               isPlaying && "animate-spin-slow"
             )}
-            onClick={() => {
-              setIsMusicExpanded(!isMusicExpanded);
-              startMinimizeTimer();
-            }}
+            onClick={toggleMusic}
           >
             {trackImageUrl ? (
-              <Image 
-                src={trackImageUrl} 
-                alt="Track Art" 
-                fill 
-                sizes="56px"
-                className="object-cover" 
-              />
+              <Image src={trackImageUrl} alt="Track Art" fill sizes="56px" className="object-cover" />
             ) : (
-              <Music className="h-6 w-6 text-primary" />
+              <Music className={cn("h-6 w-6 text-primary", isPlaying && "animate-pulse")} />
             )}
             
-            {/* Audio Focus Indicator */}
             {isPlayingVoice && (
               <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
                 <VolumeX className="h-5 w-5 text-white/70" />
@@ -230,19 +289,21 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
             )}
           </button>
           
-          <div className={cn(
-            "absolute top-0 right-[calc(100%+16px)] sm:right-[calc(100%+24px)] transition-all duration-500 ease-in-out h-20 flex items-center",
-            isMusicExpanded 
-              ? "w-[240px] sm:w-[350px] opacity-100 scale-100" 
-              : "w-[240px] sm:w-[350px] opacity-0 scale-95 pointer-events-none"
-          )}>
+          {soundtrackSource === 'spotify' && (
             <div className={cn(
-              "w-full h-full bg-black/80 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md border border-white/10 transition-opacity duration-1000",
-              isFading ? "opacity-30" : "opacity-100"
+              "absolute top-0 right-[calc(100%+16px)] sm:right-[calc(100%+24px)] transition-all duration-500 ease-in-out h-20 flex items-center",
+              isMusicExpanded 
+                ? "w-[240px] sm:w-[350px] opacity-100 scale-100" 
+                : "w-[240px] sm:w-[350px] opacity-0 scale-95 pointer-events-none"
             )}>
-              <div ref={embedContainerRef} className="w-full h-full min-h-[80px]" />
+              <div className={cn(
+                "w-full h-full bg-black/80 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md border border-white/10 transition-opacity duration-1000",
+                isFading ? "opacity-30" : "opacity-100"
+              )}>
+                <div ref={embedContainerRef} className="w-full h-full min-h-[80px]" />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 
@@ -263,11 +324,6 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
           <Button onClick={toggleVoiceNote} variant="ghost" className={cn("rounded-full p-0 backdrop-blur-md border-none transition-all hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center bg-white/10 hover:bg-white/20 text-foreground w-9 h-9 sm:w-14 sm:h-14")}>
             {isPlayingVoice ? <div className="flex gap-1.5"><div className="w-2 h-6 bg-current rounded-full animate-pulse" /><div className="w-2 h-6 bg-current rounded-full animate-pulse" /></div> : <Play className="fill-current ml-1 w-6 h-6 sm:w-8 sm:h-8" />}
           </Button>
-          {isPlayingVoice && (
-            <div className="absolute -bottom-1 w-full flex justify-center">
-              <span className="text-[8px] font-bold text-primary uppercase tracking-tighter">Voice Active</span>
-            </div>
-          )}
         </div>
       )}
 

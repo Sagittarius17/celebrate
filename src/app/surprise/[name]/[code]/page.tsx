@@ -164,12 +164,9 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
 
   const handleRevealClick = () => {
     if (isOpening) return;
-    
-    // CRITICAL: Trigger the sound immediately and synchronously in the click handler
     setIsOpening(true);
     setIsRevealed(true);
     
-    // Using the ref to call the Spotify API play() synchronously
     if (controlsRef.current) {
       controlsRef.current.playMusic();
     }
@@ -240,6 +237,8 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
         spotifyTrackDurationMs={page?.spotifyTrackDurationMs}
         spotifyLoop={page?.spotifyLoop}
         isRevealed={isRevealed}
+        customTrackUrl={page?.customTrackDataUri}
+        soundtrackSource={page?.soundtrackSource}
       />
 
       <div className={cn("transition-opacity duration-1000", isRevealed ? "opacity-100" : "opacity-0 pointer-events-none")}>
@@ -346,4 +345,3 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
     </main>
   );
 }
-

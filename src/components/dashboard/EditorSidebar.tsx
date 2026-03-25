@@ -27,7 +27,10 @@ import {
   Circle,
   Square as SquareIcon,
   Timer,
-  Repeat
+  Repeat,
+  Upload,
+  CloudUpload,
+  FileAudio
 } from 'lucide-react';
 import { DocumentReference, Firestore, doc } from 'firebase/firestore';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -43,6 +46,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { SelectionContext } from '@/app/dashboard/[id]/page';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const FONTS = [
   "Playfair Display", "PT Sans", "Montserrat", "Lora", "Quicksand", 
@@ -108,8 +112,8 @@ function TrackMetadataDisplay({ trackId }: { trackId: string }) {
   if (!metadata) return null;
 
   return (
-    <div className="flex items-center gap-2 mt-2 p-2 bg-muted/30 rounded-lg border border-dashed border-black/20 dark:border-[#FFD700]/20 animate-in fade-in slide-in-from-top-1">
-      <div className="relative h-10 w-10 shrink-0 rounded-md overflow-hidden bg-muted">
+    <div className="flex items-center gap-3 mt-4 p-2 bg-muted/30 rounded-xl border border-dashed border-black/20 dark:border-[#FFD700]/20 animate-in fade-in slide-in-from-top-1">
+      <div className="relative h-10 w-10 shrink-0 rounded-lg overflow-hidden bg-muted">
         <Image src={metadata.imageUrl} alt="" fill className="object-cover" />
       </div>
       <div className="flex-1 min-w-0">
@@ -135,10 +139,12 @@ export function EditorSidebar({
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [audioUrl, setAudioUrl] = useState<string | null>(page.voiceNoteDataUri || null);
+  const [isUploadingTrack, setIsUploadingTrack] = useState(false);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const trackUploadRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     return () => {
@@ -218,12 +224,32 @@ export function EditorSidebar({
     toast({ title: "Voice Note Removed" });
   };
 
+  const handleTrackUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        toast({ variant: "destructive", title: "File too large", description: "Audio must be under 10MB." });
+        return;
+      }
+      setIsUploadingTrack(true);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result as string;
+        handleUpdatePage({ customTrackDataUri: base64 });
+        setIsUploadingTrack(false);
+        toast({ title: "Track Uploaded" });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const selectedEvent = events?.find(e => e.id === selectionContext?.eventId);
   const currentFont = selectionContext?.field === 'title' 
     ? (selectedEvent?.titleFont || 'inherit') 
     : (selectedEvent?.messageFont || 'inherit');
 
   const isCollageLayout = page.layout === 'Collage';
+  const soundtrackSource = page.soundtrackSource || 'spotify';
 
   return (
     <Sidebar className="border-r">
@@ -311,53 +337,85 @@ export function EditorSidebar({
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup className="py-2">
-          <SidebarGroupLabel className="px-2 mb-1 font-bold text-black dark:text-[#FFD700] text-[11px] uppercase tracking-wider">Soundtrack</SidebarGroupLabel>
-          <SidebarGroupContent className="px-2 space-y-3">
-            <div className="space-y-1.5">
-              <Label className="text-[10px] font-bold text-black/60 dark:text-[#FFD700]/60 uppercase tracking-tight">Spotify Track ID or URL</Label>
-              <Input 
-                placeholder="Paste Link or ID here" 
-                className="rounded-lg h-9 px-3 bg-muted/30 border border-input focus-visible:ring-1 text-xs transition-all"
-                value={page.spotifyTrackId || ''} 
-                onChange={(e) => handleUpdatePage({ spotifyTrackId: extractSpotifyTrackId(e.target.value) })} 
-              />
-              <TrackMetadataDisplay trackId={page.spotifyTrackId || ''} />
-            </div>
+        <SidebarGroup className="py-4">
+          <SidebarGroupLabel className="px-2 mb-2 font-bold text-black dark:text-[#FFD700] text-[11px] uppercase tracking-wider">Soundtrack</SidebarGroupLabel>
+          <SidebarGroupContent className="px-2">
+            <div className="p-4 bg-black/5 dark:bg-[#FFD700]/5 rounded-[2rem] border-2 border-dashed border-black/20 dark:border-[#FFD700]/20 space-y-4">
+              <Tabs value={soundtrackSource} onValueChange={(val) => handleUpdatePage({ soundtrackSource: val })} className="w-full">
+                <TabsList className="grid w-full grid-cols-2 rounded-full h-9 p-1 bg-muted/50">
+                  <TabsTrigger value="spotify" className="rounded-full text-[10px] uppercase font-bold tracking-widest">Spotify</TabsTrigger>
+                  <TabsTrigger value="upload" className="rounded-full text-[10px] uppercase font-bold tracking-widest">Upload</TabsTrigger>
+                </TabsList>
+              </Tabs>
 
-            {page.spotifyTrackId && (
-              <div className="space-y-3 p-3 bg-muted/20 rounded-xl border border-dashed border-black/10 dark:border-[#FFD700]/10">
-                <div className="space-y-1.5">
-                  <Label className="text-[10px] font-bold text-black/60 dark:text-[#FFD700]/60 uppercase tracking-tight flex items-center gap-1.5">
+              {soundtrackSource === 'spotify' ? (
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold opacity-60 uppercase tracking-tight px-1">Spotify Track ID or URL</Label>
+                  <Input 
+                    placeholder="Paste Link or ID here" 
+                    className="rounded-full h-11 px-4 bg-background border border-input focus-visible:ring-1 text-xs transition-all shadow-none"
+                    value={page.spotifyTrackId || ''} 
+                    onChange={(e) => handleUpdatePage({ spotifyTrackId: extractSpotifyTrackId(e.target.value) })} 
+                  />
+                  <TrackMetadataDisplay trackId={page.spotifyTrackId || ''} />
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold opacity-60 uppercase tracking-tight px-1">Upload Audio File</Label>
+                  <input type="file" ref={trackUploadRef} className="hidden" accept="audio/*" onChange={handleTrackUpload} />
+                  <Button 
+                    onClick={() => trackUploadRef.current?.click()}
+                    variant="outline" 
+                    className="w-full h-11 rounded-full border-dashed border-black/30 dark:border-[#FFD700]/30 text-xs gap-2"
+                    disabled={isUploadingTrack}
+                  >
+                    {isUploadingTrack ? <CloudUpload className="h-4 w-4 animate-bounce" /> : <Upload className="h-4 w-4" />}
+                    {page.customTrackDataUri ? "Change Audio" : "Choose MP3/WAV"}
+                  </Button>
+                  {page.customTrackDataUri && (
+                    <div className="flex items-center gap-2 p-2 bg-background/50 rounded-xl border border-dashed border-green-500/20 text-green-600 dark:text-green-400">
+                      <FileAudio className="h-4 w-4 shrink-0" />
+                      <span className="text-[10px] font-bold uppercase truncate flex-1">Audio Ready</span>
+                      <Button variant="ghost" size="icon" onClick={() => handleUpdatePage({ customTrackDataUri: null })} className="h-6 w-6 rounded-full">
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="pt-2 space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold opacity-60 uppercase tracking-tight px-1 flex items-center gap-1.5">
                     <Music className="h-3 w-3" /> Clip Duration
                   </Label>
                   <Select 
                     value={(page.spotifyTrackDurationMs || 30000).toString()} 
                     onValueChange={(val) => handleUpdatePage({ spotifyTrackDurationMs: parseInt(val) })}
                   >
-                    <SelectTrigger className="h-8 text-xs rounded-lg"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="h-10 text-xs rounded-full px-4"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {DURATIONS.map(d => <SelectItem key={d.value} value={d.value.toString()} className="text-xs">{d.label}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
 
-                <div className="space-y-1.5">
-                  <Label className="text-[10px] font-bold text-black/60 dark:text-[#FFD700]/60 uppercase tracking-tight flex items-center gap-1.5">
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold opacity-60 uppercase tracking-tight px-1 flex items-center gap-1.5">
                     <Timer className="h-3 w-3" /> Start At (seconds)
                   </Label>
                   <Input 
                     type="number"
                     min="0"
-                    placeholder="e.g. 45"
-                    className="h-8 text-xs rounded-lg"
+                    placeholder="e.g. 0"
+                    className="h-10 text-xs rounded-full px-4"
                     value={Math.floor((page.spotifyTrackStartMs || 0) / 1000)}
                     onChange={(e) => handleUpdatePage({ spotifyTrackStartMs: (parseInt(e.target.value) || 0) * 1000 })}
                   />
                 </div>
 
-                <div className="flex items-center justify-between pt-1">
-                  <Label className="text-[10px] font-bold text-black/60 dark:text-[#FFD700]/60 uppercase tracking-tight flex items-center gap-1.5">
+                <div className="flex items-center justify-between px-1">
+                  <Label className="text-[10px] font-bold opacity-60 uppercase tracking-tight flex items-center gap-1.5">
                     <Repeat className="h-3 w-3" /> Loop Track
                   </Label>
                   <Switch 
@@ -366,7 +424,7 @@ export function EditorSidebar({
                   />
                 </div>
               </div>
-            )}
+            </div>
           </SidebarGroupContent>
         </SidebarGroup>
 

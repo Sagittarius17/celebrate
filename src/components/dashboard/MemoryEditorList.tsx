@@ -394,18 +394,18 @@ function MemoryItemEditor({
           />
         </div>
 
-        <CardContent className="p-4 md:p-5 flex-1 space-y-3 relative">
+        <CardContent className="p-3 md:p-3.5 flex-1 space-y-1.5 relative">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-2">
                <span className="text-[10px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full uppercase tracking-widest flex items-center gap-1.5">
                 {event.videoUrl ? <Film className="h-2.5 w-2.5" /> : <ImageIcon className="h-2.5 w-2.5" />}
                 Memory #{index + 1}
                </span>
-               <div className="flex items-center gap-2">
+               <div className="flex items-center gap-1.5">
                 <div className="relative flex items-center">
                   <input 
                     type="date" 
-                    className="border-none bg-transparent p-0 h-auto font-bold text-foreground text-xs focus-visible:ring-0 shadow-none cursor-pointer outline-none block dark:text-white"
+                    className="border-none bg-transparent p-0 h-auto font-bold text-foreground text-[11px] focus-visible:ring-0 shadow-none cursor-pointer outline-none block dark:text-white"
                     value={event.eventDate}
                     onChange={(e) => handleUpdateEvent({ eventDate: e.target.value })}
                   />
@@ -434,24 +434,24 @@ function MemoryItemEditor({
             </div>
           </div>
           
-          <div className="space-y-1">
-            <Label className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-1.5 block opacity-60">Memory Title</Label>
+          <div className="space-y-0.5">
+            <Label className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-1 block opacity-60">Memory Title</Label>
             <Input 
               placeholder="e.g. First Steps" 
               style={{ fontFamily: event.titleFont || 'inherit' }}
-              className="h-12 px-5 rounded-[2rem] bg-muted/30 border-2 border-transparent hover:border-primary/20 focus-visible:border-primary focus-visible:ring-0 text-lg font-headline font-bold transition-all shadow-none"
+              className="h-10 px-4 rounded-[2rem] bg-muted/30 border-2 border-transparent hover:border-primary/20 focus-visible:border-primary focus-visible:ring-0 text-base font-headline font-bold transition-all shadow-none"
               value={event.title}
               onFocus={() => onFieldFocus?.(event.id, 'title')}
               onChange={(e) => handleUpdateEvent({ title: e.target.value })}
             />
           </div>
 
-          <div className="space-y-1">
-            <Label className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-1.5 block opacity-60">The Story</Label>
+          <div className="space-y-0.5">
+            <Label className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-1 block opacity-60">The Story</Label>
             <Textarea 
               placeholder="Tell the story of this moment..." 
               style={{ fontFamily: event.messageFont || 'inherit' }}
-              className="min-h-[100px] px-5 py-4 rounded-[2rem] bg-muted/30 border-2 border-transparent hover:border-primary/20 focus-visible:border-primary focus-visible:ring-0 italic text-muted-foreground leading-relaxed text-sm resize-none transition-all shadow-none"
+              className="min-h-[80px] px-4 py-2 rounded-[2rem] bg-muted/30 border-2 border-transparent hover:border-primary/20 focus-visible:border-primary focus-visible:ring-0 italic text-muted-foreground leading-relaxed text-sm resize-none transition-all shadow-none"
               value={event.message}
               onFocus={() => onFieldFocus?.(event.id, 'message')}
               onChange={(e) => handleUpdateEvent({ message: e.target.value })}
@@ -476,7 +476,7 @@ export function MemoryEditorList({ events, isLoading, pageId, db, onFieldFocus }
 
   return (
     <ScrollArea className="h-[calc(100vh-140px)] -mx-4 px-4">
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 py-2 px-2">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 py-2 px-2">
         {events.map((event, index) => (
           <MemoryItemEditor 
             key={event.id} 

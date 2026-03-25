@@ -300,6 +300,52 @@ export default function Dashboard() {
           </div>
           
           <div className="flex items-center gap-4">
+            <Button 
+              className={`${headerButtonStyle} bg-secondary hover:bg-secondary/80 text-secondary-foreground`}
+              onClick={toggleTheme}
+              title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            >{isDark ? <Sun className="h-5 w-5 text-yellow-400" /> : <Moon className="h-5 w-5 text-slate-700" />}</Button>
+
+            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+              <DialogTrigger asChild>
+                <Button className={`${headerButtonStyle} bg-secondary hover:bg-secondary/80 text-secondary-foreground`} title="New Surprise">
+                  <Plus className="h-6 w-6" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px] rounded-[2rem]">
+                <DialogHeader><DialogTitle>Create a New Surprise Page</DialogTitle></DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label>Occasion</Label>
+                    <Select value={newSurprise.occasion} onValueChange={(val) => setNewSurprise({...newSurprise, occasion: val})}>
+                      <SelectTrigger className="rounded-xl h-12"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent>{OCCASIONS.map(occ => <SelectItem key={occ} value={occ}>{occ}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Who is this for? (Recipient)</Label>
+                    <Input placeholder="e.g. Sarah Jones" className="rounded-xl h-12" value={newSurprise.recipientName} onChange={(e) => setNewSurprise({...newSurprise, recipientName: e.target.value})} />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Your Name (Creator)</Label>
+                    <Input placeholder="e.g. David" className="rounded-xl h-12" value={newSurprise.creatorName} onChange={(e) => setNewSurprise({...newSurprise, creatorName: e.target.value})} />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Page Title</Label>
+                    <Input placeholder="e.g. Happy 25th Birthday, Sarah!" className="rounded-xl h-12" value={newSurprise.title} onChange={(e) => setNewSurprise({...newSurprise, title: e.target.value})} />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label className="flex items-center gap-2"><Music className="h-4 w-4 text-primary" /> Spotify Track ID or URL</Label>
+                    <Input placeholder="Paste Link or ID here" className="rounded-xl h-12" value={newSurprise.spotifyTrackId} onChange={(e) => setNewSurprise({...newSurprise, spotifyTrackId: extractSpotifyTrackId(e.target.value)})} />
+                    <TrackMetadataDisplay trackId={newSurprise.spotifyTrackId} />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button className="w-full rounded-full h-12" onClick={handleCreate} disabled={!newSurprise.recipientName || !newSurprise.title || !newSurprise.creatorName}>Create Surprise</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="outline" className={`${headerButtonStyle} overflow-hidden hover:ring-2 hover:ring-primary/50`}>
@@ -379,52 +425,6 @@ export default function Dashboard() {
                 </div>
               </SheetContent>
             </Sheet>
-
-            <Button 
-              className={`${headerButtonStyle} bg-secondary hover:bg-secondary/80 text-secondary-foreground`}
-              onClick={toggleTheme}
-              title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
-            >{isDark ? <Sun className="h-5 w-5 text-yellow-400" /> : <Moon className="h-5 w-5 text-slate-700" />}</Button>
-
-            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-              <DialogTrigger asChild>
-                <Button className={`${headerButtonStyle} bg-secondary hover:bg-secondary/80 text-secondary-foreground`} title="New Surprise">
-                  <Plus className="h-6 w-6" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px] rounded-[2rem]">
-                <DialogHeader><DialogTitle>Create a New Surprise Page</DialogTitle></DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label>Occasion</Label>
-                    <Select value={newSurprise.occasion} onValueChange={(val) => setNewSurprise({...newSurprise, occasion: val})}>
-                      <SelectTrigger className="rounded-xl h-12"><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent>{OCCASIONS.map(occ => <SelectItem key={occ} value={occ}>{occ}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label>Who is this for? (Recipient)</Label>
-                    <Input placeholder="e.g. Sarah Jones" className="rounded-xl h-12" value={newSurprise.recipientName} onChange={(e) => setNewSurprise({...newSurprise, recipientName: e.target.value})} />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label>Your Name (Creator)</Label>
-                    <Input placeholder="e.g. David" className="rounded-xl h-12" value={newSurprise.creatorName} onChange={(e) => setNewSurprise({...newSurprise, creatorName: e.target.value})} />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label>Page Title</Label>
-                    <Input placeholder="e.g. Happy 25th Birthday, Sarah!" className="rounded-xl h-12" value={newSurprise.title} onChange={(e) => setNewSurprise({...newSurprise, title: e.target.value})} />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label className="flex items-center gap-2"><Music className="h-4 w-4 text-primary" /> Spotify Track ID or URL</Label>
-                    <Input placeholder="Paste Link or ID here" className="rounded-xl h-12" value={newSurprise.spotifyTrackId} onChange={(e) => setNewSurprise({...newSurprise, spotifyTrackId: extractSpotifyTrackId(e.target.value)})} />
-                    <TrackMetadataDisplay trackId={newSurprise.spotifyTrackId} />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button className="w-full rounded-full h-12" onClick={handleCreate} disabled={!newSurprise.recipientName || !newSurprise.title || !newSurprise.creatorName}>Create Surprise</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
           </div>
         </div>
 

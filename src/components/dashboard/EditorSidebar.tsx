@@ -351,12 +351,12 @@ export function EditorSidebar({
         <SidebarGroup className="py-2">
           <SidebarGroupLabel className="px-2 mb-1 font-bold text-black dark:text-[#FFD700] text-[11px] uppercase tracking-wider">Final Quote</SidebarGroupLabel>
           <SidebarGroupContent className="px-2">
-            <div className="p-2 bg-muted/20 dark:bg-black/20 rounded-xl border border-dashed border-black/20 dark:border-[#FFD700]/20 space-y-2 animate-in zoom-in-95 duration-300">
+            <div className="p-2 bg-black/5 dark:bg-[#FFD700]/5 rounded-xl border border-dashed border-black/30 dark:border-[#FFD700]/30 space-y-2 animate-in zoom-in-95 duration-300">
               <Textarea 
                 placeholder="A final heart-warming message..." 
                 value={customQuote} 
                 onChange={(e) => setCustomQuote(e.target.value)} 
-                className="min-h-[80px] p-3 text-xs rounded-lg bg-white dark:bg-black/40 border-none focus-visible:ring-0 transition-all resize-none shadow-none" 
+                className="min-h-[80px] p-3 text-xs rounded-lg bg-background border-none focus-visible:ring-0 transition-all resize-none shadow-none" 
               />
               <Button 
                 variant="secondary" 

@@ -86,11 +86,13 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
         setIsMusicExpanded(true);
         setIsPlaying(true);
         startMinimizeTimer();
-      } else if (soundtrackSource === 'youtube' && ytPlayerRef.current && typeof ytPlayerRef.current.playVideo === 'function') {
+      } else if (soundtrackSource === 'youtube' && ytPlayerRef.current) {
         if (typeof ytPlayerRef.current.seekTo === 'function') {
           ytPlayerRef.current.seekTo(spotifyTrackStartMs / 1000);
         }
-        ytPlayerRef.current.playVideo();
+        if (typeof ytPlayerRef.current.playVideo === 'function') {
+          ytPlayerRef.current.playVideo();
+        }
         setIsMusicExpanded(true);
         setIsPlaying(true);
         startMinimizeTimer();
@@ -297,7 +299,7 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
       )}
 
       {onToggleTheme && isRevealed && (
-        <Button onClick={onToggleTheme} variant="ghost" className={cn(standardButtonStyle, "bg-white/10 text-foreground")}>
+        <Button onClick={onToggleTheme} variant="ghost" className={cn(standardButtonStyle, "bg-white/10 text-foreground hover:bg-white/20 hover:text-foreground")}>
           {isCandle ? <Sun className="h-10 w-10 text-yellow-400" /> : <Flame className="h-10 w-10 text-orange-500 fill-orange-500" />}
         </Button>
       )}
@@ -309,7 +311,7 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
       )}
 
       {voiceNoteUrl && isRevealed && (
-        <div className="flex flex-col items-center gap-1 group">
+        <div className="flex flex-col items-center gap-4 group">
           <Button 
             onClick={() => { if (!audioRef.current) return; isPlayingVoice ? audioRef.current.pause() : audioRef.current.play(); setIsPlayingVoice(!isPlayingVoice); }} 
             variant="ghost" 

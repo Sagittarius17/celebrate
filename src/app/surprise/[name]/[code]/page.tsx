@@ -163,10 +163,10 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
 
   const handleRevealClick = () => {
     if (isOpening) return;
+    // CRITICAL: We set isRevealed and isOpening instantly.
+    // This connects the Spotify autoplay directly to the user's click gesture.
     setIsOpening(true);
-    setTimeout(() => {
-      setIsRevealed(true);
-    }, 800);
+    setIsRevealed(true);
   };
 
   const handleToggleTheme = () => {
@@ -333,13 +333,6 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
                 )}
               </div>
             </div>
-            
-            {isOpening && (
-              <div className="flex items-center gap-2 text-primary font-bold animate-fade-in">
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span>Preparing your journey...</span>
-              </div>
-            )}
           </div>
         </div>
       )}

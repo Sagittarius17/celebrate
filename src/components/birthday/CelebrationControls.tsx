@@ -1,8 +1,9 @@
+
 "use client";
 
 import React, { useState, useRef, useEffect, useImperativeHandle, forwardRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Sun, Flame, Sparkles, Play, Pause, Music, Volume2, VolumeX, Youtube, ChevronUp } from 'lucide-react';
+import { Sun, Flame, Sparkles, Play, Pause, Music, Volume2, VolumeX, Youtube, ChevronUp, Video, VideoOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
@@ -11,6 +12,8 @@ interface CelebrationControlsProps {
   onToggleTheme?: () => void;
   showFireworks?: boolean;
   onToggleFireworks?: () => void;
+  showBackgroundVideo?: boolean;
+  onToggleBackgroundVideo?: () => void;
   voiceNoteUrl?: string | null;
   spotifyTrackId?: string;
   youtubeVideoId?: string;
@@ -31,6 +34,8 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
   onToggleTheme,
   showFireworks,
   onToggleFireworks,
+  showBackgroundVideo,
+  onToggleBackgroundVideo,
   voiceNoteUrl,
   spotifyTrackId,
   youtubeVideoId,
@@ -297,6 +302,15 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
         </div>
       )}
 
+      {onToggleBackgroundVideo && soundtrackSource === 'youtube' && isRevealed && !isCandle && (
+        <Button 
+          onClick={onToggleBackgroundVideo} 
+          className={cn(standardButtonStyle, showBackgroundVideo ? "bg-primary text-primary-foreground" : "bg-white/10 text-foreground hover:bg-white/20")}
+        >
+          {showBackgroundVideo ? <Video className="h-10 w-10" /> : <VideoOff className="h-10 w-10" />}
+        </Button>
+      )}
+
       {onToggleTheme && isRevealed && (
         <Button 
           onClick={onToggleTheme} 
@@ -321,7 +335,7 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
             {isPlayingVoice ? <div className="flex gap-1.5"><div className="w-2 h-6 bg-current rounded-full animate-pulse" /><div className="w-2 h-6 bg-current rounded-full animate-pulse" /></div> : <Play className="fill-current ml-1 w-6 h-6 sm:w-8 sm:h-8" />}
           </Button>
           
-          <div className="relative flex flex-col items-center transition-all duration-300 group-hover:opacity-0 group-hover:scale-95 group-hover:translate-y-1 mt-6">
+          <div className="relative flex flex-col items-center transition-all duration-300 group-hover:opacity-0 group-hover:scale-95 group-hover:translate-y-1 mt-10">
             <ChevronUp className="w-4 h-4 text-secondary animate-bounce-slow mb-[-4px]" />
             <span className="text-[10px] font-bold uppercase tracking-widest text-foreground bg-secondary px-4 py-1.5 rounded-full shadow-xl animate-pulse-slow">
               Play Me

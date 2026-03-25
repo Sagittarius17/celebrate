@@ -39,6 +39,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
   const [scrollProgress, setScrollProgress] = useState(0);
   const [theme, setTheme] = useState<'light' | 'candle-light'>('light');
   const [showFireworks, setShowFireworks] = useState(false);
+  const [showBackgroundVideo, setShowBackgroundVideo] = useState(true);
   const [isRevealed, setIsRevealed] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -250,6 +251,8 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         onToggleTheme={handleToggleTheme}
         showFireworks={showFireworks}
         onToggleFireworks={() => setShowFireworks(prev => !prev)}
+        showBackgroundVideo={showBackgroundVideo}
+        onToggleBackgroundVideo={() => setShowBackgroundVideo(prev => !prev)}
         voiceNoteUrl={page?.voiceNoteDataUri}
         spotifyTrackId={page?.spotifyTrackId}
         youtubeVideoId={page?.youtubeVideoId}
@@ -267,6 +270,9 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
           occasion={page?.occasion}
           theme={theme}
           youtubeVideoId={page?.youtubeVideoId}
+          showVideo={showBackgroundVideo}
+          startMs={page?.spotifyTrackStartMs}
+          loop={page?.spotifyLoop}
         />
 
         <section id="journey" ref={journeyRef} className="pt-8 pb-0 sm:pt-16 relative z-10">

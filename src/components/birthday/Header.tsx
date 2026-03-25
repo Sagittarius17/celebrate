@@ -9,13 +9,19 @@ interface HeaderProps {
   occasion?: string;
   theme?: 'light' | 'candle-light';
   youtubeVideoId?: string;
+  showVideo?: boolean;
+  startMs?: number;
+  loop?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({ 
   title, 
   occasion = "Celebration", 
   theme,
-  youtubeVideoId
+  youtubeVideoId,
+  showVideo = true,
+  startMs = 0,
+  loop = false
 }) => {
   const isCandle = theme === 'candle-light';
 
@@ -26,11 +32,13 @@ export const Header: React.FC<HeaderProps> = ({
     }
   };
 
+  const startSeconds = Math.floor(startMs / 1000);
+
   return (
     <header className="relative min-h-screen flex flex-col z-10 overflow-hidden">
       {/* Background Video for YouTube Tracks (Light Mode Only) */}
-      {!isCandle && youtubeVideoId && (
-        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none transition-opacity duration-1000 opacity-40">
+      {!isCandle && youtubeVideoId && showVideo && (
+        <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none transition-opacity duration-1000 opacity-40">
           <div 
             className="absolute inset-0 z-10 w-full h-full"
             style={{
@@ -40,17 +48,17 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <iframe
               className="w-[100vw] h-[56.25vw] min-h-[100vh] min-w-[177.77vh] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-110"
-              src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&mute=1&loop=1&playlist=${youtubeVideoId}&controls=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&fs=0`}
+              src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&mute=1&loop=${loop ? 1 : 0}&playlist=${youtubeVideoId}&controls=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&fs=0&start=${startSeconds}`}
               allow="autoplay; encrypted-media"
             />
           </div>
           
-          {/* Edge Fading Overlays - Fades all 4 edges into the background color */}
+          {/* Edge Fading Overlays */}
           <div className="absolute inset-0 z-20 pointer-events-none">
             {/* Top Fade */}
-            <div className="absolute top-0 left-0 right-0 h-1/4 bg-gradient-to-b from-background to-transparent" />
+            <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-background via-background/60 to-transparent" />
             {/* Bottom Fade */}
-            <div className="absolute bottom-0 left-0 right-0 h-1/4 bg-gradient-to-t from-background to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-background via-background/60 to-transparent" />
             {/* Left Fade */}
             <div className="absolute top-0 bottom-0 left-0 w-1/4 bg-gradient-to-r from-background to-transparent" />
             {/* Right Fade */}
@@ -58,7 +66,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Subtle Overall Tint */}
-          <div className="absolute inset-0 z-20 bg-background/10" />
+          <div className="absolute inset-0 z-20 bg-background/5" />
         </div>
       )}
 

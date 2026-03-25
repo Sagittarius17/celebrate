@@ -356,11 +356,12 @@ export function EditorSidebar({
                 placeholder="A final heart-warming message..." 
                 value={customQuote} 
                 onChange={(e) => setCustomQuote(e.target.value)} 
-                className="min-h-[80px] p-3 text-xs rounded-lg bg-background border-none focus-visible:ring-0 transition-all resize-none shadow-none" 
+                rows={8}
+                className="min-h-[160px] p-3 text-xs rounded-lg bg-background border-none focus-visible:ring-0 transition-all resize-none shadow-none" 
               />
               <Button 
-                variant="secondary" 
-                className="w-full rounded-lg h-9 text-xs text-black dark:text-[#FFD700] font-bold shadow-sm" 
+                variant="outline" 
+                className="w-full rounded-lg h-9 text-xs text-black dark:text-[#FFD700] font-bold shadow-sm bg-background border-none hover:bg-background/80" 
                 onClick={onSaveQuote} 
                 disabled={isSavingQuote}
               >

@@ -46,6 +46,7 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
   const embedContainerRef = useRef<HTMLDivElement>(null);
   const controllerRef = useRef<any>(null);
   const minimizeTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const pendingPlayRef = useRef(false);
 
   const startMinimizeTimer = useCallback(() => {
     if (minimizeTimerRef.current) clearTimeout(minimizeTimerRef.current);
@@ -65,6 +66,9 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
         controllerRef.current.play();
         setIsMusicExpanded(true);
         startMinimizeTimer();
+      } else {
+        // If the controller isn't ready yet, queue the play command
+        pendingPlayRef.current = true;
       }
     }
   }));
@@ -109,6 +113,13 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
           if (spotifyTrackStartMs > 0) {
             EmbedController.seek(spotifyTrackStartMs / 1000);
           }
+          // If a play request was made before we were ready, execute it now
+          if (pendingPlayRef.current) {
+            EmbedController.play();
+            setIsMusicExpanded(true);
+            startMinimizeTimer();
+            pendingPlayRef.current = false;
+          }
         });
       });
     };
@@ -136,7 +147,7 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
     return () => {
       if (minimizeTimerRef.current) clearTimeout(minimizeTimerRef.current);
     };
-  }, [spotifyTrackId, spotifyTrackStartMs, spotifyTrackDurationMs, spotifyLoop]);
+  }, [spotifyTrackId, spotifyTrackStartMs, spotifyTrackDurationMs, spotifyLoop, startMinimizeTimer]);
 
   // Fetch track metadata for the button icon
   useEffect(() => {
@@ -172,11 +183,11 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
       <audio ref={audioRef} src={voiceNoteUrl || undefined} className="hidden" onEnded={() => setIsPlayingVoice(false)} />
 
       {/* 
-        CRITICAL: The Spotify container must ALWAYS be in the DOM (even if hidden) 
-        so the API can initialize BEFORE the reveal click.
+        CRITICAL: The Spotify container is always in the DOM but hidden until revealed.
+        This allows the API to initialize properly before the reveal click.
       */}
       {spotifyTrackId && (
-        <div className={cn("relative flex flex-col items-center transition-opacity duration-500", !isRevealed && "opacity-0 pointer-events-none")}>
+        <div className={cn("relative flex flex-col items-center transition-all duration-700", !isRevealed ? "opacity-0 scale-50 pointer-events-none" : "opacity-100 scale-100")}>
           <button 
             className={cn(
               "relative w-10 h-10 sm:w-14 sm:h-14 rounded-full overflow-hidden shadow-2xl border-2 transition-all duration-300 bg-black shrink-0 flex items-center justify-center cursor-pointer",

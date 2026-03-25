@@ -203,7 +203,7 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
               {error || "Surprise not found."}
               <div className="mt-8 space-y-3">
                 <button onClick={() => window.location.reload()} className="w-full bg-primary text-primary-foreground py-3 sm:py-4 rounded-full font-bold shadow-lg active:scale-95 transition-all">Refresh Page</button>
-                <a href="/view" className="block"><button className="w-full border-2 border-primary text-primary py-3 sm:py-4 rounded-full font-bold active:scale-95 transition-all">Try Another Code</button></a>
+                <a href="/surprise" className="block"><button className="w-full border-2 border-primary text-primary py-3 sm:py-4 rounded-full font-bold active:scale-95 transition-all">Try Another Code</button></a>
               </div>
             </AlertDescription>
           </Alert>

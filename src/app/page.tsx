@@ -212,7 +212,7 @@ export default function Home() {
           </Dialog>
         )}
         
-        <Link href="/view">
+        <Link href="/surprise">
           <Button variant="outline" size="lg" className="rounded-full px-10 py-8 text-xl font-bold shadow-lg hover:scale-105 transition-all bg-white hover:bg-slate-50 border-none text-slate-900">
             <Gift className="mr-3 h-6 w-6" />
             Open a Surprise

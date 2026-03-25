@@ -34,8 +34,8 @@ export const Header: React.FC<HeaderProps> = ({
           <div 
             className="absolute inset-0 z-10 w-full h-full"
             style={{
-              maskImage: 'radial-gradient(circle, black 30%, transparent 75%)',
-              WebkitMaskImage: 'radial-gradient(circle, black 30%, transparent 75%)'
+              maskImage: 'radial-gradient(ellipse 60% 80% at 50% 50%, black 0%, transparent 100%)',
+              WebkitMaskImage: 'radial-gradient(ellipse 60% 80% at 50% 50%, black 0%, transparent 100%)'
             }}
           >
             <iframe
@@ -44,8 +44,21 @@ export const Header: React.FC<HeaderProps> = ({
               allow="autoplay; encrypted-media"
             />
           </div>
-          {/* Subtle Color Overlay */}
-          <div className="absolute inset-0 z-20 bg-background/20" />
+          
+          {/* Edge Fading Overlays - Fades all 4 edges into the background color */}
+          <div className="absolute inset-0 z-20 pointer-events-none">
+            {/* Top Fade */}
+            <div className="absolute top-0 left-0 right-0 h-1/4 bg-gradient-to-b from-background to-transparent" />
+            {/* Bottom Fade */}
+            <div className="absolute bottom-0 left-0 right-0 h-1/4 bg-gradient-to-t from-background to-transparent" />
+            {/* Left Fade */}
+            <div className="absolute top-0 bottom-0 left-0 w-1/4 bg-gradient-to-r from-background to-transparent" />
+            {/* Right Fade */}
+            <div className="absolute top-0 bottom-0 right-0 w-1/4 bg-gradient-to-l from-background to-transparent" />
+          </div>
+
+          {/* Subtle Overall Tint */}
+          <div className="absolute inset-0 z-20 bg-background/10" />
         </div>
       )}
 

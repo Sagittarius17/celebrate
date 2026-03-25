@@ -252,10 +252,13 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         onToggleFireworks={() => setShowFireworks(prev => !prev)}
         voiceNoteUrl={page?.voiceNoteDataUri}
         spotifyTrackId={page?.spotifyTrackId}
+        youtubeVideoId={page?.youtubeVideoId}
         spotifyTrackStartMs={page?.spotifyTrackStartMs}
         spotifyTrackDurationMs={page?.spotifyTrackDurationMs}
         spotifyLoop={page?.spotifyLoop}
         isRevealed={isRevealed}
+        customTrackUrl={page?.customTrackDataUri}
+        soundtrackSource={page?.soundtrackSource}
       />
 
       <div className={cn("transition-opacity duration-1000", isRevealed ? "opacity-100" : "opacity-0 pointer-events-none")}>
@@ -263,6 +266,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
           title={page?.title}
           occasion={page?.occasion}
           theme={theme}
+          youtubeVideoId={page?.youtubeVideoId}
         />
 
         <section id="journey" ref={journeyRef} className="pt-8 pb-0 sm:pt-16 relative z-10">
@@ -362,4 +366,3 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
     </main>
   );
 }
-

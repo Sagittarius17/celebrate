@@ -8,12 +8,14 @@ interface HeaderProps {
   title?: string;
   occasion?: string;
   theme?: 'light' | 'candle-light';
+  youtubeVideoId?: string;
 }
 
 export const Header: React.FC<HeaderProps> = ({ 
   title, 
   occasion = "Celebration", 
-  theme
+  theme,
+  youtubeVideoId
 }) => {
   const isCandle = theme === 'candle-light';
 
@@ -25,7 +27,28 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="relative min-h-screen flex flex-col z-10 overflow-visible">
+    <header className="relative min-h-screen flex flex-col z-10 overflow-hidden">
+      {/* Background Video for YouTube Tracks (Light Mode Only) */}
+      {!isCandle && youtubeVideoId && (
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none transition-opacity duration-1000 opacity-40">
+          <div 
+            className="absolute inset-0 z-10 w-full h-full"
+            style={{
+              maskImage: 'radial-gradient(circle, black 30%, transparent 75%)',
+              WebkitMaskImage: 'radial-gradient(circle, black 30%, transparent 75%)'
+            }}
+          >
+            <iframe
+              className="w-[100vw] h-[56.25vw] min-h-[100vh] min-w-[177.77vh] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-110"
+              src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&mute=1&loop=1&playlist=${youtubeVideoId}&controls=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&fs=0`}
+              allow="autoplay; encrypted-media"
+            />
+          </div>
+          {/* Subtle Color Overlay */}
+          <div className="absolute inset-0 z-20 bg-background/20" />
+        </div>
+      )}
+
       {/* Main Centered Content */}
       <div className="flex-1 flex flex-col items-center justify-center text-center px-4 overflow-hidden -mt-20">
         <div className="relative z-30 animate-fade-in space-y-8 flex flex-col items-center">

@@ -247,6 +247,7 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
           title={page?.title} 
           occasion={page?.occasion} 
           theme={theme} 
+          youtubeVideoId={page?.youtubeVideoId}
         />
         
         <section id="journey" ref={journeyRef} className="pt-8 pb-0 sm:pt-16 relative z-10">

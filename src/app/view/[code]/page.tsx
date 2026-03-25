@@ -248,6 +248,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
         onToggleFireworks={() => setShowFireworks(prev => !prev)}
         voiceNoteUrl={page?.voiceNoteDataUri}
         spotifyTrackId={page?.spotifyTrackId}
+        spotifyTrackStartMs={page?.spotifyTrackStartMs}
         isRevealed={isRevealed}
       />
 

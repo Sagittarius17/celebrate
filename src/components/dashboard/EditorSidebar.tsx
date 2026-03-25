@@ -14,28 +14,23 @@ import {
   SelectValue 
 } from '@/components/ui/select';
 import { 
-  LayoutTemplate, 
-  Quote, 
   Save, 
   Music, 
   Mic, 
   Square, 
   Play, 
   Trash2, 
-  Clock, 
   Music2, 
   Settings2,
-  ArrowLeft,
   Type,
-  Grid,
   Circle,
-  Square as SquareIcon
+  Square as SquareIcon,
+  Timer
 } from 'lucide-react';
 import { DocumentReference, Firestore, doc } from 'firebase/firestore';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
-import Link from 'next/link';
 import {
   Sidebar,
   SidebarContent,
@@ -43,7 +38,6 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarGroupContent,
-  SidebarSeparator,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { SelectionContext } from '@/app/dashboard/[id]/page';
@@ -55,6 +49,13 @@ const FONTS = [
 ];
 
 const LAYOUTS = ["Timeline", "Carousel", "Grid", "Collage"];
+
+const DURATIONS = [
+  { label: "15 Seconds", value: 15000 },
+  { label: "30 Seconds", value: 30000 },
+  { label: "1 Minute", value: 60000 },
+  { label: "Full Song", value: 300000 }
+];
 
 interface EditorSidebarProps {
   page: any;
@@ -321,6 +322,40 @@ export function EditorSidebar({
               />
               <TrackMetadataDisplay trackId={page.spotifyTrackId || ''} />
             </div>
+
+            {page.spotifyTrackId && (
+              <div className="space-y-3 p-3 bg-muted/20 rounded-xl border border-dashed border-black/10 dark:border-[#FFD700]/10">
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] font-bold text-black/60 dark:text-[#FFD700]/60 uppercase tracking-tight flex items-center gap-1.5">
+                    <Music className="h-3 w-3" /> Clip Duration
+                  </Label>
+                  <Select 
+                    value={(page.spotifyTrackDurationMs || 30000).toString()} 
+                    onValueChange={(val) => handleUpdatePage({ spotifyTrackDurationMs: parseInt(val) })}
+                  >
+                    <SelectTrigger className="h-8 text-xs rounded-lg"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {DURATIONS.map(d => <SelectItem key={d.value} value={d.value.toString()} className="text-xs">{d.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] font-bold text-black/60 dark:text-[#FFD700]/60 uppercase tracking-tight flex items-center gap-1.5">
+                    <Timer className="h-3 w-3" /> Start At (seconds)
+                  </Label>
+                  <Input 
+                    type="number"
+                    min="0"
+                    placeholder="e.g. 45"
+                    className="h-8 text-xs rounded-lg"
+                    value={Math.floor((page.spotifyTrackStartMs || 0) / 1000)}
+                    onChange={(e) => handleUpdatePage({ spotifyTrackStartMs: (parseInt(e.target.value) || 0) * 1000 })}
+                  />
+                  <p className="text-[9px] text-muted-foreground italic leading-tight">Pick the best part of the song!</p>
+                </div>
+              </div>
+            )}
           </SidebarGroupContent>
         </SidebarGroup>
 

@@ -14,6 +14,7 @@ interface CelebrationControlsProps {
   onToggleFireworks?: () => void;
   voiceNoteUrl?: string | null;
   spotifyTrackId?: string;
+  spotifyTrackStartMs?: number;
   isRevealed?: boolean;
 }
 
@@ -24,6 +25,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
   onToggleFireworks,
   voiceNoteUrl,
   spotifyTrackId,
+  spotifyTrackStartMs = 0,
   isRevealed = false
 }) => {
   const isCandle = theme === 'candle-light';
@@ -128,6 +130,12 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
 
   const standardButtonStyle = "rounded-full w-10 h-10 sm:w-14 sm:h-14 p-0 backdrop-blur-md border-none transition-all hover:scale-105 active:scale-95 shadow-2xl flex items-center justify-center shrink-0";
 
+  // Convert start time to seconds for Spotify t parameter
+  const startSeconds = Math.floor(spotifyTrackStartMs / 1000);
+  const spotifyEmbedUrl = spotifyTrackId 
+    ? `https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0&autoplay=1${startSeconds > 0 ? `&t=${startSeconds}` : ''}`
+    : '';
+
   return (
     <div 
       className="fixed top-4 right-4 sm:top-10 sm:right-10 z-[10000] flex flex-col items-center gap-2 pointer-events-auto"
@@ -163,7 +171,7 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
           )}>
             <div className="w-full h-full bg-black/80 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md border border-white/10">
               <iframe 
-                src={`https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0&autoplay=1`} 
+                src={spotifyEmbedUrl} 
                 width="100%" 
                 height="80" 
                 frameBorder="0" 

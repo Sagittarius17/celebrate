@@ -83,14 +83,18 @@
         },
         "spotifyTrackDurationMs": {
           "type": "number",
-          "description": "The duration of the selected Spotify track in milliseconds."
+          "description": "The duration of the selected Spotify clip in milliseconds."
+        },
+        "spotifyTrackStartMs": {
+          "type": "number",
+          "description": "The start offset of the Spotify clip in milliseconds."
         },
         "voiceNoteDataUri": {
           "type": "string",
           "description": "A Base64 data URI of a recorded voice message."
         },
         "voiceNoteDuration": {
-          "number": "number",
+          "type": "number",
           "description": "The duration of the voice note in seconds."
         },
         "ownerId": {

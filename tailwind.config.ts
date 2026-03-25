@@ -103,6 +103,7 @@ export default {
         'fade-in': 'fade-in 0.5s ease-out forwards',
         'float-up': 'float-up 4s ease-in-out infinite',
         'heartbeat': 'heartbeat 5s ease-in-out infinite',
+        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
     },
   },

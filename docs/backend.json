@@ -7,275 +7,40 @@
       "type": "object",
       "description": "Information about a registered user of the application.",
       "properties": {
-        "uid": {
-          "type": "string",
-          "description": "The unique identifier for the user (Firebase Auth UID)."
-        },
-        "email": {
-          "type": "string",
-          "description": "The user's registered email address."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp when the user account was created.",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "Timestamp when the user profile was last updated.",
-          "format": "date-time"
-        }
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
       },
-      "required": [
-        "uid",
-        "email",
-        "createdAt"
-      ]
+      "required": ["uid", "email", "createdAt"]
     },
     "CelebrationPage": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "CelebrationPage",
       "type": "object",
-      "description": "Represents a single interactive celebration landing page, containing all events and media.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the CelebrationPage entity."
-        },
-        "title": {
-          "type": "string",
-          "description": "The main title displayed prominently on the page (e.g., 'Happy Anniversary!')."
-        },
-        "recipientName": {
-          "type": "string",
-          "description": "The full name of the person or group being celebrated."
-        },
-        "creatorName": {
-          "type": "string",
-          "description": "The name of the user who created this celebration page."
-        },
-        "occasion": {
-          "type": "string",
-          "description": "The type of celebration (e.g., Birthday, Anniversary, Graduation, Wedding)."
-        },
-        "accessCode": {
-          "type": "string",
-          "description": "A secret code required to securely access this particular page."
-        },
-        "finalQuote": {
-          "type": "string",
-          "description": "A final message or quote shown at the end of the timeline."
-        },
-        "layout": {
-          "type": "string",
-          "description": "The visual layout style for the memories.",
-          "enum": ["Timeline", "Carousel", "Grid", "Collage"],
-          "default": "Timeline"
-        },
-        "font": {
-          "type": "string",
-          "description": "The font family selected for the celebration page.",
-          "enum": ["Playfair Display", "PT Sans", "Montserrat", "Lora", "Quicksand", "Merriweather", "Oswald", "Dancing Script", "Caveat", "Pacifico", "Lobster", "Cinzel", "Comfortaa", "Great Vibes", "Sacramento"]
-        },
-        "spotifyTrackId": {
-          "type": "string",
-          "description": "The Spotify Track ID to play on the page."
-        },
-        "spotifyTrackDurationMs": {
-          "type": "number",
-          "description": "The duration of the selected Spotify clip in milliseconds."
-        },
-        "spotifyTrackStartMs": {
-          "type": "number",
-          "description": "The start offset of the Spotify clip in milliseconds."
-        },
-        "spotifyLoop": {
-          "type": "boolean",
-          "description": "Whether to loop the Spotify track duration.",
-          "default": false
-        },
-        "voiceNoteDataUri": {
-          "type": "string",
-          "description": "A Base64 data URI of a recorded voice message."
-        },
-        "voiceNoteDuration": {
-          "type": "number",
-          "description": "The duration of the voice note in seconds."
-        },
-        "ownerId": {
-          "type": "string",
-          "description": "UID of the creator."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp indicating when the celebration page was initially created.",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "Timestamp indicating when the celebration page was last updated.",
-          "format": "date-time"
-        }
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "recipientName": { "type": "string" },
+        "creatorName": { "type": "string" },
+        "occasion": { "type": "string" },
+        "accessCode": { "type": "string" },
+        "finalQuote": { "type": "string" },
+        "layout": { "type": "string", "enum": ["Timeline", "Carousel", "Grid", "Collage"], "default": "Timeline" },
+        "font": { "type": "string" },
+        "soundtrackSource": { "type": "string", "enum": ["spotify", "youtube", "upload"], "default": "spotify" },
+        "spotifyTrackId": { "type": "string" },
+        "youtubeVideoId": { "type": "string" },
+        "customTrackDataUri": { "type": "string" },
+        "spotifyTrackDurationMs": { "type": "number", "default": 180000 },
+        "spotifyTrackStartMs": { "type": "number", "default": 0 },
+        "spotifyLoop": { "boolean": { "type": "boolean", "default": false } },
+        "voiceNoteDataUri": { "type": "string" },
+        "voiceNoteDuration": { "type": "number" },
+        "ownerId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
       },
-      "required": [
-        "id",
-        "title",
-        "recipientName",
-        "creatorName",
-        "occasion",
-        "accessCode",
-        "ownerId",
-        "createdAt"
-      ]
-    },
-    "BirthdayEvent": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "BirthdayEvent",
-      "type": "object",
-      "description": "Represents a single chronological event or memory to be displayed as an interactive card on the timeline.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the BirthdayEvent entity."
-        },
-        "celebrationPageId": {
-          "type": "string",
-          "description": "Reference to the CelebrationPage this event belongs to."
-        },
-        "eventDate": {
-          "type": "string",
-          "description": "The specific date associated with this event.",
-          "format": "date"
-        },
-        "showDate": {
-          "type": "boolean",
-          "description": "Whether or not to display the date badge on the card.",
-          "default": true
-        },
-        "title": {
-          "type": "string",
-          "description": "A concise title for the event card."
-        },
-        "titleFont": {
-          "type": "string",
-          "description": "Custom font for this memory's title."
-        },
-        "message": {
-          "type": "string",
-          "description": "The celebratory message or a memorable quote associated with this event."
-        },
-        "messageFont": {
-          "type": "string",
-          "description": "Custom font for this memory's message."
-        },
-        "cornerStyle": {
-          "type": "string",
-          "description": "The corner style of the card frame.",
-          "enum": ["rounded", "angled"],
-          "default": "rounded"
-        },
-        "order": {
-          "type": "number",
-          "description": "An integer representing the display order."
-        },
-        "imageUrl": {
-          "type": "string",
-          "description": "URL for the image associated with this event."
-        },
-        "videoUrl": {
-          "type": "string",
-          "description": "Base64 data URI for a short video clip associated with this event."
-        },
-        "imageZoom": {
-          "type": "number",
-          "description": "Zoom scale for the image (default 1.0).",
-          "default": 1
-        },
-        "imageX": {
-          "type": "number",
-          "description": "X-axis pan offset in percentage.",
-          "default": 0
-        },
-        "imageY": {
-          "type": "number",
-          "description": "Y-axis pan offset in percentage.",
-          "default": 0
-        },
-        "mediaRotation": {
-          "type": "number",
-          "description": "Rotation of the image/video within the frame in degrees.",
-          "default": 0
-        },
-        "canvasX": {
-          "type": "number",
-          "description": "X-coordinate on the collage canvas (0-100).",
-          "default": 10
-        },
-        "canvasY": {
-          "type": "number",
-          "description": "Y-coordinate on the collage canvas (0-100).",
-          "default": 10
-        },
-        "canvasScale": {
-          "type": "number",
-          "description": "Scaling of the photo on the collage canvas.",
-          "default": 1
-        },
-        "canvasRotation": {
-          "type": "number",
-          "description": "Rotation of the photo on the collage canvas in degrees.",
-          "default": 0
-        },
-        "canvasZIndex": {
-          "type": "number",
-          "description": "Stacking order on the collage canvas.",
-          "default": 1
-        },
-        "ownerId": {
-          "type": "string",
-          "description": "UID of the creator."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp indicating when this event record was created.",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "Timestamp indicating when this event record was last updated.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "celebrationPageId",
-        "eventDate",
-        "title",
-        "message",
-        "order",
-        "ownerId",
-        "createdAt"
-      ]
-    }
-  },
-  "auth": {
-    "providers": [
-      "password",
-      "anonymous"
-    ]
-  },
-  "firestore": {
-    "/users/{userId}": {
-      "schema": { "$ref": "#/backend/entities/UserProfile" },
-      "description": "User profile documents storing basic account information."
-    },
-    "/celebrationPages/{celebrationPageId}": {
-      "schema": { "$ref": "#/backend/entities/CelebrationPage" },
-      "description": "Publicly accessible celebration pages (via code)."
-    },
-    "/celebrationPages/{celebrationPageId}/birthdayEvents/{birthdayEventId}": {
-      "schema": { "$ref": "#/backend/entities/BirthdayEvent" },
-      "description": "Events within a celebration page."
+      "required": ["id", "title", "recipientName", "creatorName", "occasion", "accessCode", "ownerId", "createdAt"]
     }
   }
 }

@@ -30,7 +30,9 @@ import {
   Repeat,
   Upload,
   CloudUpload,
-  FileAudio
+  FileAudio,
+  Youtube,
+  Search
 } from 'lucide-react';
 import { DocumentReference, Firestore, doc } from 'firebase/firestore';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -47,6 +49,8 @@ import {
 } from '@/components/ui/sidebar';
 import { SelectionContext } from '@/app/dashboard/[id]/page';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SpotifySearch } from './SpotifySearch';
+import { YouTubeSearch } from './YouTubeSearch';
 
 const FONTS = [
   "Playfair Display", "PT Sans", "Montserrat", "Lora", "Quicksand", 
@@ -84,35 +88,49 @@ const extractSpotifyTrackId = (input: string) => {
   return input.trim();
 };
 
-function TrackMetadataDisplay({ trackId }: { trackId: string }) {
+const extractYouTubeVideoId = (input: string) => {
+  if (!input) return '';
+  const urlMatch = input.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&]{11})/);
+  if (urlMatch && urlMatch[1]) return urlMatch[1];
+  return input.trim();
+};
+
+function SoundtrackMetadataDisplay({ trackId, source }: { trackId: string; source: string }) {
   const [metadata, setMetadata] = useState<{ title: string; artist: string; imageUrl: string } | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (trackId && trackId.length === 22) {
+    if (!trackId) {
       setMetadata(null);
+      return;
+    }
+
+    if (source === 'spotify' && trackId.length === 22) {
       setLoading(true);
       fetch(`https://open.spotify.com/oembed?url=spotify:track:${trackId}`)
         .then(r => r.json())
         .then(data => {
-          setMetadata({
-            title: data.title,
-            artist: data.author_name,
-            imageUrl: data.thumbnail_url
-          });
+          setMetadata({ title: data.title, artist: data.author_name, imageUrl: data.thumbnail_url });
         })
         .catch(() => setMetadata(null))
         .finally(() => setLoading(false));
-    } else {
-      setMetadata(null);
+    } else if (source === 'youtube') {
+      setLoading(true);
+      fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${trackId}&format=json`)
+        .then(r => r.json())
+        .then(data => {
+          setMetadata({ title: data.title, artist: data.author_name, imageUrl: data.thumbnail_url });
+        })
+        .catch(() => setMetadata(null))
+        .finally(() => setLoading(false));
     }
-  }, [trackId]);
+  }, [trackId, source]);
 
-  if (loading) return <div className="flex items-center gap-2 mt-1 text-xs text-black dark:text-[#FFD700]"><Music2 className="h-3 w-3 animate-pulse" /> Loading info...</div>;
+  if (loading) return <div className="flex items-center gap-2 mt-1 text-xs"><Music2 className="h-3 w-3 animate-pulse" /> Loading info...</div>;
   if (!metadata) return null;
 
   return (
-    <div className="flex items-center gap-3 mt-4 p-2 bg-muted/30 rounded-xl border border-dashed border-black/20 dark:border-[#FFD700]/20 animate-in fade-in slide-in-from-top-1">
+    <div className="flex items-center gap-3 mt-4 p-2 bg-muted/30 rounded-xl border border-dashed animate-in fade-in slide-in-from-top-1">
       <div className="relative h-10 w-10 shrink-0 rounded-lg overflow-hidden bg-muted">
         <Image src={metadata.imageUrl} alt="" fill className="object-cover" />
       </div>
@@ -342,22 +360,44 @@ export function EditorSidebar({
           <SidebarGroupContent className="px-2">
             <div className="p-4 bg-black/5 dark:bg-[#FFD700]/5 rounded-[2rem] border-2 border-dashed border-black/20 dark:border-[#FFD700]/20 space-y-4">
               <Tabs value={soundtrackSource} onValueChange={(val) => handleUpdatePage({ soundtrackSource: val })} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 rounded-full h-9 p-1 bg-muted/50">
-                  <TabsTrigger value="spotify" className="rounded-full text-[10px] uppercase font-bold tracking-widest">Spotify</TabsTrigger>
-                  <TabsTrigger value="upload" className="rounded-full text-[10px] uppercase font-bold tracking-widest">Upload</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-3 rounded-full h-10 p-1 bg-muted/50">
+                  <TabsTrigger value="spotify" className="rounded-full text-[9px] uppercase font-bold tracking-tight">Spotify</TabsTrigger>
+                  <TabsTrigger value="youtube" className="rounded-full text-[9px] uppercase font-bold tracking-tight">YT Music</TabsTrigger>
+                  <TabsTrigger value="upload" className="rounded-full text-[9px] uppercase font-bold tracking-tight">Upload</TabsTrigger>
                 </TabsList>
               </Tabs>
 
               {soundtrackSource === 'spotify' ? (
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-bold opacity-60 uppercase tracking-tight px-1">Spotify Track ID or URL</Label>
+                  <div className="flex items-center justify-between px-1">
+                    <Label className="text-[10px] font-bold opacity-60 uppercase tracking-tight">Spotify Track</Label>
+                    <SpotifySearch onSelect={(track) => handleUpdatePage({ spotifyTrackId: track.trackId })} trigger={
+                      <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full"><Search className="h-3 w-3" /></Button>
+                    } />
+                  </div>
                   <Input 
                     placeholder="Paste Link or ID here" 
-                    className="rounded-full h-11 px-4 bg-background border border-input focus-visible:ring-1 text-xs transition-all shadow-none"
+                    className="rounded-full h-10 px-4 bg-background border border-input text-xs transition-all"
                     value={page.spotifyTrackId || ''} 
                     onChange={(e) => handleUpdatePage({ spotifyTrackId: extractSpotifyTrackId(e.target.value) })} 
                   />
-                  <TrackMetadataDisplay trackId={page.spotifyTrackId || ''} />
+                  <SoundtrackMetadataDisplay trackId={page.spotifyTrackId || ''} source="spotify" />
+                </div>
+              ) : soundtrackSource === 'youtube' ? (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between px-1">
+                    <Label className="text-[10px] font-bold opacity-60 uppercase tracking-tight">YouTube Track</Label>
+                    <YouTubeSearch onSelect={(track) => handleUpdatePage({ youtubeVideoId: track.videoId })} trigger={
+                      <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full"><Search className="h-3 w-3 text-red-500" /></Button>
+                    } />
+                  </div>
+                  <Input 
+                    placeholder="Paste Link or Video ID" 
+                    className="rounded-full h-10 px-4 bg-background border border-input text-xs transition-all"
+                    value={page.youtubeVideoId || ''} 
+                    onChange={(e) => handleUpdatePage({ youtubeVideoId: extractYouTubeVideoId(e.target.value) })} 
+                  />
+                  <SoundtrackMetadataDisplay trackId={page.youtubeVideoId || ''} source="youtube" />
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -366,14 +406,14 @@ export function EditorSidebar({
                   <Button 
                     onClick={() => trackUploadRef.current?.click()}
                     variant="outline" 
-                    className="w-full h-11 rounded-full border-dashed border-black/30 dark:border-[#FFD700]/30 text-xs gap-2"
+                    className="w-full h-10 rounded-full border-dashed border-black/30 dark:border-[#FFD700]/30 text-xs gap-2"
                     disabled={isUploadingTrack}
                   >
                     {isUploadingTrack ? <CloudUpload className="h-4 w-4 animate-bounce" /> : <Upload className="h-4 w-4" />}
                     {page.customTrackDataUri ? "Change Audio" : "Choose MP3/WAV"}
                   </Button>
                   {page.customTrackDataUri && (
-                    <div className="flex items-center gap-2 p-2 bg-background/50 rounded-xl border border-dashed border-green-500/20 text-green-600 dark:text-green-400">
+                    <div className="flex items-center gap-2 p-2 bg-background/50 rounded-xl border border-dashed border-green-500/20 text-green-600">
                       <FileAudio className="h-4 w-4 shrink-0" />
                       <span className="text-[10px] font-bold uppercase truncate flex-1">Audio Ready</span>
                       <Button variant="ghost" size="icon" onClick={() => handleUpdatePage({ customTrackDataUri: null })} className="h-6 w-6 rounded-full">
@@ -393,7 +433,7 @@ export function EditorSidebar({
                     value={(page.spotifyTrackDurationMs || 30000).toString()} 
                     onValueChange={(val) => handleUpdatePage({ spotifyTrackDurationMs: parseInt(val) })}
                   >
-                    <SelectTrigger className="h-10 text-xs rounded-full px-4"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="h-9 text-xs rounded-full px-4"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {DURATIONS.map(d => <SelectItem key={d.value} value={d.value.toString()} className="text-xs">{d.label}</SelectItem>)}
                     </SelectContent>
@@ -408,7 +448,7 @@ export function EditorSidebar({
                     type="number"
                     min="0"
                     placeholder="e.g. 0"
-                    className="h-10 text-xs rounded-full px-4"
+                    className="h-9 text-xs rounded-full px-4"
                     value={Math.floor((page.spotifyTrackStartMs || 0) / 1000)}
                     onChange={(e) => handleUpdatePage({ spotifyTrackStartMs: (parseInt(e.target.value) || 0) * 1000 })}
                   />

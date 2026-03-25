@@ -12,12 +12,12 @@ import { CollageLayout } from '@/components/birthday/CollageLayout';
 import { FinalMessage } from '@/components/birthday/FinalMessage';
 import { ButterflySwarm } from '@/components/birthday/ButterflySwarm';
 import { FireworkEffect } from '@/components/birthday/FireworkEffect';
-import { CelebrationControls } from '@/components/birthday/CelebrationControls';
+import { CelebrationControls, CelebrationControlsHandle } from '@/components/birthday/CelebrationControls';
 import { Gift, PackageOpen, Loader2, Heart, Sparkles } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 
 const DEFAULT_QUOTES: Record<string, string> = {
   "Birthday": "To many more years of joy, laughter, and beautiful memories! Happy Birthday!",
@@ -45,6 +45,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
   
   const journeyRef = useRef<HTMLDivElement>(null);
   const endTriggerRef = useRef<HTMLDivElement>(null);
+  const controlsRef = useRef<CelebrationControlsHandle>(null);
 
   useEffect(() => {
     const findPage = async () => {
@@ -180,9 +181,14 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
 
   const handleRevealClick = () => {
     if (isOpening) return;
-    // CRITICAL: Set states instantly to preserve user gesture context for autoplay
+    
+    // CRITICAL: Set states and trigger sound synchronously
     setIsOpening(true);
     setIsRevealed(true);
+
+    if (controlsRef.current) {
+      controlsRef.current.playMusic();
+    }
   };
 
   const handleToggleTheme = () => {
@@ -239,6 +245,7 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
       <FireworkEffect enabled={showFireworks} />
       
       <CelebrationControls 
+        ref={controlsRef}
         theme={theme}
         onToggleTheme={handleToggleTheme}
         showFireworks={showFireworks}
@@ -355,3 +362,4 @@ export default function SurpriseView({ params }: { params: Promise<{ code: strin
     </main>
   );
 }
+

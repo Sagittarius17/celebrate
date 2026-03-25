@@ -12,7 +12,7 @@ import { CollageLayout } from '@/components/birthday/CollageLayout';
 import { FinalMessage } from '@/components/birthday/FinalMessage';
 import { ButterflySwarm } from '@/components/birthday/ButterflySwarm';
 import { FireworkEffect } from '@/components/birthday/FireworkEffect';
-import { CelebrationControls } from '@/components/birthday/CelebrationControls';
+import { CelebrationControls, CelebrationControlsHandle } from '@/components/birthday/CelebrationControls';
 import { Gift, PackageOpen, Loader2, Heart, Sparkles } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -45,6 +45,7 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
   
   const journeyRef = useRef<HTMLDivElement>(null);
   const endTriggerRef = useRef<HTMLDivElement>(null);
+  const controlsRef = useRef<CelebrationControlsHandle>(null);
 
   useEffect(() => {
     const findPage = async () => {
@@ -163,9 +164,15 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
 
   const handleRevealClick = () => {
     if (isOpening) return;
-    // CRITICAL: Set states instantly to preserve user gesture context for autoplay
+    
+    // CRITICAL: Trigger the sound immediately and synchronously in the click handler
     setIsOpening(true);
     setIsRevealed(true);
+    
+    // Using the ref to call the Spotify API play() synchronously
+    if (controlsRef.current) {
+      controlsRef.current.playMusic();
+    }
   };
 
   const handleToggleTheme = () => {
@@ -222,6 +229,7 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
       <FireworkEffect enabled={showFireworks} />
 
       <CelebrationControls 
+        ref={controlsRef}
         theme={theme}
         onToggleTheme={handleToggleTheme}
         showFireworks={showFireworks}
@@ -338,3 +346,4 @@ export default function SurpriseView({ params }: { params: Promise<{ name: strin
     </main>
   );
 }
+

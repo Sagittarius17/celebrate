@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Sun, Flame, Sparkles, Play, Pause, Music } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -20,7 +20,11 @@ interface CelebrationControlsProps {
   isRevealed?: boolean;
 }
 
-export const CelebrationControls: React.FC<CelebrationControlsProps> = ({ 
+export interface CelebrationControlsHandle {
+  playMusic: () => void;
+}
+
+export const CelebrationControls = forwardRef<CelebrationControlsHandle, CelebrationControlsProps>(({ 
   theme, 
   onToggleTheme,
   showFireworks,
@@ -31,18 +35,28 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
   spotifyTrackDurationMs = 300000,
   spotifyLoop = false,
   isRevealed = false
-}) => {
+}, ref) => {
   const isCandle = theme === 'candle-light';
   const [isPlayingVoice, setIsPlayingVoice] = useState(false);
   const [isMusicExpanded, setIsMusicExpanded] = useState(false);
   const [trackImageUrl, setTrackImageUrl] = useState<string | null>(null);
   const [isFading, setIsFading] = useState(false);
-  const [reloader, setReloader] = useState(0); 
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const embedContainerRef = useRef<HTMLDivElement>(null);
+  const controllerRef = useRef<any>(null);
   const minimizeTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const musicDurationTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const fadeTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Expose the play function to the parent for synchronous triggering
+  useImperativeHandle(ref, () => ({
+    playMusic: () => {
+      if (controllerRef.current) {
+        controllerRef.current.play();
+        setIsMusicExpanded(true);
+        startMinimizeTimer();
+      }
+    }
+  }));
 
   const startMinimizeTimer = () => {
     if (minimizeTimerRef.current) clearTimeout(minimizeTimerRef.current);
@@ -55,51 +69,67 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
     if (minimizeTimerRef.current) clearTimeout(minimizeTimerRef.current);
   };
 
+  // Load Spotify IFrame API
   useEffect(() => {
-    if (isRevealed && spotifyTrackId) {
-      setIsMusicExpanded(true);
-      startMinimizeTimer();
-    }
-  }, [isRevealed, spotifyTrackId]);
+    if (!spotifyTrackId || typeof window === 'undefined') return;
 
-  useEffect(() => {
-    if (isRevealed && spotifyTrackId) {
-      setIsFading(false);
-      
-      const clearTimers = () => {
-        if (musicDurationTimerRef.current) clearTimeout(musicDurationTimerRef.current);
-        if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
+    const script = document.createElement('script');
+    script.src = "https://open.spotify.com/embed/iframe-api/v1";
+    script.async = true;
+    document.body.appendChild(script);
+
+    window.onSpotifyIframeApiReady = (IFrameAPI: any) => {
+      const options = {
+        uri: `spotify:track:${spotifyTrackId}`,
+        width: '100%',
+        height: '80',
       };
-
-      clearTimers();
-
-      // Set up the duration limit and looping
-      if (spotifyTrackDurationMs < 300000) {
-        // Visual fade out 3 seconds before the end
-        const fadeDelay = Math.max(0, spotifyTrackDurationMs - 3000);
-        fadeTimerRef.current = setTimeout(() => {
-          setIsFading(true);
-        }, fadeDelay);
-
-        // Reset or loop when duration is reached
-        musicDurationTimerRef.current = setTimeout(() => {
-          if (spotifyLoop) {
-            setReloader(prev => prev + 1);
-            setIsFading(false);
-          } else {
-            // If not looping, we just let it be or the reloader could reset to a "stopped" state if needed
-            // For now, we allow looping to be the primary driver of reloads
+      
+      IFrameAPI.createController(embedContainerRef.current, options, (EmbedController: any) => {
+        controllerRef.current = EmbedController;
+        
+        // Listen for playback updates to handle duration and looping
+        EmbedController.addListener('playback_update', (e: any) => {
+          const { position, duration, isPaused } = e.data;
+          
+          // Calculate how far we are into the "clip"
+          const startMs = spotifyTrackStartMs;
+          const endMs = startMs + spotifyTrackDurationMs;
+          
+          // Handle Looping and Duration
+          if (position >= endMs && !isPaused) {
+            if (spotifyLoop) {
+              EmbedController.seek(startMs / 1000);
+            } else {
+              EmbedController.pause();
+            }
           }
-        }, spotifyTrackDurationMs);
-      }
-    }
-    
-    return () => {
-      if (musicDurationTimerRef.current) clearTimeout(musicDurationTimerRef.current);
-      if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
-    };
-  }, [isRevealed, spotifyTrackId, spotifyTrackDurationMs, spotifyLoop, reloader]);
 
+          // Handle Visual Fade (start fade 3s before end)
+          const fadeStartMs = endMs - 3000;
+          if (position >= fadeStartMs && position < endMs) {
+            setIsFading(true);
+          } else {
+            setIsFading(false);
+          }
+        });
+
+        // Set initial start position
+        if (spotifyTrackStartMs > 0) {
+          EmbedController.seek(spotifyTrackStartMs / 1000);
+        }
+      });
+    };
+
+    return () => {
+      if (script.parentNode) {
+        document.body.removeChild(script);
+      }
+      if (minimizeTimerRef.current) clearTimeout(minimizeTimerRef.current);
+    };
+  }, [spotifyTrackId, spotifyTrackStartMs, spotifyTrackDurationMs, spotifyLoop]);
+
+  // Fetch track metadata
   useEffect(() => {
     if (spotifyTrackId) {
       fetch(`https://open.spotify.com/oembed?url=spotify:track:${spotifyTrackId}`)
@@ -124,13 +154,6 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
 
   const standardButtonStyle = "rounded-full w-10 h-10 sm:w-14 sm:h-14 p-0 backdrop-blur-md border-none transition-all hover:scale-105 active:scale-95 shadow-2xl flex items-center justify-center shrink-0";
   
-  const startSeconds = Math.floor(spotifyTrackStartMs / 1000);
-  
-  // Clean URL construction with cache-busting reloader param
-  const spotifyEmbedUrl = (spotifyTrackId && isRevealed)
-    ? `https://open.spotify.com/embed/track/${spotifyTrackId}?utm_source=generator&theme=0&autoplay=1${startSeconds > 0 ? `&t=${startSeconds}` : ''}&loop=${reloader}`
-    : '';
-
   return (
     <div 
       className="fixed top-4 right-4 sm:top-10 sm:right-10 z-[10000] flex flex-col items-center gap-2 pointer-events-auto"
@@ -171,18 +194,9 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
           )}>
             <div className={cn(
               "w-full h-full bg-black/80 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-md border border-white/10 transition-opacity duration-1000",
-              isFading ? "opacity-0" : "opacity-100"
+              isFading ? "opacity-30" : "opacity-100"
             )}>
-              {/* IMPORTANT: We do NOT use a key here so that the iframe element is preserved during reloads, which helps maintain autoplay permissions */}
-              <iframe 
-                src={spotifyEmbedUrl} 
-                width="100%" 
-                height="80" 
-                frameBorder="0" 
-                allow="autoplay; encrypted-media" 
-                loading="eager"
-                className="rounded-none border-none"
-              />
+              <div ref={embedContainerRef} className="rounded-none border-none" />
             </div>
           </div>
         </div>
@@ -209,4 +223,6 @@ export const CelebrationControls: React.FC<CelebrationControlsProps> = ({
       )}
     </div>
   );
-};
+});
+
+CelebrationControls.displayName = 'CelebrationControls';

@@ -80,6 +80,7 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
         setIsMusicExpanded(true);
         startMinimizeTimer();
       } else if (soundtrackSource === 'spotify' && spotifyControllerRef.current) {
+        spotifyControllerRef.current.seek(spotifyTrackStartMs / 1000);
         spotifyControllerRef.current.play();
         setIsMusicExpanded(true);
         setIsPlaying(true);
@@ -105,6 +106,8 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
         const { position, isPaused } = e.data;
         const endMs = spotifyTrackStartMs + spotifyTrackDurationMs;
         setIsPlaying(!isPaused);
+        
+        // Loop or Pause logic
         if (position >= endMs && !isPaused) {
           if (spotifyLoop) {
             EmbedController.seek(spotifyTrackStartMs / 1000);
@@ -122,23 +125,8 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
   const initYouTube = useCallback(() => {
     if (!ytPlayerContainerRef.current || !youtubeVideoId || soundtrackSource !== 'youtube') return;
     
-    const onPlayerReady = (event: any) => {
-      ytPlayerRef.current = event.target;
-      event.target.mute(); // Help with autoplay
-    };
-
-    const onPlayerStateChange = (event: any) => {
-      if (event.data === (window as any).YT.PlayerState.PLAYING) {
-        setIsPlaying(true);
-        event.target.unMute();
-      } else if (event.data === (window as any).YT.PlayerState.PAUSED) {
-        setIsPlaying(false);
-      }
-    };
-
-    if (ytPlayerRef.current) {
-      ytPlayerRef.current.loadVideoById(youtubeVideoId);
-      return;
+    if (ytPlayerRef.current && typeof ytPlayerRef.current.destroy === 'function') {
+      try { ytPlayerRef.current.destroy(); } catch(e) {}
     }
 
     ytPlayerRef.current = new (window as any).YT.Player(ytPlayerContainerRef.current, {
@@ -155,14 +143,26 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
         start: Math.floor(spotifyTrackStartMs / 1000),
       },
       events: {
-        onReady: onPlayerReady,
-        onStateChange: onPlayerStateChange,
+        onReady: (event: any) => {
+          // Player ready
+        },
+        onStateChange: (event: any) => {
+          if (event.data === (window as any).YT.PlayerState.PLAYING) {
+            setIsPlaying(true);
+          } else if (event.data === (window as any).YT.PlayerState.PAUSED || event.data === (window as any).YT.PlayerState.ENDED) {
+            setIsPlaying(false);
+          }
+        },
       }
     });
+  }, [youtubeVideoId, soundtrackSource, spotifyTrackStartMs]);
 
-    // Looping and Duration monitor for YouTube
+  // Combined Monitor for YouTube and Upload
+  useEffect(() => {
     const interval = setInterval(() => {
-      if (ytPlayerRef.current && ytPlayerRef.current.getCurrentTime && isPlaying && soundtrackSource === 'youtube') {
+      if (!isPlaying) return;
+
+      if (soundtrackSource === 'youtube' && ytPlayerRef.current && typeof ytPlayerRef.current.getCurrentTime === 'function') {
         const positionMs = ytPlayerRef.current.getCurrentTime() * 1000;
         const endMs = spotifyTrackStartMs + spotifyTrackDurationMs;
         
@@ -171,14 +171,28 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
             ytPlayerRef.current.seekTo(spotifyTrackStartMs / 1000);
           } else {
             ytPlayerRef.current.pauseVideo();
+            setIsPlaying(false);
           }
         }
         setIsFading(positionMs >= endMs - 3000 && positionMs < endMs);
+      } else if (soundtrackSource === 'upload' && customTrackAudioRef.current) {
+        const pos = customTrackAudioRef.current.currentTime * 1000;
+        const end = spotifyTrackStartMs + spotifyTrackDurationMs;
+        if (pos >= end) {
+          if (spotifyLoop) {
+            customTrackAudioRef.current.currentTime = spotifyTrackStartMs / 1000;
+            customTrackAudioRef.current.play();
+          } else {
+            customTrackAudioRef.current.pause();
+            setIsPlaying(false);
+          }
+        }
+        setIsFading(pos >= end - 3000 && pos < end);
       }
-    }, 500);
+    }, 200);
 
     return () => clearInterval(interval);
-  }, [youtubeVideoId, soundtrackSource, spotifyTrackStartMs, spotifyTrackDurationMs, spotifyLoop, isPlaying]);
+  }, [soundtrackSource, isPlaying, spotifyTrackStartMs, spotifyTrackDurationMs, spotifyLoop]);
 
   useEffect(() => {
     if (soundtrackSource === 'spotify') {
@@ -220,7 +234,6 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
     }
   }, [spotifyTrackId, youtubeVideoId, soundtrackSource]);
 
-  // Audio Focus
   useEffect(() => {
     if (isPlayingVoice) {
       if (isPlaying) {
@@ -236,27 +249,6 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
       musicWasPlayingRef.current = false;
     }
   }, [isPlayingVoice, isPlaying, soundtrackSource]);
-
-  // Custom Upload Monitor
-  useEffect(() => {
-    if (soundtrackSource !== 'upload' || !customTrackAudioRef.current) return;
-    const interval = setInterval(() => {
-      if (!isPlaying) return;
-      const pos = customTrackAudioRef.current!.currentTime * 1000;
-      const end = spotifyTrackStartMs + spotifyTrackDurationMs;
-      if (pos >= end) {
-        if (spotifyLoop) {
-          customTrackAudioRef.current!.currentTime = spotifyTrackStartMs / 1000;
-          customTrackAudioRef.current!.play();
-        } else {
-          customTrackAudioRef.current!.pause();
-          setIsPlaying(false);
-        }
-      }
-      setIsFading(pos >= end - 3000 && pos < end);
-    }, 200);
-    return () => clearInterval(interval);
-  }, [soundtrackSource, isPlaying, spotifyTrackStartMs, spotifyTrackDurationMs, spotifyLoop]);
 
   const toggleMusic = () => {
     if (soundtrackSource === 'upload' && customTrackAudioRef.current) {

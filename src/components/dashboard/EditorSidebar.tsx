@@ -350,16 +350,23 @@ export function EditorSidebar({
 
         <SidebarGroup>
           <SidebarGroupLabel className="px-3 mb-2 font-bold text-black dark:text-[#FFD700] text-sm">Final Quote</SidebarGroupLabel>
-          <SidebarGroupContent className="px-3 space-y-4">
-            <Textarea 
-              placeholder="A final heart-warming message..." 
-              value={customQuote} 
-              onChange={(e) => setCustomQuote(e.target.value)} 
-              className="min-h-[120px] p-5 text-sm rounded-[2rem] bg-muted/30 border-2 border-transparent focus-visible:border-primary focus-visible:ring-0 transition-all resize-none shadow-none" 
-            />
-            <Button variant="secondary" className="w-full rounded-full h-12 text-sm text-black dark:text-[#FFD700] font-bold" onClick={onSaveQuote} disabled={isSavingQuote}>
-              {isSavingQuote ? "Saving..." : <><Save className="mr-2 h-4 w-4" /> Save Ending</>}
-            </Button>
+          <SidebarGroupContent className="px-3">
+            <div className="p-3 bg-muted/20 dark:bg-black/20 rounded-[2.5rem] border border-dashed border-black/20 dark:border-[#FFD700]/20 space-y-3 animate-in zoom-in-95 duration-300">
+              <Textarea 
+                placeholder="A final heart-warming message..." 
+                value={customQuote} 
+                onChange={(e) => setCustomQuote(e.target.value)} 
+                className="min-h-[120px] p-5 text-sm rounded-[1.5rem] bg-white dark:bg-black/40 border-none focus-visible:ring-0 transition-all resize-none shadow-none" 
+              />
+              <Button 
+                variant="secondary" 
+                className="w-full rounded-full h-12 text-sm text-black dark:text-[#FFD700] font-bold shadow-sm" 
+                onClick={onSaveQuote} 
+                disabled={isSavingQuote}
+              >
+                {isSavingQuote ? "Saving..." : <><Save className="mr-2 h-4 w-4" /> Save Quote</>}
+              </Button>
+            </div>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

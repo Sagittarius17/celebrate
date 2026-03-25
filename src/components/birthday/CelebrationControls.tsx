@@ -299,29 +299,28 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
       )}
 
       {onToggleTheme && isRevealed && (
-        <Button onClick={onToggleTheme} variant="ghost" className={cn(standardButtonStyle, "bg-white/10 text-foreground hover:bg-white/20 hover:text-foreground")}>
+        <Button onClick={onToggleTheme} className={cn(standardButtonStyle, "bg-white/10 text-foreground hover:bg-white/20 hover:text-foreground shadow-2xl")}>
           {isCandle ? <Sun className="h-10 w-10 text-yellow-400" /> : <Flame className="h-10 w-10 text-orange-500 fill-orange-500" />}
         </Button>
       )}
 
       {onToggleFireworks && isCandle && isRevealed && (
-        <Button onClick={onToggleFireworks} variant="ghost" className={cn(standardButtonStyle, showFireworks ? "bg-primary text-primary-foreground" : "bg-white/10 text-foreground hover:bg-white/20")}>
+        <Button onClick={onToggleFireworks} className={cn(standardButtonStyle, showFireworks ? "bg-primary text-primary-foreground" : "bg-white/10 text-foreground hover:bg-white/20")}>
           <Sparkles className={cn("h-10 w-10", showFireworks && "animate-pulse")} />
         </Button>
       )}
 
       {voiceNoteUrl && isRevealed && (
-        <div className="flex flex-col items-center gap-4 group">
+        <div className="flex flex-col items-center gap-6 group">
           <Button 
             onClick={() => { if (!audioRef.current) return; isPlayingVoice ? audioRef.current.pause() : audioRef.current.play(); setIsPlayingVoice(!isPlayingVoice); }} 
-            variant="ghost" 
-            className={cn(standardButtonStyle, "bg-white/10 text-foreground hover:bg-white/20")}
+            className={cn(standardButtonStyle, "bg-white/10 text-foreground hover:bg-white/20 shadow-2xl")}
           >
             {isPlayingVoice ? <div className="flex gap-1.5"><div className="w-2 h-6 bg-current rounded-full animate-pulse" /><div className="w-2 h-6 bg-current rounded-full animate-pulse" /></div> : <Play className="fill-current ml-1 w-6 h-6 sm:w-8 sm:h-8" />}
           </Button>
           
           <div className="relative flex flex-col items-center transition-all duration-300 group-hover:opacity-0 group-hover:scale-95 group-hover:translate-y-1">
-            <div className="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-b-[5px] border-b-secondary animate-pulse-slow mb-0.5" />
+            <div className="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-b-[5px] border-b-secondary animate-pulse-slow mb-1" />
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground bg-secondary px-4 py-1.5 rounded-full shadow-xl animate-pulse-slow">
               Play Me
             </span>

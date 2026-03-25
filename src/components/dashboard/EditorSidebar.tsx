@@ -101,17 +101,17 @@ function TrackMetadataDisplay({ trackId }: { trackId: string }) {
     }
   }, [trackId]);
 
-  if (loading) return <div className="flex items-center gap-2 mt-2 text-sm text-black dark:text-[#FFD700]"><Music2 className="h-4 w-4 animate-pulse" /> Loading info...</div>;
+  if (loading) return <div className="flex items-center gap-2 mt-1 text-xs text-black dark:text-[#FFD700]"><Music2 className="h-3 w-3 animate-pulse" /> Loading info...</div>;
   if (!metadata) return null;
 
   return (
-    <div className="flex items-center gap-3 mt-4 p-3 bg-muted/30 rounded-2xl border border-dashed border-black/30 dark:border-[#FFD700]/30 animate-in fade-in slide-in-from-top-2">
-      <div className="relative h-12 w-12 shrink-0 rounded-lg overflow-hidden bg-muted">
+    <div className="flex items-center gap-2 mt-2 p-2 bg-muted/30 rounded-lg border border-dashed border-black/20 dark:border-[#FFD700]/20 animate-in fade-in slide-in-from-top-1">
+      <div className="relative h-10 w-10 shrink-0 rounded-md overflow-hidden bg-muted">
         <Image src={metadata.imageUrl} alt="" fill className="object-cover" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-bold truncate leading-tight">{metadata.title}</p>
-        <p className="text-xs text-muted-foreground truncate">{metadata.artist}</p>
+        <p className="text-[11px] font-bold truncate leading-tight">{metadata.title}</p>
+        <p className="text-[10px] text-muted-foreground truncate">{metadata.artist}</p>
       </div>
     </div>
   );
@@ -224,37 +224,37 @@ export function EditorSidebar({
 
   return (
     <Sidebar className="border-r">
-      <SidebarHeader className="h-16 flex flex-row items-center justify-between px-4 border-b shrink-0">
+      <SidebarHeader className="h-14 flex flex-row items-center justify-between px-3 border-b shrink-0">
         <div className="flex items-center gap-2">
-          <Settings2 className="h-6 w-6 text-black dark:text-[#FFD700]" />
-          <h2 className="text-2xl font-bold font-headline text-black dark:text-[#FFD700]">Customize</h2>
+          <Settings2 className="h-5 w-5 text-black dark:text-[#FFD700]" />
+          <h2 className="text-xl font-bold font-headline text-black dark:text-[#FFD700]">Customize</h2>
         </div>
         <SidebarTrigger className="-mr-1" />
       </SidebarHeader>
       
-      <SidebarContent>
+      <SidebarContent className="gap-0">
         {selectionContext && selectionContext.field && (
-          <SidebarGroup className="animate-in slide-in-from-top-2">
-            <SidebarGroupLabel className="px-3 mb-2 flex items-center gap-2 text-black dark:text-[#FFD700] font-bold text-sm">
-              <Type className="h-4 w-4" /> Selected Style
+          <SidebarGroup className="py-2 animate-in slide-in-from-top-1">
+            <SidebarGroupLabel className="px-2 mb-1 flex items-center gap-1.5 text-black dark:text-[#FFD700] font-bold text-[11px] uppercase tracking-wider">
+              <Type className="h-3.5 w-3.5" /> Selected Style
             </SidebarGroupLabel>
-            <SidebarGroupContent className="px-3 space-y-4">
-               <div className="p-4 bg-black/5 dark:bg-[#FFD700]/5 rounded-2xl border border-dashed border-black/30 dark:border-[#FFD700]/30 space-y-4">
-                 <p className="text-xs font-bold uppercase tracking-widest opacity-80 text-black dark:text-[#FFD700]">
+            <SidebarGroupContent className="px-2 space-y-2">
+               <div className="p-3 bg-black/5 dark:bg-[#FFD700]/5 rounded-xl border border-dashed border-black/30 dark:border-[#FFD700]/30 space-y-3">
+                 <p className="text-[10px] font-bold uppercase tracking-widest opacity-80 text-black dark:text-[#FFD700]">
                    Styling {selectionContext.field === 'title' ? 'Title' : 'Message'}
                  </p>
-                 <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label className="text-[10px] uppercase tracking-wider font-bold opacity-60">Font Style</Label>
+                 <div className="space-y-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-[9px] uppercase tracking-wider font-bold opacity-60">Font Style</Label>
                       <Select value={currentFont} onValueChange={(val) => handleUpdateEventField(selectionContext.field === 'title' ? 'titleFont' : 'messageFont', val)}>
-                        <SelectTrigger className="w-full h-12 rounded-full bg-background border-2 border-transparent focus:ring-0 transition-all">
+                        <SelectTrigger className="w-full h-9 rounded-lg bg-background border border-input focus:ring-0 transition-all text-xs">
                           <SelectValue placeholder="Inherit Page Font" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="inherit">Use Default Page Font</SelectItem>
                           {FONTS.map(font => (
                             <SelectItem key={font} value={font}>
-                              <span style={{ fontFamily: font }} className="text-base">{font}</span>
+                              <span style={{ fontFamily: font }} className="text-sm">{font}</span>
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -262,22 +262,22 @@ export function EditorSidebar({
                     </div>
 
                     {isCollageLayout && (
-                      <div className="space-y-2">
-                        <Label className="text-[10px] uppercase tracking-wider font-bold opacity-60">Frame Corners</Label>
-                        <div className="flex bg-muted p-1 rounded-full">
+                      <div className="space-y-1.5">
+                        <Label className="text-[9px] uppercase tracking-wider font-bold opacity-60">Frame Corners</Label>
+                        <div className="flex bg-muted p-0.5 rounded-lg">
                           <Button 
                             variant={selectedEvent?.cornerStyle !== 'angled' ? 'default' : 'ghost'} 
-                            className="flex-1 rounded-full h-9 text-xs"
+                            className="flex-1 rounded-md h-7 text-[10px] px-0"
                             onClick={() => handleUpdateEventField('cornerStyle', 'rounded')}
                           >
-                            <Circle className="h-3.5 w-3.5 mr-2" /> Rounded
+                            <Circle className="h-3 w-3 mr-1" /> Rounded
                           </Button>
                           <Button 
                             variant={selectedEvent?.cornerStyle === 'angled' ? 'default' : 'ghost'} 
-                            className="flex-1 rounded-full h-9 text-xs"
+                            className="flex-1 rounded-md h-7 text-[10px] px-0"
                             onClick={() => handleUpdateEventField('cornerStyle', 'angled')}
                           >
-                            <SquareIcon className="h-3.5 w-3.5 mr-2" /> Angled
+                            <SquareIcon className="h-3 w-3 mr-1" /> Angled
                           </Button>
                         </div>
                       </div>
@@ -288,34 +288,34 @@ export function EditorSidebar({
           </SidebarGroup>
         )}
 
-        <SidebarGroup>
-          <SidebarGroupLabel className="px-3 mb-2 font-bold text-black dark:text-[#FFD700] text-sm">Layout & Style</SidebarGroupLabel>
-          <SidebarGroupContent className="px-3 space-y-5">
-            <div className="space-y-2.5">
-              <Label className="text-sm font-medium text-black/70 dark:text-[#FFD700]/70">Choose Layout</Label>
+        <SidebarGroup className="py-2">
+          <SidebarGroupLabel className="px-2 mb-1 font-bold text-black dark:text-[#FFD700] text-[11px] uppercase tracking-wider">Layout & Style</SidebarGroupLabel>
+          <SidebarGroupContent className="px-2 space-y-3">
+            <div className="space-y-1.5">
+              <Label className="text-[10px] font-bold text-black/60 dark:text-[#FFD700]/60 uppercase tracking-tight">Choose Layout</Label>
               <Select value={page.layout || 'Timeline'} onValueChange={(val) => handleUpdatePage({ layout: val })}>
-                <SelectTrigger className="w-full h-12 rounded-full border-2 border-transparent focus:ring-0 transition-all"><SelectValue placeholder="Select layout" /></SelectTrigger>
-                <SelectContent>{LAYOUTS.map(layout => <SelectItem key={layout} value={layout}>{layout}</SelectItem>)}</SelectContent>
+                <SelectTrigger className="w-full h-9 rounded-lg border border-input focus:ring-0 text-xs transition-all"><SelectValue placeholder="Select layout" /></SelectTrigger>
+                <SelectContent>{LAYOUTS.map(layout => <SelectItem key={layout} value={layout} className="text-xs">{layout}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div className="space-y-2.5">
-              <Label className="text-sm font-medium text-black/70 dark:text-[#FFD700]/70">Global Font</Label>
+            <div className="space-y-1.5">
+              <Label className="text-[10px] font-bold text-black/60 dark:text-[#FFD700]/60 uppercase tracking-tight">Global Font</Label>
               <Select value={page.font || 'Playfair Display'} onValueChange={(val) => handleUpdatePage({ font: val })}>
-                <SelectTrigger className="w-full h-12 rounded-full border-2 border-transparent focus:ring-0 transition-all"><SelectValue placeholder="Select font" /></SelectTrigger>
-                <SelectContent>{FONTS.map(font => <SelectItem key={font} value={font}><span style={{ fontFamily: font }} className="text-base">{font}</span></SelectItem>)}</SelectContent>
+                <SelectTrigger className="w-full h-9 rounded-lg border border-input focus:ring-0 text-xs transition-all"><SelectValue placeholder="Select font" /></SelectTrigger>
+                <SelectContent>{FONTS.map(font => <SelectItem key={font} value={font} className="text-xs"><span style={{ fontFamily: font }} className="text-sm">{font}</span></SelectItem>)}</SelectContent>
               </Select>
             </div>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel className="px-3 mb-2 font-bold text-black dark:text-[#FFD700] text-sm">Soundtrack</SidebarGroupLabel>
-          <SidebarGroupContent className="px-3 space-y-4">
-            <div className="space-y-2.5">
-              <Label className="text-sm font-medium text-black/70 dark:text-[#FFD700]/70">Spotify Track ID or URL</Label>
+        <SidebarGroup className="py-2">
+          <SidebarGroupLabel className="px-2 mb-1 font-bold text-black dark:text-[#FFD700] text-[11px] uppercase tracking-wider">Soundtrack</SidebarGroupLabel>
+          <SidebarGroupContent className="px-2 space-y-3">
+            <div className="space-y-1.5">
+              <Label className="text-[10px] font-bold text-black/60 dark:text-[#FFD700]/60 uppercase tracking-tight">Spotify Track ID or URL</Label>
               <Input 
                 placeholder="Paste Link or ID here" 
-                className="rounded-full h-12 px-6 bg-muted/30 border-2 border-transparent focus-visible:border-primary focus-visible:ring-0 text-sm transition-all"
+                className="rounded-lg h-9 px-3 bg-muted/30 border border-input focus-visible:ring-1 text-xs transition-all"
                 value={page.spotifyTrackId || ''} 
                 onChange={(e) => handleUpdatePage({ spotifyTrackId: extractSpotifyTrackId(e.target.value) })} 
               />
@@ -324,47 +324,47 @@ export function EditorSidebar({
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel className="px-3 mb-2 font-bold text-black dark:text-[#FFD700] text-sm">Personal Touch</SidebarGroupLabel>
-          <SidebarGroupContent className="px-3 space-y-4">
-            <div className="flex flex-col gap-4">
+        <SidebarGroup className="py-2">
+          <SidebarGroupLabel className="px-2 mb-1 font-bold text-black dark:text-[#FFD700] text-[11px] uppercase tracking-wider">Personal Touch</SidebarGroupLabel>
+          <SidebarGroupContent className="px-2 space-y-3">
+            <div className="flex flex-col gap-2">
               {!isRecording ? (
-                <Button onClick={startRecording} variant="outline" className="w-full rounded-full border-dashed border-black/40 dark:border-[#FFD700]/40 h-12 text-sm">
-                  <Mic className="mr-2 h-4 w-4 text-black dark:text-[#FFD700]" /> {audioUrl ? "Record New" : "Voice Note"}
+                <Button onClick={startRecording} variant="outline" className="w-full rounded-lg border-dashed border-black/30 dark:border-[#FFD700]/30 h-9 text-xs">
+                  <Mic className="mr-1.5 h-3.5 w-3.5 text-black dark:text-[#FFD700]" /> {audioUrl ? "Record New" : "Voice Note"}
                 </Button>
               ) : (
-                <Button onClick={stopRecording} variant="destructive" className="w-full rounded-full animate-pulse h-12 text-sm">
-                  <Square className="mr-2 h-4 w-4" /> Stop ({formatTime(recordingTime)})
+                <Button onClick={stopRecording} variant="destructive" className="w-full rounded-lg animate-pulse h-9 text-xs">
+                  <Square className="mr-1.5 h-3.5 w-3.5" /> Stop ({formatTime(recordingTime)})
                 </Button>
               )}
               {audioUrl && !isRecording && (
-                <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-2xl border border-dashed border-black/30 dark:border-[#FFD700]/30">
-                  <Play className="h-4 w-4 text-orange-500 shrink-0" />
-                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex-1">Saved Note</span>
-                  <Button variant="ghost" size="icon" onClick={deleteVoiceNote} className="rounded-full h-9 w-9 shrink-0"><Trash2 className="h-4 w-4" /></Button>
+                <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg border border-dashed border-black/20 dark:border-[#FFD700]/20">
+                  <Play className="h-3.5 w-3.5 text-orange-500 shrink-0" />
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex-1">Saved Note</span>
+                  <Button variant="ghost" size="icon" onClick={deleteVoiceNote} className="rounded-md h-7 w-7 shrink-0"><Trash2 className="h-3.5 w-3.5" /></Button>
                 </div>
               )}
             </div>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel className="px-3 mb-2 font-bold text-black dark:text-[#FFD700] text-sm">Final Quote</SidebarGroupLabel>
-          <SidebarGroupContent className="px-3">
-            <div className="p-3 bg-muted/20 dark:bg-black/20 rounded-2xl border border-dashed border-black/20 dark:border-[#FFD700]/20 space-y-3 animate-in zoom-in-95 duration-300">
+        <SidebarGroup className="py-2">
+          <SidebarGroupLabel className="px-2 mb-1 font-bold text-black dark:text-[#FFD700] text-[11px] uppercase tracking-wider">Final Quote</SidebarGroupLabel>
+          <SidebarGroupContent className="px-2">
+            <div className="p-2 bg-muted/20 dark:bg-black/20 rounded-xl border border-dashed border-black/20 dark:border-[#FFD700]/20 space-y-2 animate-in zoom-in-95 duration-300">
               <Textarea 
                 placeholder="A final heart-warming message..." 
                 value={customQuote} 
                 onChange={(e) => setCustomQuote(e.target.value)} 
-                className="min-h-[120px] p-5 text-sm rounded-xl bg-white dark:bg-black/40 border-none focus-visible:ring-0 transition-all resize-none shadow-none" 
+                className="min-h-[80px] p-3 text-xs rounded-lg bg-white dark:bg-black/40 border-none focus-visible:ring-0 transition-all resize-none shadow-none" 
               />
               <Button 
                 variant="secondary" 
-                className="w-full rounded-xl h-12 text-sm text-black dark:text-[#FFD700] font-bold shadow-sm" 
+                className="w-full rounded-lg h-9 text-xs text-black dark:text-[#FFD700] font-bold shadow-sm" 
                 onClick={onSaveQuote} 
                 disabled={isSavingQuote}
               >
-                {isSavingQuote ? "Saving..." : <><Save className="mr-2 h-4 w-4" /> Save Quote</>}
+                {isSavingQuote ? "Saving..." : <><Save className="mr-1.5 h-3.5 w-3.5" /> Save Quote</>}
               </Button>
             </div>
           </SidebarGroupContent>

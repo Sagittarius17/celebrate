@@ -439,7 +439,7 @@ function MemoryItemEditor({
             <Input 
               placeholder="e.g. First Steps" 
               style={{ fontFamily: event.titleFont || 'inherit' }}
-              className="h-12 px-5 rounded-full bg-muted/30 border-2 border-transparent hover:border-primary/20 focus-visible:border-primary focus-visible:ring-0 text-lg font-headline font-bold transition-all shadow-none"
+              className="h-12 px-5 rounded-[2rem] bg-muted/30 border-2 border-transparent hover:border-primary/20 focus-visible:border-primary focus-visible:ring-0 text-lg font-headline font-bold transition-all shadow-none"
               value={event.title}
               onFocus={() => onFieldFocus?.(event.id, 'title')}
               onChange={(e) => handleUpdateEvent({ title: e.target.value })}

@@ -200,7 +200,10 @@ function CollageItem({
       ref={itemRef}
       className={cn(
         "absolute transition-shadow duration-200 cursor-move group touch-none",
-        isSelected && "z-[9999!important] ring-4 ring-primary ring-offset-4 rounded-xl"
+        isSelected && cn(
+          "z-[9999!important] ring-4 ring-primary ring-offset-4",
+          isAngled ? "rounded-none" : "rounded-sm"
+        )
       )}
       style={{
         left: `${left}px`,
@@ -356,8 +359,8 @@ function CollageItem({
         </div>
 
         <div className="mt-4 px-1 pb-2 select-none text-center">
-          <h4 className="font-bold text-xs truncate font-headline">{event.title}</h4>
-          <p className="text-[10px] text-muted-foreground truncate italic opacity-60">"{event.message}"</p>
+          <h4 className="font-bold text-xs truncate font-headline text-slate-900">{event.title}</h4>
+          <p className="text-[10px] text-slate-600 truncate italic font-medium">"{event.message}"</p>
         </div>
       </div>
     </div>

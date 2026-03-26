@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Calendar, Trash2, Upload, Image as ImageIcon, Move, ZoomIn, Eye, EyeOff, Film, RotateCw, X } from 'lucide-react';
+import { Calendar, Trash2, Upload, Image as ImageIcon, Move, ZoomIn, Eye, EyeOff, Film, RotateCw, X, Maximize, Minimize } from 'lucide-react';
 import Image from 'next/image';
 import { Firestore, doc } from 'firebase/firestore';
 import { updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -46,7 +46,8 @@ function MemoryItemEditor({
     zoom: event.imageZoom || 1,
     x: event.imageX || 0,
     y: event.imageY || 0,
-    rotation: event.mediaRotation || 0
+    rotation: event.mediaRotation || 0,
+    fit: event.mediaFit || 'cover'
   });
 
   const [isInteracting, setIsInteracting] = useState(false);
@@ -62,9 +63,10 @@ function MemoryItemEditor({
       zoom: event.imageZoom || 1,
       x: event.imageX || 0,
       y: event.imageY || 0,
-      rotation: event.mediaRotation || 0
+      rotation: event.mediaRotation || 0,
+      fit: event.mediaFit || 'cover'
     });
-  }, [event.imageZoom, event.imageX, event.imageY, event.mediaRotation]);
+  }, [event.imageZoom, event.imageX, event.imageY, event.mediaRotation, event.mediaFit]);
 
   const handleUpdateEvent = useCallback((updates: any) => {
     if (!db) return;
@@ -76,10 +78,11 @@ function MemoryItemEditor({
   }, [db, pageId, event.id]);
 
   const isPlaceholder = !event.videoUrl && (event.imageUrl?.includes('picsum.photos/seed/placeholder') || !event.imageUrl);
+  const isFit = localFraming.fit === 'contain';
 
   useEffect(() => {
     const el = containerRef.current;
-    if (!el || isPlaceholder) return;
+    if (!el || isPlaceholder || isFit) return;
 
     const handleWheelNative = (e: WheelEvent) => {
       e.preventDefault();
@@ -102,7 +105,7 @@ function MemoryItemEditor({
 
     el.addEventListener('wheel', handleWheelNative, { passive: false });
     return () => el.removeEventListener('wheel', handleWheelNative);
-  }, [isPlaceholder]);
+  }, [isPlaceholder, isFit]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -110,23 +113,24 @@ function MemoryItemEditor({
         localFraming.zoom !== event.imageZoom || 
         localFraming.x !== event.imageX || 
         localFraming.y !== event.imageY ||
-        localFraming.rotation !== event.mediaRotation
+        localFraming.rotation !== event.mediaRotation ||
+        localFraming.fit !== event.mediaFit
       ) {
         handleUpdateEvent({ 
           imageZoom: localFraming.zoom,
           imageX: localFraming.x,
           imageY: localFraming.y,
-          mediaRotation: localFraming.rotation
+          mediaRotation: localFraming.rotation,
+          mediaFit: localFraming.fit
         });
       }
     }, 500);
     return () => clearTimeout(timer);
-  }, [localFraming, event.imageZoom, event.imageX, event.imageY, event.mediaRotation, handleUpdateEvent]);
+  }, [localFraming, event.imageZoom, event.imageX, event.imageY, event.mediaRotation, event.mediaFit, handleUpdateEvent]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Limit file size to 10MB initially to avoid browser crashes during processing
       if (file.size > 10 * 1024 * 1024) {
         toast({
           variant: "destructive",
@@ -142,14 +146,12 @@ function MemoryItemEditor({
       reader.onloadend = async () => {
         const result = reader.result as string;
         if (isVideo) {
-          // Optimization for video is complex client-side, we store as is if small enough
           handleUpdateEvent({ videoUrl: result, imageUrl: null });
         } else {
-          // Automatically optimize and reduce resolution of images to "applicable size"
           const optimized = await optimizeImage(result);
           handleUpdateEvent({ imageUrl: optimized, videoUrl: null });
         }
-        toast({ title: "Media Updated", description: `The ${isVideo ? 'video' : 'photo'} has been optimized and changed.` });
+        toast({ title: "Media Updated" });
       };
       reader.readAsDataURL(file);
     }
@@ -159,7 +161,7 @@ function MemoryItemEditor({
     if (!db) return;
     const eventRef = doc(db, 'celebrationPages', pageId, 'birthdayEvents', event.id);
     deleteDocumentNonBlocking(eventRef);
-    toast({ title: "Memory Removed", description: "The memory has been deleted." });
+    toast({ title: "Memory Removed" });
   };
 
   const handleRemoveMedia = (e: React.MouseEvent) => {
@@ -170,13 +172,14 @@ function MemoryItemEditor({
       imageX: 0,
       imageY: 0,
       imageZoom: 1,
-      mediaRotation: 0
+      mediaRotation: 0,
+      mediaFit: 'cover'
     });
-    toast({ title: "Media Removed", description: "Reverted to placeholder." });
+    toast({ title: "Media Removed" });
   };
 
   const handlePointerDown = (e: React.PointerEvent) => {
-    if (isPlaceholder) return;
+    if (isPlaceholder || isFit) return;
     setIsInteracting(true);
     interactionRef.current.lastX = e.clientX;
     interactionRef.current.lastY = e.clientY;
@@ -222,7 +225,7 @@ function MemoryItemEditor({
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (e.touches.length === 2) {
+    if (e.touches.length === 2 && !isFit) {
       e.preventDefault();
       interactionRef.current.isPinching = true;
       const dist = Math.hypot(
@@ -265,8 +268,15 @@ function MemoryItemEditor({
   };
 
   const toggleShowDate = () => {
-    const newVal = event.showDate === false ? true : false;
-    handleUpdateEvent({ showDate: newVal });
+    handleUpdateEvent({ showDate: event.showDate === false ? true : false });
+  };
+
+  const toggleFitMode = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const nextFit = localFraming.fit === 'contain' ? 'cover' : 'contain';
+    setLocalFraming(prev => ({ ...prev, fit: nextFit }));
+    handleUpdateEvent({ mediaFit: nextFit });
+    toast({ title: nextFit === 'contain' ? "Mode: Fit (No Crop)" : "Mode: Fill (Crop)" });
   };
 
   const handleRotateMedia = (e: React.MouseEvent) => {
@@ -274,7 +284,6 @@ function MemoryItemEditor({
     const nextRotation = ((localFraming.rotation || 0) + 90) % 360;
     setLocalFraming(prev => ({ ...prev, rotation: nextRotation }));
     handleUpdateEvent({ mediaRotation: nextRotation });
-    toast({ title: "Media Rotated", description: `Rotated to ${nextRotation}°` });
   };
 
   const isRotatedSideways = (localFraming.rotation || 0) % 180 !== 0;
@@ -288,7 +297,7 @@ function MemoryItemEditor({
           ref={containerRef}
           className={cn(
             "relative w-full md:w-56 h-56 md:h-auto overflow-hidden bg-muted touch-none select-none",
-            isPlaceholder ? "cursor-pointer" : "cursor-move"
+            isPlaceholder ? "cursor-pointer" : (isFit ? "cursor-default" : "cursor-move")
           )}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
@@ -297,6 +306,19 @@ function MemoryItemEditor({
           onTouchEnd={handleTouchEnd}
           onClick={handleContainerClick}
         >
+          {/* Blurred Background for 'Fit' mode */}
+          {isFit && (event.imageUrl || event.videoUrl) && (
+            <div 
+              className="absolute inset-0 scale-110 blur-xl opacity-40"
+              style={{ 
+                backgroundImage: event.imageUrl ? `url(${event.imageUrl})` : 'none',
+                backgroundColor: 'black',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+              }}
+            />
+          )}
+
           <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
             {event.videoUrl ? (
               <video 
@@ -306,11 +328,11 @@ function MemoryItemEditor({
                 muted
                 playsInline
                 className={cn(
-                  "w-full h-full object-cover",
-                  !isInteracting && "transition-transform duration-300"
+                  "w-full h-full transition-all duration-300 relative z-10",
+                  isFit ? "object-contain" : "object-cover"
                 )}
                 style={{
-                  transform: `scale(${finalScale}) translate(${localFraming.x}%, ${localFraming.y}%) rotate(${localFraming.rotation}deg)`
+                  transform: `scale(${isFit ? 1 : finalScale}) translate(${isFit ? 0 : localFraming.x}%, ${isFit ? 0 : localFraming.y}%) rotate(${localFraming.rotation}deg)`
                 }}
               />
             ) : event.imageUrl ? (
@@ -319,11 +341,11 @@ function MemoryItemEditor({
                 alt={event.title} 
                 fill 
                 className={cn(
-                  "object-cover",
-                  !isInteracting && "transition-transform duration-300"
+                  "transition-all duration-300 relative z-10",
+                  isFit ? "object-contain" : "object-cover"
                 )}
                 style={{
-                  transform: `scale(${finalScale}) translate(${localFraming.x}%, ${localFraming.y}%) rotate(${localFraming.rotation}deg)`
+                  transform: `scale(${isFit ? 1 : finalScale}) translate(${isFit ? 0 : localFraming.x}%, ${isFit ? 0 : localFraming.y}%) rotate(${localFraming.rotation}deg)`
                 }}
               />
             ) : (
@@ -335,20 +357,28 @@ function MemoryItemEditor({
           </div>
 
           <div className={cn(
-            "absolute inset-0 bg-black/40 flex flex-col items-center justify-center transition-opacity pointer-events-none",
+            "absolute inset-0 bg-black/40 flex flex-col items-center justify-center transition-opacity pointer-events-none z-20",
             isPlaceholder ? "opacity-100" : "opacity-0 group-hover:opacity-100"
           )}>
             <div className="flex flex-col items-center gap-2 text-white text-center px-4">
               {isPlaceholder ? (
                 <>
                   <Upload className="h-6 w-6" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">Click to Upload Photo/Video</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest">Click to Upload</span>
                 </>
               ) : (
                 <>
-                  <div className="flex gap-4 items-center">
-                    <Move className="h-5 w-5 opacity-80" />
-                    <ZoomIn className="h-5 w-5 opacity-80" />
+                  <div className="flex gap-2 items-center">
+                    {!isFit && <Move className="h-4 w-4 opacity-80" />}
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 rounded-full bg-white/20 hover:bg-white/40 pointer-events-auto"
+                      onClick={toggleFitMode}
+                      title={isFit ? "Change to Fill (Crop)" : "Change to Fit (No Crop)"}
+                    >
+                      {isFit ? <Maximize className="h-4 w-4" /> : <Minimize className="h-4 w-4" />}
+                    </Button>
                     <Button 
                       variant="ghost" 
                       size="icon" 
@@ -359,7 +389,9 @@ function MemoryItemEditor({
                       <RotateCw className="h-4 w-4" />
                     </Button>
                   </div>
-                  <span className="text-[9px] font-bold uppercase tracking-widest opacity-80">Drag to Pan • Scroll to Zoom • Tap Rotate</span>
+                  <span className="text-[9px] font-bold uppercase tracking-widest opacity-80">
+                    {isFit ? "Cinematic Fit Enabled" : "Drag to Pan • Scroll to Zoom"}
+                  </span>
                 </>
               )}
             </div>
@@ -371,7 +403,6 @@ function MemoryItemEditor({
                 size="icon" 
                 className="absolute top-2 left-2 h-7 w-7 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-30 shadow-sm border-none pointer-events-auto"
                 onClick={handleRemoveMedia}
-                title="Remove Media"
              >
                <X className="h-4 w-4" />
              </Button>
@@ -380,22 +411,16 @@ function MemoryItemEditor({
           <Button 
             variant="outline" 
             size="sm" 
-            className="absolute top-2 right-2 h-7 rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-white text-black hover:bg-white/90 hover:text-black text-[10px] font-bold pointer-events-auto shadow-sm border-none"
+            className="absolute top-2 right-2 h-7 rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-white text-black hover:bg-white/90 hover:text-black text-[10px] font-bold pointer-events-auto shadow-sm border-none z-30"
             onClick={(e) => {
               e.stopPropagation();
               fileInputRef.current?.click();
             }}
           >
-            {isPlaceholder ? "Upload Media" : "Change Media"}
+            {isPlaceholder ? "Upload" : "Change"}
           </Button>
 
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            className="hidden" 
-            accept="image/*,video/*" 
-            onChange={handleFileChange} 
-          />
+          <input type="file" ref={fileInputRef} className="hidden" accept="image/*,video/*" onChange={handleFileChange} />
         </div>
 
         <CardContent className="p-3 md:p-3.5 flex-1 space-y-1.5 relative">
@@ -406,36 +431,25 @@ function MemoryItemEditor({
                 Memory #{index + 1}
                </span>
                <div className="flex items-center gap-1.5">
-                <div className="relative flex items-center">
-                  <input 
-                    type="date" 
-                    className="border-none bg-transparent p-0 h-auto font-bold text-foreground text-[11px] focus-visible:ring-0 shadow-none cursor-pointer outline-none block dark:text-white"
-                    value={event.eventDate}
-                    onChange={(e) => handleUpdateEvent({ eventDate: e.target.value })}
-                  />
-                </div>
+                <input 
+                  type="date" 
+                  className="border-none bg-transparent p-0 h-auto font-bold text-foreground text-[11px] focus-visible:ring-0 shadow-none cursor-pointer outline-none block dark:text-white"
+                  value={event.eventDate}
+                  onChange={(e) => handleUpdateEvent({ eventDate: e.target.value })}
+                />
                 <Button 
                   variant="ghost" 
                   size="icon" 
                   className={cn("h-6 w-6 rounded-full transition-colors", event.showDate === false ? "text-muted-foreground/40" : "text-primary")}
                   onClick={toggleShowDate}
-                  title={event.showDate === false ? "Show Date" : "Hide Date"}
                 >
                   {event.showDate === false ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                 </Button>
               </div>
             </div>
-            <div className="flex items-center gap-1">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="text-muted-foreground hover:text-destructive transition-colors h-7 w-7"
-                onClick={handleDeleteEvent}
-                title="Delete Memory"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
-            </div>
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive h-7 w-7" onClick={handleDeleteEvent}>
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
           </div>
           
           <div className="space-y-0.5">
@@ -453,7 +467,7 @@ function MemoryItemEditor({
           <div className="space-y-0.5">
             <Label className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-1 block opacity-60">The Story</Label>
             <Textarea 
-              placeholder="Tell the story of this moment..." 
+              placeholder="Tell the story..." 
               style={{ fontFamily: event.messageFont || 'inherit' }}
               className="min-h-[80px] px-4 py-2 rounded-[2rem] bg-muted/30 border-2 border-transparent hover:border-primary/20 focus-visible:border-primary focus-visible:ring-0 italic text-muted-foreground leading-relaxed text-sm resize-none transition-all shadow-none"
               value={event.message}

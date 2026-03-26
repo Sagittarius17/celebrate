@@ -6,7 +6,7 @@ import { Firestore, doc } from 'firebase/firestore';
 import { updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { cn, optimizeImage } from '@/lib/utils';
 import Image from 'next/image';
-import { Move, ZoomIn, Layers, RotateCw, Trash2, Upload, MousePointer2, ImageIcon, Frame, Square, Circle, RefreshCcw } from 'lucide-react';
+import { Move, ZoomIn, Layers, RotateCw, Trash2, Upload, MousePointer2, ImageIcon, Frame, Square, Circle, RefreshCcw, Maximize, Minimize } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -51,6 +51,7 @@ function CollageItem({
   const baseSize = 300 * scale;
   const currentScale = event.canvasScale || 1;
   const cardWidth = baseSize * currentScale;
+  const isFit = event.mediaFit === 'contain';
 
   useEffect(() => {
     const el = itemRef.current;
@@ -69,7 +70,7 @@ function CollageItem({
         const currentScale = event.canvasScale || 1;
         const newScale = Math.min(Math.max(currentScale + delta, 0.2), 3);
         onUpdate(event.id, { canvasScale: newScale });
-      } else {
+      } else if (!isFit) {
         const currentZoom = event.imageZoom || 1;
         const newZoom = Math.min(Math.max(currentZoom + delta, 1), 5);
         
@@ -87,14 +88,20 @@ function CollageItem({
 
     el.addEventListener('wheel', handleWheelNative, { passive: false });
     return () => el.removeEventListener('wheel', handleWheelNative);
-  }, [event.id, event.canvasScale, event.imageZoom, event.imageX, event.imageY, isSelected, editMode, onUpdate]);
+  }, [event.id, event.canvasScale, event.imageZoom, event.imageX, event.imageY, isSelected, editMode, onUpdate, isFit]);
 
   const handlePointerDown = (e: React.PointerEvent) => {
     if (isRotating) return;
     e.stopPropagation();
     onSelect(event.id);
-    setIsInteracting(true);
+    
+    // If in Fit mode, we only allow moving the card, not the photo
+    if (editMode === 'photo' && isFit) {
+      toast({ title: "Media Fit mode active", description: "All edges are visible. No panning needed!" });
+      return;
+    }
 
+    setIsInteracting(true);
     dragStartRef.current = {
       x: e.clientX,
       y: e.clientY,
@@ -122,7 +129,7 @@ function CollageItem({
         canvasX: Math.min(Math.max(newX, -30), 100),
         canvasY: Math.min(Math.max(newY, -30), 100),
       });
-    } else {
+    } else if (!isFit) {
       const zoom = event.imageZoom || 1;
       const imageWidthInPixels = cardWidth * zoom;
       
@@ -169,6 +176,12 @@ function CollageItem({
   const handleRotatePointerUp = (e: React.PointerEvent) => {
     setIsRotating(false);
     (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+  };
+
+  const toggleFitMode = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const nextFit = isFit ? 'cover' : 'contain';
+    onUpdate(event.id, { mediaFit: nextFit });
   };
 
   const handleRotateMedia = (e: React.MouseEvent) => {
@@ -227,6 +240,19 @@ function CollageItem({
           "relative w-full h-full overflow-hidden bg-muted",
           isAngled ? "rounded-none" : "rounded-sm"
         )}>
+          {/* Blurred Background for 'Fit' mode */}
+          {isFit && (event.imageUrl || event.videoUrl) && (
+            <div 
+              className="absolute inset-0 scale-110 blur-xl opacity-40"
+              style={{ 
+                backgroundImage: event.imageUrl ? `url(${event.imageUrl})` : 'none',
+                backgroundColor: 'black',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+              }}
+            />
+          )}
+
           {event.videoUrl ? (
              <video 
               src={event.videoUrl}
@@ -235,11 +261,12 @@ function CollageItem({
               muted
               playsInline
               className={cn(
-                "w-full h-full object-cover pointer-events-none",
+                "w-full h-full relative z-10 pointer-events-none",
+                isFit ? "object-contain" : "object-cover",
                 (!isInteracting && !isRotating) && "transition-transform duration-300"
               )}
               style={{
-                transform: `scale(${finalScale}) translate(${event.imageX || 0}%, ${event.imageY || 0}%) rotate(${event.mediaRotation || 0}deg)`
+                transform: `scale(${isFit ? 1 : finalScale}) translate(${isFit ? 0 : (event.imageX || 0)}%, ${isFit ? 0 : (event.imageY || 0)}%) rotate(${event.mediaRotation || 0}deg)`
               }}
             />
           ) : event.imageUrl ? (
@@ -248,11 +275,12 @@ function CollageItem({
               alt={event.title} 
               fill 
               className={cn(
-                "object-cover pointer-events-none",
+                "relative z-10 pointer-events-none",
+                isFit ? "object-contain" : "object-cover",
                 (!isInteracting && !isRotating) && "transition-transform duration-300"
               )}
               style={{
-                transform: `scale(${finalScale}) translate(${event.imageX || 0}%, ${event.imageY || 0}%) rotate(${event.mediaRotation || 0}deg)`
+                transform: `scale(${isFit ? 1 : finalScale}) translate(${isFit ? 0 : (event.imageX || 0)}%, ${isFit ? 0 : (event.imageY || 0)}%) rotate(${event.mediaRotation || 0}deg)`
               }}
             />
           ) : (
@@ -290,6 +318,12 @@ function CollageItem({
           
           <div className="w-px h-6 bg-border mx-1" />
 
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" title={isFit ? "Fill mode" : "Fit mode"} onClick={toggleFitMode}>
+            {isFit ? <Maximize className="h-4 w-4" /> : <Minimize className="h-4 w-4" />}
+          </Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" title="Rotate Media" onClick={handleRotateMedia}>
+            <RefreshCcw className="h-4 w-4" />
+          </Button>
           <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" title="Bring to Front" onClick={(e) => { e.stopPropagation(); bringToFront(); }}>
             <Layers className="h-4 w-4" />
           </Button>
@@ -297,7 +331,6 @@ function CollageItem({
             variant="ghost" 
             size="icon" 
             className={cn("h-8 w-8 rounded-lg cursor-ew-resize transition-colors", isRotating && "text-primary bg-primary/10")} 
-            title="Drag Left/Right to Rotate Card"
             onPointerDown={handleRotatePointerDown}
             onPointerMove={handleRotatePointerMove}
             onPointerUp={handleRotatePointerUp}
@@ -307,22 +340,12 @@ function CollageItem({
           <Button 
             variant="ghost" 
             size="icon" 
-            className="h-8 w-8 rounded-lg" 
-            title="Rotate Media (Photo/Video)" 
-            onClick={handleRotateMedia}
-          >
-            <RefreshCcw className="h-4 w-4" />
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
             className={cn("h-8 w-8 rounded-lg", isAngled && "text-primary")} 
-            title={isAngled ? "Rounded Corners" : "Angled Corners"} 
             onClick={(e) => { e.stopPropagation(); toggleCorners(); }}
           >
             {isAngled ? <Circle className="h-4 w-4" /> : <Square className="h-4 w-4" />}
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" title="Change Image/Video" onClick={(e) => { e.stopPropagation(); onFileSelect(); }}>
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" title="Change Media" onClick={(e) => { e.stopPropagation(); onFileSelect(); }}>
             <Upload className="h-4 w-4" />
           </Button>
           
@@ -429,7 +452,7 @@ export function CollageEditor({ events, isLoading, pageId, db, onFieldFocus }: C
           const optimized = await optimizeImage(result);
           handleUpdateEvent(selectedId, { imageUrl: optimized, videoUrl: null });
         }
-        toast({ title: "Media Optimized & Updated" });
+        toast({ title: "Media Updated" });
       };
       reader.readAsDataURL(file);
     }

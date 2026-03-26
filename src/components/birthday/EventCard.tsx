@@ -22,6 +22,7 @@ interface EventCardProps {
   mediaRotation?: number;
   cornerStyle?: 'rounded' | 'angled';
   showDate?: boolean;
+  mediaFit?: 'cover' | 'contain';
 }
 
 export const EventCard: React.FC<EventCardProps> = ({ 
@@ -38,9 +39,11 @@ export const EventCard: React.FC<EventCardProps> = ({
   imageY = 0,
   mediaRotation = 0,
   cornerStyle = 'rounded',
-  showDate = true
+  showDate = true,
+  mediaFit = 'cover'
 }) => {
   const isAngled = cornerStyle === 'angled';
+  const isFit = mediaFit === 'contain';
   
   // Calculate rotation scale: When rotated 90/270 in a rectangular container, 
   // we need to scale up to ensure no gaps appear on the sides.
@@ -55,6 +58,19 @@ export const EventCard: React.FC<EventCardProps> = ({
     )}>
       <div className="relative h-64 sm:h-80 w-full overflow-hidden">
         <div className="relative w-full h-full overflow-hidden bg-muted">
+          {/* Blurred Background for 'Fit' mode */}
+          {isFit && (imageUrl || videoUrl) && (
+            <div 
+              className="absolute inset-0 scale-110 blur-2xl opacity-40 grayscale-[0.2]"
+              style={{ 
+                backgroundImage: imageUrl ? `url(${imageUrl})` : 'none',
+                backgroundColor: 'black',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+              }}
+            />
+          )}
+
           {videoUrl ? (
             <video 
               src={videoUrl}
@@ -62,9 +78,12 @@ export const EventCard: React.FC<EventCardProps> = ({
               loop
               muted
               playsInline
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-300"
+              className={cn(
+                "absolute inset-0 w-full h-full transition-transform duration-300",
+                isFit ? "object-contain" : "object-cover"
+              )}
               style={{
-                transform: `scale(${finalScale}) translate(${imageX}%, ${imageY}%) rotate(${mediaRotation}deg)`
+                transform: `scale(${isFit ? 1 : finalScale}) translate(${imageX}%, ${imageY}%) rotate(${mediaRotation}deg)`
               }}
             />
           ) : imageUrl ? (
@@ -72,9 +91,12 @@ export const EventCard: React.FC<EventCardProps> = ({
               src={imageUrl} 
               alt={title}
               fill
-              className="object-cover transition-transform duration-300"
+              className={cn(
+                "transition-transform duration-300",
+                isFit ? "object-contain" : "object-cover"
+              )}
               style={{
-                transform: `scale(${finalScale}) translate(${imageX}%, ${imageY}%) rotate(${mediaRotation}deg)`
+                transform: `scale(${isFit ? 1 : finalScale}) translate(${imageX}%, ${imageY}%) rotate(${mediaRotation}deg)`
               }}
               data-ai-hint="celebration photo"
             />

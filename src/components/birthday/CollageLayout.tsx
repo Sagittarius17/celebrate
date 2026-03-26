@@ -32,6 +32,7 @@ export function CollageLayout({
         {events.map((event) => {
           const currentScale = event.canvasScale || 1;
           const isAngled = event.cornerStyle === 'angled';
+          const isFit = event.mediaFit === 'contain';
           
           return (
             <div
@@ -52,6 +53,19 @@ export function CollageLayout({
                 "relative aspect-square overflow-hidden bg-muted",
                 isAngled ? "rounded-none" : "rounded-sm"
               )}>
+                {/* Blurred Background for 'Fit' mode */}
+                {isFit && (event.imageUrl || event.videoUrl) && (
+                  <div 
+                    className="absolute inset-0 scale-110 blur-xl opacity-40"
+                    style={{ 
+                      backgroundImage: event.imageUrl ? `url(${event.imageUrl})` : 'none',
+                      backgroundColor: 'black',
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center'
+                    }}
+                  />
+                )}
+
                 {event.videoUrl ? (
                   <video 
                     src={event.videoUrl}
@@ -59,9 +73,12 @@ export function CollageLayout({
                     loop
                     muted
                     playsInline
-                    className="w-full h-full object-cover"
+                    className={cn(
+                      "w-full h-full relative z-10",
+                      isFit ? "object-contain" : "object-cover"
+                    )}
                     style={{
-                      transform: `scale(${event.imageZoom || 1}) translate(${event.imageX || 0}%, ${event.imageY || 0}%) rotate(${event.mediaRotation || 0}deg)`
+                      transform: `scale(${isFit ? 1 : (event.imageZoom || 1)}) translate(${event.imageX || 0}%, ${event.imageY || 0}%) rotate(${event.mediaRotation || 0}deg)`
                     }}
                   />
                 ) : event.imageUrl ? (
@@ -69,9 +86,12 @@ export function CollageLayout({
                     src={event.imageUrl} 
                     alt={event.title}
                     fill
-                    className="object-cover"
+                    className={cn(
+                      "relative z-10",
+                      isFit ? "object-contain" : "object-cover"
+                    )}
                     style={{
-                      transform: `scale(${event.imageZoom || 1}) translate(${event.imageX || 0}%, ${event.imageY || 0}%) rotate(${event.mediaRotation || 0}deg)`
+                      transform: `scale(${isFit ? 1 : (event.imageZoom || 1)}) translate(${event.imageX || 0}%, ${event.imageY || 0}%) rotate(${event.mediaRotation || 0}deg)`
                     }}
                   />
                 ) : (

@@ -358,7 +358,7 @@ function CollageItem({
         </div>
 
         <div className="mt-4 px-1 pb-2 select-none text-center">
-          <h4 className="font-bold text-xs truncate font-headline text-slate-900">{event.title}</h4>
+          <h4 className="font-bold text-xs truncate font-headline text-black">{event.title}</h4>
           <p className="text-[10px] text-slate-600 truncate italic font-medium">"{event.message}"</p>
         </div>
       </div>
@@ -426,7 +426,6 @@ export function CollageEditor({ events, isLoading, pageId, db, onFieldFocus }: C
         if (isVideo) {
           handleUpdateEvent(selectedId, { videoUrl: result, imageUrl: null });
         } else {
-          // Intelligent client-side optimization for better performance and resolution
           const optimized = await optimizeImage(result);
           handleUpdateEvent(selectedId, { imageUrl: optimized, videoUrl: null });
         }
@@ -456,11 +455,11 @@ export function CollageEditor({ events, isLoading, pageId, db, onFieldFocus }: C
 
       <div 
         ref={containerRef}
-        className="w-full bg-slate-100 dark:bg-slate-900 rounded-[2.5rem] relative shadow-inner overflow-hidden border-8 border-slate-200 dark:border-slate-800"
+        className="w-full bg-slate-100/50 dark:bg-slate-900/50 rounded-[2.5rem] relative shadow-inner overflow-hidden border-4 border-dashed border-slate-200 dark:border-slate-800"
         style={{ height: `${CANVAS_HEIGHT * scale}px` }}
         onClick={() => setSelectedId(null)}
       >
-        <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+        <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
         {events?.map((event) => (
           <CollageItem 

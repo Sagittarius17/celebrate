@@ -23,11 +23,11 @@ export function CollageLayout({
   return (
     <div className="max-w-6xl mx-auto px-4 py-20">
       <div 
-        className="w-full relative mx-auto bg-white/50 dark:bg-black/20 rounded-[3rem] shadow-2xl overflow-hidden reveal-on-scroll"
+        className="w-full relative mx-auto bg-transparent reveal-on-scroll"
         style={{ aspectRatio: `${CANVAS_WIDTH} / ${CANVAS_HEIGHT}` }}
       >
-        <div className="absolute top-10 left-10 opacity-20"><Sparkles className="w-10 h-10 text-primary" /></div>
-        <div className="absolute bottom-10 right-10 opacity-20"><Heart className="w-10 h-10 text-secondary" /></div>
+        <div className="absolute top-10 left-10 opacity-20 pointer-events-none"><Sparkles className="w-10 h-10 text-primary" /></div>
+        <div className="absolute bottom-10 right-10 opacity-20 pointer-events-none"><Heart className="w-10 h-10 text-secondary" /></div>
 
         {events.map((event) => {
           const currentScale = event.canvasScale || 1;
@@ -81,7 +81,7 @@ export function CollageLayout({
                 )}
               </div>
               <div className="mt-3 text-center">
-                <p className="font-headline font-bold text-[clamp(8px,1.5vw,14px)] truncate">{event.title}</p>
+                <p className="font-headline font-bold text-[clamp(8px,1.5vw,14px)] truncate text-black">{event.title}</p>
                 <p className="text-[clamp(6px,1vw,10px)] text-muted-foreground italic truncate opacity-60">"{event.message}"</p>
               </div>
             </div>

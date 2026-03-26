@@ -220,7 +220,7 @@ function CollageItem({
       }}
     >
       <div className={cn(
-        "relative aspect-square bg-white p-3 shadow-xl transition-all duration-300 group",
+        "relative aspect-square bg-white p-2 shadow-xl transition-all duration-300 group",
         isAngled ? "rounded-none" : "rounded-sm"
       )}>
         <div className={cn(

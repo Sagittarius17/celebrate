@@ -37,7 +37,7 @@ export function CollageLayout({
             <div
               key={event.id}
               className={cn(
-                "absolute shadow-2xl bg-white p-3 transition-transform duration-700 hover:scale-105 hover:z-[100]",
+                "absolute shadow-2xl bg-white p-2 transition-transform duration-700 hover:scale-105 hover:z-[100]",
                 isAngled ? "rounded-none" : "rounded-sm"
               )}
               style={{

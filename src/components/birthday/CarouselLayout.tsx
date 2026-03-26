@@ -45,6 +45,7 @@ export function CarouselLayout({ events }: CarouselLayoutProps) {
                   imageX={event.imageX}
                   imageY={event.imageY}
                   mediaRotation={event.mediaRotation}
+                  mediaFit={event.mediaFit}
                   cornerStyle="rounded"
                   icon={React.cloneElement(icons[index % icons.length] as React.ReactElement, { className: "w-6 h-6 text-primary-foreground candle-light:text-primary" })}
                 />

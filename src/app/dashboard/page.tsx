@@ -464,15 +464,30 @@ export default function Dashboard() {
             {surprises?.map((surprise) => (
               <Card 
                 key={surprise.id} 
-                className="group hover:shadow-xl transition-all duration-300 rounded-[2.5rem] overflow-hidden border-none shadow-md relative bg-card cursor-pointer"
+                className="group hover:shadow-2xl transition-all duration-500 rounded-[2.5rem] overflow-hidden border-none shadow-md relative bg-card cursor-pointer hover:-translate-y-2 hover:scale-[1.02]"
                 onClick={() => router.push(`/dashboard/${surprise.id}`)}
               >
-                <CardHeader className="bg-primary/10">
+                <CardHeader className="bg-primary/10 relative">
                   <div className="flex justify-between items-start">
-                    <CardTitle className="font-headline text-2xl truncate pr-4">{surprise.title}</CardTitle>
-                    <div className="bg-primary/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest text-primary-foreground">{surprise.occasion}</div>
+                    <CardTitle className="font-headline text-2xl truncate pr-12">{surprise.title}</CardTitle>
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="absolute top-4 right-4 rounded-full h-10 w-10 bg-background/50 hover:bg-background border-none shadow-sm transition-transform active:scale-95 z-10" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenEdit(surprise);
+                      }}
+                    >
+                      <Edit2 className="h-4 w-4 text-muted-foreground" />
+                    </Button>
                   </div>
-                  <CardDescription className="flex items-center gap-2 mt-2"><User className="h-4 w-4" /> For {surprise.recipientName}</CardDescription>
+                  <div className="flex flex-col gap-2 mt-2">
+                    <CardDescription className="flex items-center gap-2"><User className="h-4 w-4" /> For {surprise.recipientName}</CardDescription>
+                    <div className="flex">
+                      <div className="bg-primary/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest text-primary-foreground">{surprise.occasion}</div>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent className="p-6 space-y-4">
                   <div className="flex items-center justify-between text-sm text-muted-foreground">
@@ -510,23 +525,12 @@ export default function Dashboard() {
                     >
                       {copiedLinkId === surprise.id ? <Check className="h-4 w-4 text-green-500" /> : <Share2 className="h-4 w-4" />}
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      size="icon" 
-                      className="rounded-full h-11 w-11" 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleOpenEdit(surprise);
-                      }}
-                    >
-                      <Edit2 className="h-4 w-4 text-muted-foreground" />
-                    </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button 
                           variant="outline" 
                           size="icon" 
-                          className="rounded-full h-11 w-11"
+                          className="rounded-full h-11 w-11 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <Trash2 className="h-4 w-4" />

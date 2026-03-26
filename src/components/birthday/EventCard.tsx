@@ -83,7 +83,7 @@ export const EventCard: React.FC<EventCardProps> = ({
                 isFit ? "object-contain" : "object-cover"
               )}
               style={{
-                transform: `scale(${isFit ? 1 : finalScale}) translate(${imageX}%, ${imageY}%) rotate(${mediaRotation}deg)`
+                transform: `scale(${isFit ? 1 : finalScale}) translate(${isFit ? 0 : imageX}%, ${isFit ? 0 : imageY}%) rotate(${mediaRotation}deg)`
               }}
             />
           ) : imageUrl ? (
@@ -96,7 +96,7 @@ export const EventCard: React.FC<EventCardProps> = ({
                 isFit ? "object-contain" : "object-cover"
               )}
               style={{
-                transform: `scale(${isFit ? 1 : finalScale}) translate(${imageX}%, ${imageY}%) rotate(${mediaRotation}deg)`
+                transform: `scale(${isFit ? 1 : finalScale}) translate(${isFit ? 0 : imageX}%, ${isFit ? 0 : imageY}%) rotate(${mediaRotation}deg)`
               }}
               data-ai-hint="celebration photo"
             />

@@ -78,7 +78,7 @@ export function CollageLayout({
                       isFit ? "object-contain" : "object-cover"
                     )}
                     style={{
-                      transform: `scale(${isFit ? 1 : (event.imageZoom || 1)}) translate(${event.imageX || 0}%, ${event.imageY || 0}%) rotate(${event.mediaRotation || 0}deg)`
+                      transform: `scale(${isFit ? 1 : (event.imageZoom || 1)}) translate(${isFit ? 0 : (event.imageX || 0)}%, ${isFit ? 0 : (event.imageY || 0)}%) rotate(${event.mediaRotation || 0}deg)`
                     }}
                   />
                 ) : event.imageUrl ? (
@@ -91,7 +91,7 @@ export function CollageLayout({
                       isFit ? "object-contain" : "object-cover"
                     )}
                     style={{
-                      transform: `scale(${isFit ? 1 : (event.imageZoom || 1)}) translate(${event.imageX || 0}%, ${event.imageY || 0}%) rotate(${event.mediaRotation || 0}deg)`
+                      transform: `scale(${isFit ? 1 : (event.imageZoom || 1)}) translate(${isFit ? 0 : (event.imageX || 0)}%, ${isFit ? 0 : (event.imageY || 0)}%) rotate(${event.mediaRotation || 0}deg)`
                     }}
                   />
                 ) : (

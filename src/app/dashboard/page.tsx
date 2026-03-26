@@ -502,7 +502,7 @@ export default function Dashboard() {
                         <User className="h-3.5 w-3.5" /> 
                         <span className="font-medium">For {surprise.recipientName}</span>
                       </div>
-                      <span className="bg-muted px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest text-primary border border-primary/10">
+                      <span className="bg-secondary/20 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest text-secondary-foreground border border-secondary/30">
                         {surprise.occasion}
                       </span>
                     </CardDescription>

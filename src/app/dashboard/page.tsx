@@ -25,6 +25,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Progress } from '@/components/ui/progress';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Switch } from '@/components/ui/switch';
 import { Plus, User, Key, ArrowRight, Gift, LogOut, Copy, Check, Type, Trash2, Edit2, Sun, Moon, Music, Share2, Music2, Calendar, Mail, BadgeCheck, Camera, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -385,6 +386,19 @@ export default function Dashboard() {
                           {userProfile?.createdAt ? new Date(userProfile.createdAt).toLocaleDateString() : 'N/A'}
                         </p>
                       </div>
+                    </div>
+
+                    <div className="p-4 bg-muted/30 rounded-2xl border border-dashed flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className="p-2 bg-primary/10 rounded-xl text-primary">
+                          {isDark ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Display Theme</p>
+                          <p className="text-sm font-medium">{isDark ? 'Dark Mode' : 'Light Mode'}</p>
+                        </div>
+                      </div>
+                      <Switch checked={isDark} onCheckedChange={toggleTheme} />
                     </div>
 
                     <div className="p-4 bg-muted/30 rounded-2xl border border-dashed flex items-center gap-4">

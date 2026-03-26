@@ -26,6 +26,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const toggleTheme = () => setIsDark(!isDark);
 
+  // Sync theme with document root to ensure Portals (Sheets, Dialogs) are themed
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDark]);
+
   // Protected route logic: ensure user is verified
   useEffect(() => {
     if (!isUserLoading && (!user || (user && !user.isAnonymous && !user.emailVerified))) {
@@ -64,10 +73,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <ThemeContext.Provider value={{ isDark, toggleTheme }}>
-      <div className={isDark ? 'dark' : ''}>
-        <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
-          {children}
-        </div>
+      <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
+        {children}
       </div>
     </ThemeContext.Provider>
   );

@@ -496,11 +496,16 @@ export default function Dashboard() {
                       <Edit2 className="h-4 w-4 text-muted-foreground" />
                     </Button>
                   </div>
-                  <div className="flex flex-col gap-2 mt-2">
-                    <CardDescription className="flex items-center gap-2"><User className="h-4 w-4" /> For {surprise.recipientName}</CardDescription>
-                    <div className="flex">
-                      <div className="bg-primary/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest text-primary-foreground">{surprise.occasion}</div>
-                    </div>
+                  <div className="mt-2">
+                    <CardDescription className="flex items-center gap-2 flex-wrap">
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <User className="h-3.5 w-3.5" /> 
+                        <span className="font-medium">For {surprise.recipientName}</span>
+                      </div>
+                      <span className="bg-muted px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest text-primary border border-primary/10">
+                        {surprise.occasion}
+                      </span>
+                    </CardDescription>
                   </div>
                 </CardHeader>
                 <CardContent className="p-6 space-y-4">

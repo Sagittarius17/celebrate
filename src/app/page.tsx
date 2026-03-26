@@ -116,17 +116,19 @@ export default function Home() {
 
   const isFullyAuthenticated = user && !user.isAnonymous && user.emailVerified;
 
+  const buttonBaseClass = "rounded-full py-8 text-xl font-bold shadow-xl hover:scale-105 transition-all w-[280px] sm:w-[320px] flex items-center justify-center border-none";
+
   return (
     <main className="min-h-screen flex items-center justify-center bg-[#F8F8FF] p-4">
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+      <div className="flex flex-col items-center justify-center gap-6">
         {isUserLoading ? (
-          <Button disabled size="lg" className="rounded-full px-10 py-8 text-xl font-bold shadow-xl bg-[#E6E6FA] text-[#2D2D5F]">
+          <Button disabled size="lg" className={`${buttonBaseClass} bg-[#E6E6FA] text-[#2D2D5F]`}>
             <Loader2 className="mr-3 h-6 w-6 animate-spin" />
             Loading...
           </Button>
         ) : isFullyAuthenticated ? (
           <Link href="/dashboard">
-            <Button size="lg" className="rounded-full px-10 py-8 text-xl font-bold shadow-xl hover:scale-105 transition-all bg-[#E6E6FA] text-[#2D2D5F] border-none hover:bg-[#D8D8F0]">
+            <Button size="lg" className={`${buttonBaseClass} bg-[#E6E6FA] text-[#2D2D5F] hover:bg-[#D8D8F0]`}>
               <Sparkles className="mr-3 h-6 w-6" />
               Manage Surprises
             </Button>
@@ -136,7 +138,7 @@ export default function Home() {
             <DialogTrigger asChild>
               <Button 
                 size="lg" 
-                className="rounded-full px-10 py-8 text-xl font-bold shadow-xl hover:scale-105 transition-all bg-[#E6E6FA] text-[#2D2D5F] border-none hover:bg-[#D8D8F0]"
+                className={`${buttonBaseClass} bg-[#E6E6FA] text-[#2D2D5F] hover:bg-[#D8D8F0]`}
               >
                 <Sparkles className="mr-3 h-6 w-6" />
                 Create a Surprise
@@ -213,7 +215,7 @@ export default function Home() {
         )}
         
         <Link href="/surprise">
-          <Button variant="outline" size="lg" className="rounded-full px-10 py-8 text-xl font-bold shadow-lg hover:scale-105 transition-all bg-white hover:bg-slate-50 border-none text-slate-900">
+          <Button variant="outline" size="lg" className={`${buttonBaseClass} bg-white hover:bg-slate-50 text-slate-900`}>
             <Gift className="mr-3 h-6 w-6" />
             Open a Surprise
           </Button>

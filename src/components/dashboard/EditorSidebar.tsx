@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import { Slider } from '@/components/ui/slider';
 import { 
   Select, 
   SelectContent, 
@@ -60,13 +61,6 @@ const FONTS = [
 
 const LAYOUTS = ["Timeline", "Carousel", "Grid", "Collage"];
 
-const DURATIONS = [
-  { label: "15 Seconds", value: 15000 },
-  { label: "30 Seconds", value: 30000 },
-  { label: "1 Minute", value: 60000 },
-  { label: "Full Song", value: 300000 }
-];
-
 interface EditorSidebarProps {
   page: any;
   pageRef: DocumentReference | null;
@@ -78,6 +72,13 @@ interface EditorSidebarProps {
   selectionContext: SelectionContext;
   events: any[] | null;
 }
+
+const formatTime = (ms: number) => {
+  const totalSeconds = Math.floor(ms / 1000);
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = totalSeconds % 60;
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
 
 const extractSpotifyTrackId = (input: string) => {
   if (!input) return '';
@@ -169,12 +170,6 @@ export function EditorSidebar({
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, []);
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
 
   const handleUpdatePage = (updates: any) => {
     if (!db || !pageRef) return;
@@ -268,6 +263,19 @@ export function EditorSidebar({
 
   const isCollageLayout = page.layout === 'Collage';
   const soundtrackSource = page.soundtrackSource || 'spotify';
+
+  const startMs = page.spotifyTrackStartMs || 0;
+  const clipLength = page.spotifyTrackDurationMs || 30000;
+  const totalDuration = page.totalTrackDurationMs || 300000;
+  const endMs = startMs + clipLength;
+
+  const handleRangeChange = (val: number[]) => {
+    const [newStart, newEnd] = val;
+    handleUpdatePage({
+      spotifyTrackStartMs: newStart,
+      spotifyTrackDurationMs: Math.max(1000, newEnd - newStart) // Minimum 1s clip
+    });
+  };
 
   return (
     <Sidebar className="border-r">
@@ -371,7 +379,7 @@ export function EditorSidebar({
                 <div className="space-y-2">
                   <div className="flex items-center justify-between px-1">
                     <Label className="text-[10px] font-bold opacity-60 uppercase tracking-tight">Spotify Track</Label>
-                    <SpotifySearch onSelect={(track) => handleUpdatePage({ spotifyTrackId: track.trackId })} trigger={
+                    <SpotifySearch onSelect={(track) => handleUpdatePage({ spotifyTrackId: track.trackId, totalTrackDurationMs: track.durationMs })} trigger={
                       <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full"><Search className="h-3 w-3" /></Button>
                     } />
                   </div>
@@ -387,7 +395,7 @@ export function EditorSidebar({
                 <div className="space-y-2">
                   <div className="flex items-center justify-between px-1">
                     <Label className="text-[10px] font-bold opacity-60 uppercase tracking-tight">YouTube Track</Label>
-                    <YouTubeSearch onSelect={(track) => handleUpdatePage({ youtubeVideoId: track.videoId })} trigger={
+                    <YouTubeSearch onSelect={(track) => handleUpdatePage({ youtubeVideoId: track.videoId, totalTrackDurationMs: track.durationMs })} trigger={
                       <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full"><Search className="h-3 w-3 text-red-500" /></Button>
                     } />
                   </div>
@@ -424,46 +432,46 @@ export function EditorSidebar({
                 </div>
               )}
 
-              <div className="pt-2 space-y-4">
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-bold opacity-60 uppercase tracking-tight px-1 flex items-center gap-1.5">
-                    <Music className="h-3 w-3" /> Clip Duration
-                  </Label>
-                  <Select 
-                    value={(page.spotifyTrackDurationMs || 30000).toString()} 
-                    onValueChange={(val) => handleUpdatePage({ spotifyTrackDurationMs: parseInt(val) })}
-                  >
-                    <SelectTrigger className="h-9 text-xs rounded-full px-4"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {DURATIONS.map(d => <SelectItem key={d.value} value={d.value.toString()} className="text-xs">{d.label}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
+              {(page.spotifyTrackId || page.youtubeVideoId || page.customTrackDataUri) && (
+                <div className="pt-4 space-y-6">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between px-1">
+                      <Label className="text-[10px] font-bold opacity-60 uppercase tracking-tight flex items-center gap-1.5">
+                        <Music className="h-3.5 w-3.5" /> Favorite Part
+                      </Label>
+                      <span className="text-[10px] font-mono font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                        {formatTime(startMs)} — {formatTime(endMs)}
+                      </span>
+                    </div>
+                    
+                    <div className="px-2 pt-2">
+                      <Slider
+                        min={0}
+                        max={totalDuration}
+                        step={1000}
+                        value={[startMs, endMs]}
+                        onValueChange={handleRangeChange}
+                        className="py-4"
+                      />
+                    </div>
+                    
+                    <div className="flex justify-between px-1 text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-50">
+                      <span>Start</span>
+                      <span>{formatTime(totalDuration)}</span>
+                    </div>
+                  </div>
 
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-bold opacity-60 uppercase tracking-tight px-1 flex items-center gap-1.5">
-                    <Timer className="h-3 w-3" /> Start At (seconds)
-                  </Label>
-                  <Input 
-                    type="number"
-                    min="0"
-                    placeholder="e.g. 0"
-                    className="h-9 text-xs rounded-full px-4"
-                    value={Math.floor((page.spotifyTrackStartMs || 0) / 1000)}
-                    onChange={(e) => handleUpdatePage({ spotifyTrackStartMs: (parseInt(e.target.value) || 0) * 1000 })}
-                  />
+                  <div className="flex items-center justify-between px-1 bg-black/5 dark:bg-white/5 p-3 rounded-2xl border border-dashed border-black/10 dark:border-white/10">
+                    <Label className="text-[10px] font-bold opacity-60 uppercase tracking-tight flex items-center gap-1.5">
+                      <Repeat className="h-3 w-3" /> Loop Music
+                    </Label>
+                    <Switch 
+                      checked={page.spotifyLoop || false} 
+                      onCheckedChange={(val) => handleUpdatePage({ spotifyLoop: val })}
+                    />
+                  </div>
                 </div>
-
-                <div className="flex items-center justify-between px-1">
-                  <Label className="text-[10px] font-bold opacity-60 uppercase tracking-tight flex items-center gap-1.5">
-                    <Repeat className="h-3 w-3" /> Loop Track
-                  </Label>
-                  <Switch 
-                    checked={page.spotifyLoop || false} 
-                    onCheckedChange={(val) => handleUpdatePage({ spotifyLoop: val })}
-                  />
-                </div>
-              </div>
+              )}
             </div>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -478,7 +486,7 @@ export function EditorSidebar({
                 </Button>
               ) : (
                 <Button onClick={stopRecording} variant="destructive" className="w-full rounded-lg animate-pulse h-9 text-xs">
-                  <Square className="mr-1.5 h-3.5 w-3.5" /> Stop ({formatTime(recordingTime)})
+                  <Square className="mr-1.5 h-3.5 w-3.5" /> Stop ({formatTime(recordingTime * 1000)})
                 </Button>
               )}
               {audioUrl && !isRecording && (

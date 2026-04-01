@@ -338,9 +338,9 @@ export const CelebrationControls = forwardRef<CelebrationControlsHandle, Celebra
             {isPlayingVoice ? <div className="flex gap-1.5"><div className="w-2 h-6 bg-current rounded-full animate-pulse" /><div className="w-2 h-6 bg-current rounded-full animate-pulse" /></div> : <Play className="fill-current ml-1 w-6 h-6 sm:w-8 sm:h-8" />}
           </Button>
           
-          <div className="relative flex flex-col items-center transition-all duration-300 group-hover:opacity-0 group-hover:scale-95 group-hover:translate-y-1 mt-4">
+          <div className="relative flex flex-col items-center transition-all duration-300 group-hover:opacity-0 group-hover:scale-95 group-hover:translate-y-1 mt-4 animate-float">
             <ChevronUp className="w-4 h-4 text-secondary animate-bounce-slow mb-[-4px]" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-foreground bg-secondary px-4 py-1.5 rounded-full shadow-xl animate-pulse-slow">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-foreground bg-secondary px-4 py-1.5 rounded-full shadow-xl">
               Play Me
             </span>
           </div>
